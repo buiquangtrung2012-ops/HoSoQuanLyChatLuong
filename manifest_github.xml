@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OfficeApp 
+  xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" 
+  xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides" 
+  xsi:type="TaskPaneApp">
+
+  <Id>f2a518b2-4d2a-4f5c-8c1d-github-deploy</Id>
+  <Version>1.0.0.7</Version>
+  <ProviderName>Construction Quality Pro</ProviderName>
+  <DefaultLocale>en-US</DefaultLocale>
+  <DisplayName DefaultValue="CQ Pro (GitHub)" />
+  <Description DefaultValue="Professional Quality Management" />
+  
+  <Hosts>
+    <Host Name="Document" />
+  </Hosts>
+
+  <DefaultSettings>
+    <SourceLocation DefaultValue="https://buiquangtrung2012-ops.github.io/HoSoQuanLyChatLuong/dist/index.html" />
+  </DefaultSettings>
+
+  <Permissions>ReadWriteDocument</Permissions>
+
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
+    <Hosts>
+      <Host xsi:type="Document">
+        <DesktopFormFactor>
+          <ExtensionPoint xsi:type="PrimaryCommandSurface">
+            <CustomTab id="CQProTabGithub">
+              <Group id="CQProGroupGithub">
+                <Label resid="GroupLabel" />
+                <Control xsi:type="Button" id="CQPro.OpenGithub">
+                  <Label resid="ButtonLabel" />
+                  <Supertip>
+                    <Title resid="ButtonLabel" />
+                    <Description resid="ButtonTooltip" />
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon16" />
+                    <bt:Image size="32" resid="Icon32" />
+                    <bt:Image size="80" resid="Icon80" />
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>CQProTPG</TaskpaneId>
+                    <SourceLocation resid="TaskpaneUrl" />
+                  </Action>
+                </Control>
+              </Group>
+              <Label resid="TabLabel" />
+            </CustomTab>
+          </ExtensionPoint>
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+    <Resources>
+      <bt:Urls>
+        <bt:Url id="TaskpaneUrl" DefaultValue="https://buiquangtrung2012-ops.github.io/HoSoQuanLyChatLuong/dist/index.html" />
+      </bt:Urls>
+      <bt:Images>
+        <bt:Image id="Icon16" DefaultValue="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/assets/brand-icons/product/svg/word_16x1.svg" />
+        <bt:Image id="Icon32" DefaultValue="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/assets/brand-icons/product/svg/word_32x1.svg" />
+        <bt:Image id="Icon80" DefaultValue="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/assets/brand-icons/product/svg/word_80x1.svg" />
+      </bt:Images>
+      <bt:ShortStrings>
+        <bt:String id="GroupLabel" DefaultValue="Công cụ" />
+        <bt:String id="TabLabel" DefaultValue="CQ PRO" />
+        <bt:String id="ButtonLabel" DefaultValue="Mở Sidebar" />
+      </bt:ShortStrings>
+      <bt:LongStrings>
+        <bt:String id="ButtonTooltip" DefaultValue="Mở bảng điều khiển quản lý chất lượng" />
+      </bt:LongStrings>
+    </Resources>
+  </VersionOverrides>
+</OfficeApp>
