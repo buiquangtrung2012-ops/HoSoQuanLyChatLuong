@@ -1,24 +1,48 @@
-import React, { useState } from 'react';
-import { Save, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Save, RefreshCw, Calendar } from 'lucide-react';
 import type { Project } from '../types';
+import { StorageService } from '../services/storageService';
 
 export const ProjectModule: React.FC = () => {
   const [project, setProject] = useState<Project>({
     id: '1',
-    name: 'Chung cư cao cấp Sky Garden',
-    investor: 'Tập đoàn Sun Group',
-    contractor: 'Công ty Cổ phần Xây dựng Coteccons',
-    supervisor: 'Công ty CP Tư vấn Công nghệ, Thiết bị và Kiểm định xây dựng - CONINCO',
-    designer: 'Công ty thiết kế kiến trúc ABC',
-    contractNumber: '123/2026/HĐ-XD',
-    location: 'Quận 7, TP. Hồ Chí Minh',
-    startDate: '2026-01-15',
-    endDate: '2027-12-30',
+    name: 'Dự án Chiếu sáng Công cộng Quận 1',
+    investor: 'UBND Quận 1',
+    contractor: 'Công ty Cổ phần Cơ điện ABC',
+    supervisor: 'Công ty Tư vấn Giám sát XYZ',
+    designer: 'Công ty Thiết kế DEF',
+    contractNumber: '123/HĐ-MB',
+    location: 'Đường Lê Lợi, Quận 1, TP.HCM',
+    startDate: '2026-05-01',
+    endDate: '2027-12-31',
   });
+
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    const saved = StorageService.getProject();
+    if (saved) {
+      setProject(saved);
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setProject(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = () => {
+    setIsSaving(true);
+    StorageService.saveProject(project);
+    setTimeout(() => {
+      setIsSaving(false);
+      alert('Đã lưu thông tin dự án thành công!');
+    }, 500);
+  };
+
+  const handleRefresh = () => {
+    const saved = StorageService.getProject();
+    if (saved) setProject(saved);
   };
 
   return (
@@ -26,11 +50,18 @@ export const ProjectModule: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Thông tin dự án</h1>
         <div className="flex space-x-2">
-          <button className="flex items-center px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors">
+          <button 
+            onClick={handleRefresh}
+            className="flex items-center px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors"
+          >
             <RefreshCw size={18} className="mr-2" /> Tải lại
           </button>
-          <button className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm">
-            <Save size={18} className="mr-2" /> Lưu thông tin
+          <button 
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50"
+          >
+            <Save size={18} className="mr-2" /> {isSaving ? 'Đang lưu...' : 'Lưu thông tin'}
           </button>
         </div>
       </div>

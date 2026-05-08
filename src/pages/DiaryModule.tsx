@@ -1,21 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Cloud, Users, Truck, Plus, Sparkles, MapPin, Wind, Save, CheckCircle, RefreshCcw } from 'lucide-react';
 import { AiService } from '../services/AiService';
 import { mockWorkItems } from '../data/mockData';
+import { StorageService } from '../services/StorageService';
 
 export const DiaryModule: React.FC = () => {
   const [diaryContent, setDiaryContent] = useState("- Triển khai lắp dựng cột đèn tuyến Lộ 1 (24 cột).\n- Đấu nối dây lên đèn và lắp cần đèn.\n- Kiểm tra độ thẳng đứng của cột và siết bu lông móng.");
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-  const [date, setDate] = useState("2026-05-05");
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [weather, setWeather] = useState("Nắng ráo");
   const [temp, setTemp] = useState("32°C");
   const [manpower, setManpower] = useState("12 công nhân, 1 kỹ thuật");
   const [equipment, setEquipment] = useState("1 Xe cẩu tự hành, 1 máy thủy bình");
+  const [allEntries, setAllEntries] = useState<any[]>([]);
+
+  useEffect(() => {
+    const savedEntries = StorageService.getDiary();
+    setAllEntries(savedEntries);
+    
+    const existing = savedEntries.find((e: any) => e.date === date);
+    if (existing) {
+      setWeather(existing.weather);
+      setTemp(existing.temp);
+      setDiaryContent(existing.content);
+      setManpower(existing.manpower);
+      setEquipment(existing.equipment);
+      setIsSaved(true);
+    } else {
+      setIsSaved(false);
+      setDiaryContent("");
+    }
+  }, [date]);
 
   const handleAiFill = async () => {
     setIsAiLoading(true);
-    // Suggest content based on current mock tasks
     const suggestion = await AiService.generateWorkDescription("Lắp dựng cột đèn và rải cáp");
     setDiaryContent(suggestion);
     setIsAiLoading(false);
@@ -40,8 +59,24 @@ export const DiaryModule: React.FC = () => {
   };
 
   const handleSave = () => {
+    const newEntry = {
+      id: Date.now().toString(),
+      date,
+      weather,
+      temp,
+      content: diaryContent,
+      manpower,
+      equipment,
+      timestamp: new Date().toISOString()
+    };
+
+    const updatedEntries = [...allEntries.filter(e => e.date !== date), newEntry];
+    setAllEntries(updatedEntries);
+    StorageService.saveDiary(updatedEntries);
+    
     setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 3000);
+    setTimeout(() => setIsSaved(false), 2000);
+    alert('Đã lưu nhật ký ngày ' + date.split('-').reverse().join('/'));
   };
 
   return (
@@ -66,44 +101,80 @@ export const DiaryModule: React.FC = () => {
       </div>
 
       <div className="space-y-6">
-        <div className="bg-card rounded-xl border p-6 space-y-6 shadow-sm">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-6">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
-                <Calendar size={14} className="mr-1" /> Ngày tháng
-              </label>
-              <div className="flex space-x-2">
-                <input 
-                  type="date" 
-                  className="w-full p-2 border rounded-lg text-sm bg-background" 
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                />
+        <div className="bg-card rounded-xl border p-6 shadow-sm space-y-6">
+          <div className="flex flex-col lg:flex-row gap-6 border-b pb-6">
+            {/* Mini Calendar for highlighting saved days */}
+            <div className="flex-shrink-0 bg-muted/30 p-4 rounded-xl border">
+              <h3 className="text-xs font-bold uppercase text-muted-foreground mb-3 flex items-center">
+                <Calendar size={14} className="mr-1" /> Trạng thái lưu nhật ký
+              </h3>
+              <div className="grid grid-cols-7 gap-1 text-center text-[10px]">
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d} className="font-bold py-1 opacity-50">{d}</div>)}
+                {Array.from({ length: 31 }, (_, i) => {
+                  const day = i + 1;
+                  const dStr = `2026-05-${day.toString().padStart(2, '0')}`;
+                  const hasEntry = allEntries.some(e => e.date === dStr);
+                  const isCurrent = date === dStr;
+                  return (
+                    <button 
+                      key={i} 
+                      onClick={() => setDate(dStr)}
+                      className={`w-7 h-7 rounded-md flex items-center justify-center transition-all ${
+                        isCurrent ? 'bg-primary text-primary-foreground shadow-md scale-110' : 
+                        hasEntry ? 'bg-red-500 text-white font-bold animate-pulse' : 'hover:bg-accent'
+                      }`}
+                    >
+                      {day}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-4 flex items-center space-x-3 text-[10px]">
+                <div className="flex items-center"><div className="w-2 h-2 bg-red-500 rounded-full mr-1"></div> Đã lưu</div>
+                <div className="flex items-center"><div className="w-2 h-2 bg-primary rounded-full mr-1"></div> Đang chọn</div>
               </div>
             </div>
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
-                <Cloud size={14} className="mr-1" /> Thời tiết
-              </label>
-              <select 
-                className="w-full p-2 border rounded-lg text-sm bg-background"
-                value={weather}
-                onChange={(e) => setWeather(e.target.value)}
-              >
-                <option>Nắng ráo</option>
-                <option>Có mưa</option>
-                <option>Nhiều mây</option>
-              </select>
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
-                <Thermometer size={14} className="mr-1" /> Nhiệt độ
-              </label>
-              <input 
-                className="w-full p-2 border rounded-lg text-sm bg-background" 
-                value={temp}
-                onChange={(e) => setTemp(e.target.value)}
-              />
+
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
+                  <Calendar size={14} className="mr-1" /> Ngày tháng
+                </label>
+                <div className="flex space-x-2">
+                  <input 
+                    type="date" 
+                    className="w-full p-2 border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/50 outline-none" 
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
+                  <Cloud size={14} className="mr-1" /> Thời tiết
+                </label>
+                <select 
+                  className="w-full p-2 border rounded-lg text-sm bg-background"
+                  value={weather}
+                  onChange={(e) => setWeather(e.target.value)}
+                >
+                  <option>Nắng ráo</option>
+                  <option>Có mưa</option>
+                  <option>Nhiều mây</option>
+                  <option>Mưa to</option>
+                  <option>Giông bão</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
+                  <Thermometer size={14} className="mr-1" /> Nhiệt độ
+                </label>
+                <input 
+                  className="w-full p-2 border rounded-lg text-sm bg-background" 
+                  value={temp}
+                  onChange={(e) => setTemp(e.target.value)}
+                />
+              </div>
             </div>
           </div>
           

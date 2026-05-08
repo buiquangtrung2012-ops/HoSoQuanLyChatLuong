@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layers, FileCheck, AlertCircle, Briefcase, Calendar, BookOpen, MapPin, User, Building2 } from 'lucide-react';
 import { mockWorkItems } from '../data/mockData';
+import { StorageService } from '../services/StorageService';
 
 const StatCard = ({ title, value, icon: Icon, color, trend }: any) => (
   <div className="bg-card p-6 rounded-xl border shadow-sm flex items-start justify-between hover:shadow-md transition-shadow">
@@ -20,15 +21,32 @@ const StatCard = ({ title, value, icon: Icon, color, trend }: any) => (
 );
 
 export const Dashboard: React.FC = () => {
-  // Mock project info (should ideally come from a shared state/service)
-  const project = {
+  const [project, setProject] = useState({
     name: 'Chung cư cao cấp Sky Garden',
     investor: 'Tập đoàn Sun Group',
     contractor: 'Công ty Cổ phần Xây dựng Coteccons',
     location: 'Quận 7, TP. Hồ Chí Minh',
     startDate: '15/01/2026',
     endDate: '30/12/2027',
-  };
+  });
+  const [diaryEntries, setDiaryEntries] = useState<any[]>([]);
+
+  useEffect(() => {
+    const savedProject = StorageService.getProject();
+    if (savedProject) {
+      setProject({
+        name: savedProject.name,
+        investor: savedProject.investor,
+        contractor: savedProject.contractor,
+        location: savedProject.location,
+        startDate: savedProject.startDate.split('-').reverse().join('/'),
+        endDate: savedProject.endDate.split('-').reverse().join('/'),
+      });
+    }
+
+    const savedDiary = StorageService.getDiary();
+    setDiaryEntries(savedDiary.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -38,7 +56,7 @@ export const Dashboard: React.FC = () => {
           <p className="text-sm text-muted-foreground mt-1 text-primary/80 font-medium italic">Chào mừng trở lại! Dưới đây là tóm tắt tiến độ dự án.</p>
         </div>
         <div className="text-xs font-mono text-muted-foreground bg-muted px-3 py-1 rounded-full border">
-          Hôm nay: {new Date().toLocaleDateString('vi-VN')}
+          Cập nhật: {new Date().toLocaleDateString('vi-VN')}
         </div>
       </div>
 
@@ -94,18 +112,18 @@ export const Dashboard: React.FC = () => {
           value={mockWorkItems.length} 
           icon={Layers} 
           color="bg-blue-500/10 text-blue-500"
-          trend="Mới cập nhật"
+          trend="Đang thực hiện"
         />
         <StatCard 
           title="Hồ sơ đã tạo" 
           value="12" 
           icon={FileCheck} 
           color="bg-green-500/10 text-green-500"
-          trend="+3 hôm nay"
+          trend="+3 mới"
         />
         <StatCard 
           title="Nhật ký đã ghi" 
-          value="45" 
+          value={diaryEntries.length} 
           icon={BookOpen} 
           color="bg-purple-500/10 text-purple-500"
         />
@@ -116,12 +134,12 @@ export const Dashboard: React.FC = () => {
         <div className="bg-card rounded-xl border p-6 shadow-sm flex flex-col h-full">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold flex items-center">
-              <Layers size={18} className="mr-2 text-primary" /> Công việc gần đây
+              <Layers size={18} className="mr-2 text-primary" /> Công việc hiện tại
             </h3>
           </div>
           <div className="space-y-3 flex-1 overflow-auto max-h-[300px] pr-2 custom-scrollbar">
             {mockWorkItems.map((item) => (
-              <div key={item.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors">
+              <div key={item.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors border-l-4 border-primary/20 hover:border-primary">
                 <div className="flex flex-col">
                   <span className="text-sm font-bold">{item.name}</span>
                   <span className="text-[10px] text-muted-foreground uppercase font-medium">{item.category} • {item.line}</span>
@@ -139,26 +157,29 @@ export const Dashboard: React.FC = () => {
         <div className="bg-card rounded-xl border p-6 shadow-sm flex flex-col h-full">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold flex items-center">
-              <BookOpen size={18} className="mr-2 text-primary" /> Nội dung nhật ký gần đây
+              <BookOpen size={18} className="mr-2 text-primary" /> Lịch sử nhật ký thi công
             </h3>
           </div>
           <div className="space-y-4 flex-1 overflow-auto max-h-[300px] pr-2 custom-scrollbar">
-            {[
-              { date: '05/05/2026', content: 'Triển khai lắp dựng cột đèn tuyến Lộ 1 (24 cột). Đấu nối dây lên đèn và lắp cần đèn.', weather: 'Nắng ráo' },
-              { date: '04/05/2026', content: 'Đổ bê tông móng đúc sẵn M1. Kiểm tra cao độ móng bằng máy thủy bình.', weather: 'Nắng ráo' },
-              { date: '03/05/2026', content: 'Vận chuyển cột đèn và phụ kiện về bãi tập kết. Kiểm tra chất lượng vật liệu đầu vào.', weather: 'Nhiều mây' },
-            ].map((entry, i) => (
-              <div key={i} className="relative pl-6 border-l-2 border-muted hover:border-primary transition-colors">
-                <div className="absolute left-[-5px] top-0 w-2 h-2 rounded-full bg-primary shadow-sm shadow-primary/50"></div>
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="text-xs font-bold text-primary">{entry.date}</span>
-                  <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full text-muted-foreground">{entry.weather}</span>
+            {diaryEntries.length > 0 ? (
+              diaryEntries.map((entry, i) => (
+                <div key={i} className="relative pl-6 border-l-2 border-muted hover:border-primary transition-colors py-1">
+                  <div className="absolute left-[-5px] top-2 w-2 h-2 rounded-full bg-primary shadow-sm shadow-primary/50"></div>
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="text-xs font-bold text-primary">{entry.date.split('-').reverse().join('/')}</span>
+                    <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full text-muted-foreground">{entry.weather} • {entry.temp}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed italic line-clamp-2">
+                    "{entry.content}"
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground leading-relaxed italic line-clamp-2">
-                  "{entry.content}"
-                </p>
+              ))
+            ) : (
+              <div className="flex flex-col items-center justify-center py-10 text-muted-foreground opacity-50">
+                <BookOpen size={40} className="mb-2" />
+                <p className="text-sm">Chưa có nhật ký nào được lưu</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
