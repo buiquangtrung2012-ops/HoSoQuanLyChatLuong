@@ -47,6 +47,25 @@ export const DiaryModule: React.FC = () => {
     if (relatedWorks.length > 0) {
       const content = relatedWorks.map(work => `- ${work.name} (${work.line} - ${work.category}): ${work.quantity} ${work.unit}`).join('\n');
       setDiaryContent(content);
+      
+      // Auto save after fetching
+      const newEntry = {
+        id: Date.now().toString(),
+        date,
+        weather,
+        temp,
+        content: content,
+        manpower,
+        equipment,
+        timestamp: new Date().toISOString()
+      };
+
+      const updatedEntries = [...allEntries.filter(e => e.date !== date), newEntry];
+      setAllEntries(updatedEntries);
+      StorageService.saveDiary(updatedEntries);
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 2000);
+      alert(`Đã gộp ${relatedWorks.length} công việc và lưu nhật ký ngày ${date.split('-').reverse().join('/')}`);
     } else {
       alert(`Không có công việc nào trong danh sách được nghiệm thu vào ngày ${date}`);
     }
@@ -86,9 +105,16 @@ export const DiaryModule: React.FC = () => {
         <div className="flex space-x-2">
           <button 
             onClick={handleNew}
-            className="flex items-center px-4 py-2 border rounded-lg hover:bg-accent transition-all text-sm"
+            className="flex items-center px-4 py-2 border rounded-lg hover:bg-accent transition-all text-sm font-medium"
           >
-            <Plus size={18} className="mr-2" /> Tạo nhật ký mới
+            <Plus size={18} className="mr-2" /> Tạo mới
+          </button>
+          <button 
+            onClick={handleFetchFromWorkItems}
+            className="flex items-center px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-all text-sm font-bold"
+            title="Lấy nội dung từ danh sách công việc cùng ngày"
+          >
+            <RefreshCcw size={18} className="mr-2" /> Lấy từ công việc
           </button>
           <button 
             onClick={handleSave}
@@ -108,8 +134,12 @@ export const DiaryModule: React.FC = () => {
               <h3 className="text-xs font-bold uppercase text-muted-foreground mb-3 flex items-center">
                 <Calendar size={14} className="mr-1" /> Trạng thái lưu nhật ký
               </h3>
-              <div className="grid grid-cols-7 gap-1 text-center text-[10px]">
-                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d} className="font-bold py-1 opacity-50">{d}</div>)}
+              <div className="grid grid-cols-7 gap-1">
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                  <div key={i} className="text-[10px] font-bold py-1 opacity-50 w-8 h-8 flex items-center justify-center">
+                    {d}
+                  </div>
+                ))}
                 {Array.from({ length: 31 }, (_, i) => {
                   const day = i + 1;
                   const dStr = `2026-05-${day.toString().padStart(2, '0')}`;
@@ -119,9 +149,9 @@ export const DiaryModule: React.FC = () => {
                     <button 
                       key={i} 
                       onClick={() => setDate(dStr)}
-                      className={`w-7 h-7 rounded-md flex items-center justify-center transition-all ${
-                        isCurrent ? 'bg-primary text-primary-foreground shadow-md scale-110' : 
-                        hasEntry ? 'bg-red-500 text-white font-bold animate-pulse' : 'hover:bg-accent'
+                      className={`w-8 h-8 rounded-md flex items-center justify-center transition-all text-[10px] ${
+                        isCurrent ? 'bg-primary text-primary-foreground shadow-md font-bold scale-110 z-10' : 
+                        hasEntry ? 'bg-red-500 text-white font-bold' : 'hover:bg-accent text-muted-foreground'
                       }`}
                     >
                       {day}
@@ -183,13 +213,6 @@ export const DiaryModule: React.FC = () => {
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-muted-foreground uppercase">Nội dung thi công</label>
                 <div className="flex space-x-2">
-                  <button 
-                    onClick={handleFetchFromWorkItems}
-                    className="flex items-center text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full hover:bg-primary/20 transition-colors font-bold"
-                    title="Lấy nội dung từ danh sách công việc cùng ngày"
-                  >
-                    <RefreshCcw size={10} className="mr-1" /> Lấy từ công việc
-                  </button>
                   <button 
                     onClick={handleAiFill}
                     disabled={isAiLoading}

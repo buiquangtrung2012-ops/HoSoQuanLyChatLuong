@@ -141,7 +141,7 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
                   {!defaultRecordTypes.includes(type) && (
                     <button
                       onClick={(e) => handleDeleteRecord(e, type)}
-                      className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity ${
+                      className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md transition-opacity ${
                         selectedType === type ? 'text-primary-foreground/70 hover:text-primary-foreground' : 'text-destructive hover:bg-destructive/10'
                       }`}
                       title="Xóa mẫu này"

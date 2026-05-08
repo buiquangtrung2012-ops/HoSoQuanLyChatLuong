@@ -13,9 +13,11 @@ import {
   Plus,
   RefreshCw,
   Save,
-  CheckCircle2
+  CheckCircle2,
+  Trash2
 } from 'lucide-react';
 import { StorageService } from '../services/storageService';
+import { useEffect } from 'react';
 
 const contentControls = [
   { id: 'projectName', label: 'Tên Dự án', icon: FileText },
@@ -37,6 +39,19 @@ const bookmarks = [
 export const TemplateModule: React.FC = () => {
   const [recordName, setRecordName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [customRecords, setCustomRecords] = useState<string[]>([]);
+
+  useEffect(() => {
+    setCustomRecords(StorageService.getCustomRecords());
+  }, []);
+
+  const handleDeleteRecord = (type: string) => {
+    if (confirm(`Bạn có chắc muốn xóa mẫu "${type}"?`)) {
+      const updated = customRecords.filter(t => t !== type);
+      StorageService.saveCustomRecords(updated);
+      setCustomRecords(updated);
+    }
+  };
 
   const handleSaveToRecords = () => {
     if (!recordName.trim()) {
@@ -46,7 +61,9 @@ export const TemplateModule: React.FC = () => {
     setIsSaving(true);
     const currentRecords = StorageService.getCustomRecords();
     if (!currentRecords.includes(recordName)) {
-      StorageService.saveCustomRecords([...currentRecords, recordName]);
+      const updated = [...currentRecords, recordName];
+      StorageService.saveCustomRecords(updated);
+      setCustomRecords(updated);
     }
     setTimeout(() => {
       setIsSaving(false);
@@ -131,6 +148,26 @@ export const TemplateModule: React.FC = () => {
         <p className="text-[10px] text-muted-foreground italic pl-1">
           * Lưu tên biên bản này để nó xuất hiện trong danh sách lựa chọn ở Tab Hồ sơ.
         </p>
+
+        {customRecords.length > 0 && (
+          <div className="pt-4 border-t">
+            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3">Danh sách Biên bản đã đăng ký</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {customRecords.map((rec) => (
+                <div key={rec} className="flex items-center justify-between p-2 bg-muted/50 rounded-lg group">
+                  <span className="text-xs font-medium truncate pr-4">{rec}</span>
+                  <button 
+                    onClick={() => handleDeleteRecord(rec)}
+                    className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                    title="Xóa khỏi danh mục"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="space-y-6">
