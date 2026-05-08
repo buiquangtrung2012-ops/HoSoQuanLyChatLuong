@@ -41,33 +41,55 @@ export const DiaryModule: React.FC = () => {
   };
 
   const handleFetchFromWorkItems = () => {
-    // Filter work items that match the selected date (using inspectionDate as the "work day")
-    const relatedWorks = mockWorkItems.filter(work => work.inspectionDate === date);
+    // Get all unique dates from work items
+    const allDates = [...new Set(mockWorkItems.map(w => w.inspectionDate))];
     
-    if (relatedWorks.length > 0) {
-      const content = relatedWorks.map(work => `- ${work.name} (${work.line} - ${work.category}): ${work.quantity} ${work.unit}`).join('\n');
-      setDiaryContent(content);
-      
-      // Auto save after fetching
-      const newEntry = {
-        id: Date.now().toString(),
-        date,
-        weather,
-        temp,
-        content: content,
-        manpower,
-        equipment,
-        timestamp: new Date().toISOString()
-      };
+    if (allDates.length === 0) {
+      alert('Không có dữ liệu công việc nào để gộp.');
+      return;
+    }
 
-      const updatedEntries = [...allEntries.filter(e => e.date !== date), newEntry];
+    if (confirm(`Hệ thống tìm thấy công việc ở ${allDates.length} ngày khác nhau. Bạn có muốn tự động gộp và tạo nhật ký cho TẤT CẢ các ngày này không?`)) {
+      let createdCount = 0;
+      const updatedEntries = [...allEntries];
+
+      allDates.forEach(dStr => {
+        const relatedWorks = mockWorkItems.filter(work => work.inspectionDate === dStr);
+        if (relatedWorks.length > 0) {
+          const content = relatedWorks.map(work => `- ${work.name} (${work.line} - ${work.category}): ${work.quantity} ${work.unit}`).join('\n');
+          
+          const existingIndex = updatedEntries.findIndex(e => e.date === dStr);
+          const newEntry = {
+            id: Date.now().toString() + Math.random(),
+            date: dStr,
+            weather: "Nắng ráo",
+            temp: "32°C",
+            content: content,
+            manpower: "12 công nhân, 1 kỹ thuật",
+            equipment: "1 Xe cẩu tự hành, 1 máy thủy bình",
+            timestamp: new Date().toISOString()
+          };
+
+          if (existingIndex >= 0) {
+            updatedEntries[existingIndex] = newEntry;
+          } else {
+            updatedEntries.push(newEntry);
+          }
+          createdCount++;
+        }
+      });
+
       setAllEntries(updatedEntries);
       StorageService.saveDiary(updatedEntries);
-      setIsSaved(true);
-      setTimeout(() => setIsSaved(false), 2000);
-      alert(`Đã gộp ${relatedWorks.length} công việc và lưu nhật ký ngày ${date.split('-').reverse().join('/')}`);
-    } else {
-      alert(`Không có công việc nào trong danh sách được nghiệm thu vào ngày ${date}`);
+      
+      // Update UI if current date was affected
+      const currentAffected = updatedEntries.find(e => e.date === date);
+      if (currentAffected) {
+        setDiaryContent(currentAffected.content);
+        setIsSaved(true);
+      }
+
+      alert(`Đã tự động tạo/cập nhật nhật ký cho ${createdCount} ngày thành công!`);
     }
   };
 

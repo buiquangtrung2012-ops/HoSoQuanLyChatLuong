@@ -28,10 +28,27 @@ export const StorageService = {
     return data ? JSON.parse(data) : [];
   },
 
-  saveCustomRecords: (records: string[]) => localStorage.setItem(STORAGE_KEYS.CUSTOM_RECORDS, JSON.stringify(records)),
-  getCustomRecords: (): string[] => {
+  saveRecordTypes: (records: string[]) => localStorage.setItem(STORAGE_KEYS.CUSTOM_RECORDS, JSON.stringify(records)),
+  getRecordTypes: (): string[] => {
     const data = localStorage.getItem(STORAGE_KEYS.CUSTOM_RECORDS);
-    return data ? JSON.parse(data) : [];
+    if (data) return JSON.parse(data);
+    
+    // Initial default records
+    const defaults = [
+      "Biên bản bàn giao mặt bằng",
+      "Biên bản kiểm tra điều kiện khởi công",
+      "Biên bản nghiệm thu vật liệu: Cột đèn, cần đèn",
+      "Biên bản nghiệm thu vật liệu: Đèn chiếu sáng, tủ điện",
+      "Biên bản nghiệm thu vật liệu: Cáp điện, vật tư phụ",
+      "Biên bản nghiệm thu công việc: Đào móng, lắp dựng móng cột",
+      "Biên bản nghiệm thu công việc: Lắp dựng cột đèn",
+      "Biên bản nghiệm thu công việc: Rải cáp ngầm/kéo dây",
+      "Biên bản nghiệm thu công việc: Lắp đặt tủ điện, đèn",
+      "Biên bản thử nghiệm: Đo điện trở tiếp địa, cách điện",
+      "Biên bản nghiệm thu hoàn thành công trình"
+    ];
+    localStorage.setItem(STORAGE_KEYS.CUSTOM_RECORDS, JSON.stringify(defaults));
+    return defaults;
   },
   
   // Generic helpers
