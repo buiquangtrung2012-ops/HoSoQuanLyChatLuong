@@ -6,6 +6,7 @@ const STORAGE_KEYS = {
   MATERIALS: 'hoso_materials',
   EQUIPMENT: 'hoso_equipment',
   LABS: 'hoso_labs',
+  CUSTOM_RECORDS: 'hoso_custom_records',
 };
 
 export const StorageService = {
@@ -24,6 +25,12 @@ export const StorageService = {
   saveWorkItems: (items: any[]) => localStorage.setItem(STORAGE_KEYS.WORK_ITEMS, JSON.stringify(items)),
   getWorkItems: (): any[] => {
     const data = localStorage.getItem(STORAGE_KEYS.WORK_ITEMS);
+    return data ? JSON.parse(data) : [];
+  },
+
+  saveCustomRecords: (records: string[]) => localStorage.setItem(STORAGE_KEYS.CUSTOM_RECORDS, JSON.stringify(records)),
+  getCustomRecords: (): string[] => {
+    const data = localStorage.getItem(STORAGE_KEYS.CUSTOM_RECORDS);
     return data ? JSON.parse(data) : [];
   },
   

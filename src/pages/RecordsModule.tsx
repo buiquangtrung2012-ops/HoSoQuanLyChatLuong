@@ -1,11 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText, Download, Eye, Play, CheckCircle2, AlertTriangle, X, Settings2, Sparkles, RefreshCw } from 'lucide-react';
 // @ts-ignore
 import { renderAsync } from 'docx-preview';
 import { TemplateService } from '../services/templateService';
 import { AiService } from '../services/AiService';
+import { StorageService } from '../services/storageService';
 
-const recordTypes = [
+const defaultRecordTypes = [
   "Biên bản bàn giao mặt bằng",
   "Biên bản kiểm tra điều kiện khởi công",
   "Biên bản nghiệm thu vật liệu: Cột đèn, cần đèn",
@@ -16,14 +17,20 @@ const recordTypes = [
   "Biên bản nghiệm thu công việc: Rải cáp ngầm/kéo dây",
   "Biên bản nghiệm thu công việc: Lắp đặt tủ điện, đèn",
   "Biên bản thử nghiệm: Đo điện trở tiếp địa, cách điện",
-  "Biên bản thử sáng và vận hành hệ thống",
-  "Nhật ký thi công điện chiếu sáng",
   "Biên bản nghiệm thu hoàn thành công trình"
 ];
 
 export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = ({ setActiveTab }) => {
-  const [selectedType, setSelectedType] = useState(recordTypes[6]);
+  const [recordTypes, setRecordTypes] = useState(defaultRecordTypes);
+  const [selectedType, setSelectedType] = useState(defaultRecordTypes[6]);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  useEffect(() => {
+    const custom = StorageService.getCustomRecords();
+    if (custom.length > 0) {
+      setRecordTypes([...defaultRecordTypes, ...custom]);
+    }
+  }, []);
 
   // Record-specific data
   const [formData, setFormData] = useState({
@@ -46,8 +53,12 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
 
   const handleExport = async () => {
     setIsGenerating(true);
+    
+    // Improved detection: check for Word host explicitly
     // @ts-ignore
-    if (window.Office && window.Word) {
+    const isWord = window.Office && window.Office.context && window.Office.context.host === 'Word';
+
+    if (isWord) {
       // @ts-ignore
       Word.run(async (context) => {
         // Logic to fill content controls

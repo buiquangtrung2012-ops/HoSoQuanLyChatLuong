@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   FileText, 
   Hash, 
@@ -11,8 +11,11 @@ import {
   Package,
   Truck,
   Plus,
-  RefreshCw
+  RefreshCw,
+  Save,
+  CheckCircle2
 } from 'lucide-react';
+import { StorageService } from '../services/storageService';
 
 const contentControls = [
   { id: 'projectName', label: 'Tên Dự án', icon: FileText },
@@ -32,6 +35,26 @@ const bookmarks = [
 ];
 
 export const TemplateModule: React.FC = () => {
+  const [recordName, setRecordName] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSaveToRecords = () => {
+    if (!recordName.trim()) {
+      alert('Vui lòng nhập tên biên bản trước khi lưu!');
+      return;
+    }
+    setIsSaving(true);
+    const currentRecords = StorageService.getCustomRecords();
+    if (!currentRecords.includes(recordName)) {
+      StorageService.saveCustomRecords([...currentRecords, recordName]);
+    }
+    setTimeout(() => {
+      setIsSaving(false);
+      alert(`Đã lưu mẫu "${recordName}" vào danh sách Hồ sơ thành công!`);
+      setRecordName('');
+    }, 500);
+  };
+
   const insertContentControl = (id: string, label: string) => {
     // @ts-ignore
     if (window.Office && window.Word) {
@@ -80,6 +103,34 @@ export const TemplateModule: React.FC = () => {
           </div>
           <h1 className="text-2xl font-bold tracking-tight uppercase">Tạo Mẫu</h1>
         </div>
+      </div>
+
+      {/* Save to Records Feature */}
+      <div className="bg-card border-2 border-primary/20 rounded-2xl p-6 shadow-sm space-y-4">
+        <div className="flex items-center space-x-2 text-primary">
+          <FileText size={18} />
+          <h3 className="text-sm font-bold uppercase tracking-wider">Đăng ký vào Danh mục Hồ sơ</h3>
+        </div>
+        <div className="flex space-x-3">
+          <input 
+            type="text" 
+            placeholder="Nhập tên biên bản (VD: Biên bản nghiệm thu lắp đặt thiết bị...)"
+            value={recordName}
+            onChange={(e) => setRecordName(e.target.value)}
+            className="flex-1 p-3 border rounded-xl bg-background text-sm focus:ring-2 focus:ring-primary/50 outline-none"
+          />
+          <button 
+            onClick={handleSaveToRecords}
+            disabled={isSaving}
+            className="flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all font-bold shadow-lg shadow-primary/20 disabled:opacity-50"
+          >
+            {isSaving ? <RefreshCw size={18} className="mr-2 animate-spin" /> : <Save size={18} className="mr-2" />}
+            {isSaving ? "Đang lưu..." : "Lưu vào Hồ sơ"}
+          </button>
+        </div>
+        <p className="text-[10px] text-muted-foreground italic pl-1">
+          * Lưu tên biên bản này để nó xuất hiện trong danh sách lựa chọn ở Tab Hồ sơ.
+        </p>
       </div>
 
       <div className="space-y-6">

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Cloud, Users, Truck, Plus, Sparkles, MapPin, Wind, Save, CheckCircle, RefreshCcw } from 'lucide-react';
 import { AiService } from '../services/AiService';
 import { mockWorkItems } from '../data/mockData';
-import { StorageService } from '../services/StorageService';
+import { StorageService } from '../services/storageService';
 
 export const DiaryModule: React.FC = () => {
   const [diaryContent, setDiaryContent] = useState("- Triển khai lắp dựng cột đèn tuyến Lộ 1 (24 cột).\n- Đấu nối dây lên đèn và lắp cần đèn.\n- Kiểm tra độ thẳng đứng của cột và siết bu lông móng.");

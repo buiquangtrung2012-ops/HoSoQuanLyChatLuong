@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Layers, FileCheck, AlertCircle, Briefcase, Calendar, BookOpen, MapPin, User, Building2 } from 'lucide-react';
 import { mockWorkItems } from '../data/mockData';
-import { StorageService } from '../services/StorageService';
+import { StorageService } from '../services/storageService';
 
 const StatCard = ({ title, value, icon: Icon, color, trend }: any) => (
   <div className="bg-card p-6 rounded-xl border shadow-sm flex items-start justify-between hover:shadow-md transition-shadow">
