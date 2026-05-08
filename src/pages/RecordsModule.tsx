@@ -228,9 +228,9 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
                   <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tiêu chuẩn áp dụng</label>
                   <button 
                     onClick={async () => {
-                      const suggestions = await AiService.suggestStandards(formData.workItemName);
+                      const suggestions = await AiService.suggestStandards(formData.content);
                       if (suggestions.length > 0) {
-                        setFormData(prev => ({ ...prev, technicalStandard: suggestions[0] }));
+                        setFormData(prev => ({ ...prev, standard: suggestions[0] }));
                       }
                     }}
                     className="flex items-center text-[10px] bg-purple-500/10 text-purple-600 px-2 py-0.5 rounded-full hover:bg-purple-500/20 transition-colors font-bold"
@@ -238,7 +238,13 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
                     <Sparkles size={10} className="mr-1" /> Gợi ý AI
                   </button>
                 </div>
-                <input name="technicalStandard" value={formData.technicalStandard} onChange={handleInputChange} className="w-full p-2 border rounded-md text-sm bg-background focus:ring-1 focus:ring-primary outline-none" />
+                <input 
+                  type="text"
+                  name="standard" 
+                  value={formData.standard} 
+                  onChange={handleInputChange} 
+                  className="w-full p-2.5 border rounded-lg bg-background text-sm focus:ring-2 focus:ring-primary/50 outline-none" 
+                />
               </div>
             </div>
 
