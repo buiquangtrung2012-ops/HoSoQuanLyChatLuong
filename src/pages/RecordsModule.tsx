@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, Eye, Play, CheckCircle2, AlertTriangle, X, Settings2, Sparkles, RefreshCw } from 'lucide-react';
+import { FileText, Download, Eye, Play, CheckCircle2, AlertTriangle, X, Settings2, Sparkles, RefreshCw, Trash2 } from 'lucide-react';
 // @ts-ignore
 import { renderAsync } from 'docx-preview';
 import { TemplateService } from '../services/templateService';
@@ -32,18 +32,30 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
     }
   }, []);
 
+  const handleDeleteRecord = (e: React.MouseEvent, type: string) => {
+    e.stopPropagation();
+    if (defaultRecordTypes.includes(type)) {
+      alert('Không thể xóa các mẫu mặc định!');
+      return;
+    }
+    if (confirm(`Bạn có chắc muốn xóa mẫu "${type}"?`)) {
+      const custom = StorageService.getCustomRecords();
+      const updated = custom.filter(t => t !== type);
+      StorageService.saveCustomRecords(updated);
+      setRecordTypes([...defaultRecordTypes, ...updated]);
+      if (selectedType === type) setSelectedType(defaultRecordTypes[0]);
+    }
+  };
+
   // Record-specific data
   const [formData, setFormData] = useState({
     projectName: 'Dự án Chiếu sáng Công cộng Quận 1',
     investor: 'UBND Quận 1',
     contractor: 'Công ty Cổ phần Cơ điện ABC',
-    supervisor: 'Công ty Tư vấn Giám sát XYZ',
     recordNumber: 'NTCV-2026-001',
-    location: 'Đường Lê Lợi, Quận 1, TP.HCM',
-    inspectionDate: '2026-05-05',
-    workItemName: 'Lắp dựng cột đèn H=8m tuyến lộ 1',
-    quantity: '24 Cột',
-    technicalStandard: 'TCVN 4474:1987',
+    content: 'Lắp dựng cột đèn H=8m tuyến lộ 1',
+    inspectionDate: '05/05/2026',
+    standard: 'TCVN 4474:1987'
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -54,11 +66,13 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
   const handleExport = async () => {
     setIsGenerating(true);
     
-    // Improved detection: check for Word host explicitly
+    // Improved detection: check if window.Word is available or if Office is in Word host
     // @ts-ignore
-    const isWord = window.Office && window.Office.context && window.Office.context.host === 'Word';
+    const isWordHost = window.Office && window.Office.context && (window.Office.context.host === 'Word' || window.Office.context.host === 'WordOnline');
+    // @ts-ignore
+    const isWordApi = typeof Word !== 'undefined';
 
-    if (isWord) {
+    if (isWordHost || isWordApi) {
       // @ts-ignore
       Word.run(async (context) => {
         // Logic to fill content controls
@@ -114,15 +128,32 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
             </h3>
             <div className="space-y-1 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar text-sm">
               {recordTypes.map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setSelectedType(type)}
-                  className={`w-full text-left p-3 rounded-lg transition-colors ${
-                    selectedType === type ? 'bg-primary text-primary-foreground shadow-md' : 'hover:bg-accent'
-                  }`}
-                >
-                  {type}
-                </button>
+                <div key={type} className="group relative">
+                  <button
+                    onClick={() => setSelectedType(type)}
+                    onDoubleClick={handleExport}
+                    className={`w-full text-left px-4 py-3 rounded-lg transition-all flex items-center justify-between ${
+                      selectedType === type 
+                        ? 'bg-primary text-primary-foreground shadow-md' 
+                        : 'hover:bg-accent text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <span className="text-sm font-medium pr-8">{type}</span>
+                    {selectedType === type && <Play size={14} className="flex-shrink-0" />}
+                  </button>
+                  
+                  {!defaultRecordTypes.includes(type) && (
+                    <button
+                      onClick={(e) => handleDeleteRecord(e, type)}
+                      className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity ${
+                        selectedType === type ? 'text-primary-foreground/70 hover:text-primary-foreground' : 'text-destructive hover:bg-destructive/10'
+                      }`}
+                      title="Xóa mẫu này"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           </div>

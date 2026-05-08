@@ -22,7 +22,7 @@ export const Topbar: React.FC = () => {
 
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-3">
-          <span className="text-[10px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded border">v08052026.1640</span>
+          <span className="text-[10px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded border">v08052026.1645</span>
           <button 
             onClick={() => window.location.reload()}
             className="flex items-center px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-all text-sm font-medium"

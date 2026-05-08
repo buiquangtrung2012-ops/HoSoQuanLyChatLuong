@@ -1,7 +1,7 @@
 {
   "name": "hosoquanlychatluong",
   "private": true,
-  "version": "08052026.1640",
+  "version": "08052026.1645",
   "type": "module",
   "scripts": {
     "dev": "vite",
