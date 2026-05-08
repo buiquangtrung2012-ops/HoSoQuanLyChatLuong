@@ -16,7 +16,10 @@ export const PersonnelModule: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Quản lý nhân sự</h1>
-        <button className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm">
+        <button 
+          onClick={() => alert('Tính năng "Thêm nhân sự" đang được phát triển')}
+          className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
+        >
           <UserPlus size={18} className="mr-2" /> Thêm nhân sự
         </button>
       </div>

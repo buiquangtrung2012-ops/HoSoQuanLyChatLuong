@@ -9,36 +9,16 @@ const mockWorkItems: WorkItem[] = [
   { id: '4', line: 'Tuyến Lộ 1', category: 'Thiết bị', name: 'Lắp đặt đèn LED 120W và cần đèn', code: 'LD-001', unit: 'Bộ', quantity: 24, startDate: '2026-05-12', inspectionDate: '2026-05-15', status: 'Chưa thi công' },
 ];
 
-const StatusBadge = ({ status }: { status: WorkStatus }) => {
-  const styles: Record<WorkStatus, string> = {
-    'Chưa thi công': 'bg-muted text-muted-foreground',
-    'Đang thi công': 'bg-blue-500/10 text-blue-500',
-    'Chờ nghiệm thu': 'bg-amber-500/10 text-amber-500',
-    'Hoàn thành': 'bg-green-500/10 text-green-500',
-  };
-  
-  const icons: Record<WorkStatus, any> = {
-    'Chưa thi công': Clock,
-    'Đang thi công': Clock,
-    'Chờ nghiệm thu': AlertCircle,
-    'Hoàn thành': CheckCircle2,
-  };
-  
-  const Icon = icons[status];
-  
-  return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${styles[status]}`}>
-      <Icon size={12} className="mr-1" /> {status}
-    </span>
-  );
-};
 
 export const WorkItemsModule: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Quản lý công việc</h1>
-        <button className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm">
+        <button 
+          onClick={() => alert('Tính năng "Thêm công việc" đang được phát triển')}
+          className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
+        >
           <Plus size={18} className="mr-2" /> Thêm công việc
         </button>
       </div>
@@ -78,7 +58,6 @@ export const WorkItemsModule: React.FC = () => {
                 <th className="px-6 py-3">Tên công việc</th>
                 <th className="px-6 py-3">Khối lượng</th>
                 <th className="px-6 py-3">Ngày nghiệm thu</th>
-                <th className="px-6 py-3">Trạng thái</th>
                 <th className="px-6 py-3 text-right">Thao tác</th>
               </tr>
             </thead>
@@ -92,9 +71,6 @@ export const WorkItemsModule: React.FC = () => {
                   </td>
                   <td className="px-6 py-4">{item.quantity} {item.unit}</td>
                   <td className="px-6 py-4">{item.inspectionDate}</td>
-                  <td className="px-6 py-4">
-                    <StatusBadge status={item.status} />
-                  </td>
                   <td className="px-6 py-4 text-right">
                     <button className="text-primary hover:underline font-medium">Chi tiết</button>
                   </td>

@@ -6,7 +6,10 @@ export const LabModule: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Phòng thí nghiệm (LAS-XD)</h1>
-        <button className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm">
+        <button 
+          onClick={() => alert('Tính năng "Thêm PTN" đang được phát triển')}
+          className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
+        >
           <Plus size={18} className="mr-2" /> Thêm PTN
         </button>
       </div>
@@ -27,7 +30,6 @@ export const LabModule: React.FC = () => {
                   <p className="text-sm text-primary font-mono">{lab.code}</p>
                 </div>
               </div>
-              <span className="text-xs px-2 py-1 bg-green-500/10 text-green-500 rounded-full font-medium">Đang hoạt động</span>
             </div>
 
             <div className="space-y-2 pt-2">

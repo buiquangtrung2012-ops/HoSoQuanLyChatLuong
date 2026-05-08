@@ -6,7 +6,10 @@ export const EquipmentModule: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Quản lý máy móc thiết bị</h1>
-        <button className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm">
+        <button 
+          onClick={() => alert('Tính năng "Thêm máy móc" đang được phát triển')}
+          className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
+        >
           <Plus size={18} className="mr-2" /> Thêm máy móc
         </button>
       </div>
@@ -33,25 +36,19 @@ export const EquipmentModule: React.FC = () => {
                 <th className="px-6 py-3">Số Serial / Biển số</th>
                 <th className="px-6 py-3">Ngày kiểm định</th>
                 <th className="px-6 py-3">Hiệu lực đến</th>
-                <th className="px-6 py-3">Trạng thái</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {[
-                { name: "Cần trục tháp POTAIN", serial: "PT-2024-X", lastCheck: "01/01/2026", expiry: "01/01/2027", status: "Sẵn sàng" },
-                { name: "Máy bơm bê tông PUTZMEISTER", serial: "PZ-888", lastCheck: "15/02/2026", expiry: "15/02/2027", status: "Đang hoạt động" },
-                { name: "Máy toàn đạc LEICA TS06", serial: "L-99021", lastCheck: "10/03/2026", expiry: "10/03/2027", status: "Sẵn sàng" },
+                { name: "Cần trục tháp POTAIN", serial: "PT-2024-X", lastCheck: "01/01/2026", expiry: "01/01/2027" },
+                { name: "Máy bơm bê tông PUTZMEISTER", serial: "PZ-888", lastCheck: "15/02/2026", expiry: "15/02/2027" },
+                { name: "Máy toàn đạc LEICA TS06", serial: "L-99021", lastCheck: "10/03/2026", expiry: "10/03/2027" },
               ].map((item, i) => (
                 <tr key={i} className="hover:bg-accent/50 transition-colors">
                   <td className="px-6 py-4 font-medium">{item.name}</td>
                   <td className="px-6 py-4 font-mono text-xs">{item.serial}</td>
                   <td className="px-6 py-4 text-muted-foreground">{item.lastCheck}</td>
                   <td className="px-6 py-4 font-medium text-primary">{item.expiry}</td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-green-500/10 text-green-500">
-                      <ShieldCheck size={10} className="mr-1" /> {item.status}
-                    </span>
-                  </td>
                 </tr>
               ))}
             </tbody>

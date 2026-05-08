@@ -47,15 +47,9 @@ export const Dashboard: React.FC = () => {
           icon={AlertCircle} 
           color="bg-amber-500/10 text-amber-500"
         />
-        <StatCard 
-          title="Tiến độ tổng thể" 
-          value="68%" 
-          icon={TrendingUp} 
-          color="bg-purple-500/10 text-purple-500"
-        />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <div className="bg-card rounded-xl border p-6">
           <h3 className="font-semibold mb-4">Hoạt động gần đây</h3>
           <div className="space-y-4">
@@ -75,31 +69,6 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-card rounded-xl border p-6">
-          <h3 className="font-semibold mb-4">Trạng thái nhân sự</h3>
-          <div className="space-y-4">
-            {[
-              { name: "Nguyễn Văn A", role: "Chỉ huy trưởng", status: "Online" },
-              { name: "Trần Văn B", role: "Giám sát trưởng", status: "Away" },
-              { name: "Lê Văn C", role: "Tư vấn giám sát", status: "Online" },
-            ].map((person, i) => (
-              <div key={i} className="flex items-center justify-between p-2 hover:bg-accent rounded-lg transition-colors">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-muted rounded-full"></div>
-                  <div>
-                    <p className="font-medium">{person.name}</p>
-                    <p className="text-xs text-muted-foreground">{person.role}</p>
-                  </div>
-                </div>
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  person.status === 'Online' ? 'bg-green-500/10 text-green-500' : 'bg-amber-500/10 text-amber-500'
-                }`}>
-                  {person.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );

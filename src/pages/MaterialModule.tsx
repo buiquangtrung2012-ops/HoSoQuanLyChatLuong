@@ -6,7 +6,10 @@ export const MaterialModule: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Quản lý vật liệu</h1>
-        <button className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm">
+        <button 
+          onClick={() => alert('Tính năng "Nhập vật liệu" đang được phát triển')}
+          className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
+        >
           <Plus size={18} className="mr-2" /> Nhập vật liệu
         </button>
       </div>
@@ -36,7 +39,6 @@ export const MaterialModule: React.FC = () => {
                 <th className="px-6 py-3">Nguồn gốc/Nhà cung cấp</th>
                 <th className="px-6 py-3">Lô/CO-CQ</th>
                 <th className="px-6 py-3">Số lượng</th>
-                <th className="px-6 py-3">Trạng thái</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -53,13 +55,6 @@ export const MaterialModule: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 text-xs font-mono">{item.lot}</td>
                   <td className="px-6 py-4">{item.qty}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                      item.status === 'Đạt' ? 'bg-green-500/10 text-green-500' : 'bg-amber-500/10 text-amber-500'
-                    }`}>
-                      {item.status}
-                    </span>
-                  </td>
                 </tr>
               ))}
             </tbody>

@@ -22,7 +22,6 @@ export interface Personnel {
   role: PersonnelRole;
 }
 
-export type WorkStatus = 'Chưa thi công' | 'Đang thi công' | 'Chờ nghiệm thu' | 'Hoàn thành';
 
 export interface WorkItem {
   id: string;
@@ -34,7 +33,6 @@ export interface WorkItem {
   quantity: number;
   startDate: string;
   inspectionDate: string;
-  status: WorkStatus;
 }
 
 export interface Material {
@@ -46,7 +44,6 @@ export interface Material {
   cocq: string;
   quantity: string;
   testResult: string;
-  status: 'Nhập' | 'Nghiệm thu' | 'Lấy mẫu' | 'Đạt' | 'Không đạt';
 }
 
 export interface Equipment {
@@ -55,7 +52,6 @@ export interface Equipment {
   serial: string;
   inspectionDate: string;
   expiryDate: string;
-  status: string;
 }
 
 export interface Lab {
@@ -74,7 +70,6 @@ export interface QualityRecord {
   title: string;
   date: string;
   workItemId?: string;
-  status: 'Draft' | 'Final' | 'Exported';
 }
 
 export interface DiaryEntry {
