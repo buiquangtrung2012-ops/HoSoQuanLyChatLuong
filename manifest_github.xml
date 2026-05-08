@@ -7,7 +7,7 @@
     xsi:type="TaskPaneApp">
 
     <Id>6b5b5c7a-abcd-4f12-a234-999999999999</Id>
-    <Version>1.0.0.10</Version>
+    <Version>1.0.0.11</Version>
     <ProviderName>Construction Quality Pro</ProviderName>
     <DefaultLocale>en-US</DefaultLocale>
 

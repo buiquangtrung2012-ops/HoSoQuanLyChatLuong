@@ -7,13 +7,13 @@
   xsi:type="TaskPaneApp">
 
   <Id>d25087a3-5c8e-4a6c-9a4c-53538413a1e2</Id>
-  <Version>1.0.0.0</Version>
+  <Version>1.0.0.1</Version>
   <ProviderName>Antigravity AI</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="Construction Quality Pro" />
   <Description DefaultValue="Professional Construction Quality Management Add-in" />
-  <IconUrl DefaultValue="https://localhost:3000/assets/logo.png" />
-  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/logo.png" />
+  <IconUrl DefaultValue="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/assets/brand-icons/product/svg/word_32x1.svg" />
+  <HighResolutionIconUrl DefaultValue="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/assets/brand-icons/product/svg/word_80x1.svg" />
   <SupportUrl DefaultValue="https://www.example.com/help" />
   
   <AppDomains>
@@ -105,9 +105,9 @@
         <bt:Url id="Support.Url" DefaultValue="https://www.example.com/help" />
       </bt:Urls>
       <bt:Images>
-        <bt:Image id="Icon.16x16" DefaultValue="https://localhost:3000/assets/logo.png" />
-        <bt:Image id="Icon.32x32" DefaultValue="https://localhost:3000/assets/logo.png" />
-        <bt:Image id="Icon.80x80" DefaultValue="https://localhost:3000/assets/logo.png" />
+        <bt:Image id="Icon.16x16" DefaultValue="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/assets/brand-icons/product/svg/word_16x1.svg" />
+        <bt:Image id="Icon.32x32" DefaultValue="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/assets/brand-icons/product/svg/word_32x1.svg" />
+        <bt:Image id="Icon.80x80" DefaultValue="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/assets/brand-icons/product/svg/word_80x1.svg" />
       </bt:Images>
       <bt:ShortStrings>
         <bt:String id="GroupLabel" DefaultValue="CQ Pro" />
