@@ -12,7 +12,8 @@ import {
   Download,
   Settings,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Layout
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 

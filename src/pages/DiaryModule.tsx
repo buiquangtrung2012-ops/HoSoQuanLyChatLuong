@@ -65,105 +65,103 @@ export const DiaryModule: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-card rounded-xl border p-6 space-y-6 shadow-sm">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-6">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
-                  <Calendar size={14} className="mr-1" /> Ngày tháng
-                </label>
-                <div className="flex space-x-2">
-                  <input 
-                    type="date" 
-                    className="w-full p-2 border rounded-lg text-sm bg-background" 
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
-                  <Cloud size={14} className="mr-1" /> Thời tiết
-                </label>
-                <select 
-                  className="w-full p-2 border rounded-lg text-sm bg-background"
-                  value={weather}
-                  onChange={(e) => setWeather(e.target.value)}
-                >
-                  <option>Nắng ráo</option>
-                  <option>Có mưa</option>
-                  <option>Nhiều mây</option>
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
-                  <Thermometer size={14} className="mr-1" /> Nhiệt độ
-                </label>
+      <div className="space-y-6">
+        <div className="bg-card rounded-xl border p-6 space-y-6 shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-6">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
+                <Calendar size={14} className="mr-1" /> Ngày tháng
+              </label>
+              <div className="flex space-x-2">
                 <input 
+                  type="date" 
                   className="w-full p-2 border rounded-lg text-sm bg-background" 
-                  value={temp}
-                  onChange={(e) => setTemp(e.target.value)}
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
                 />
               </div>
             </div>
-            
-            <div className="space-y-6">
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-muted-foreground uppercase">Nội dung thi công</label>
-                  <div className="flex space-x-2">
-                    <button 
-                      onClick={handleFetchFromWorkItems}
-                      className="flex items-center text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full hover:bg-primary/20 transition-colors font-bold"
-                      title="Lấy nội dung từ danh sách công việc cùng ngày"
-                    >
-                      <RefreshCcw size={10} className="mr-1" /> Lấy từ công việc
-                    </button>
-                    <button 
-                      onClick={handleAiFill}
-                      disabled={isAiLoading}
-                      className="flex items-center text-[10px] bg-purple-500/10 text-purple-600 px-2 py-0.5 rounded-full hover:bg-purple-500/20 transition-colors font-bold disabled:opacity-50"
-                    >
-                      <Sparkles size={10} className="mr-1" /> {isAiLoading ? "Đang gợi ý..." : "Gợi ý AI"}
-                    </button>
-                  </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
+                <Cloud size={14} className="mr-1" /> Thời tiết
+              </label>
+              <select 
+                className="w-full p-2 border rounded-lg text-sm bg-background"
+                value={weather}
+                onChange={(e) => setWeather(e.target.value)}
+              >
+                <option>Nắng ráo</option>
+                <option>Có mưa</option>
+                <option>Nhiều mây</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
+                <Thermometer size={14} className="mr-1" /> Nhiệt độ
+              </label>
+              <input 
+                className="w-full p-2 border rounded-lg text-sm bg-background" 
+                value={temp}
+                onChange={(e) => setTemp(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-6">
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-muted-foreground uppercase">Nội dung thi công</label>
+                <div className="flex space-x-2">
+                  <button 
+                    onClick={handleFetchFromWorkItems}
+                    className="flex items-center text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full hover:bg-primary/20 transition-colors font-bold"
+                    title="Lấy nội dung từ danh sách công việc cùng ngày"
+                  >
+                    <RefreshCcw size={10} className="mr-1" /> Lấy từ công việc
+                  </button>
+                  <button 
+                    onClick={handleAiFill}
+                    disabled={isAiLoading}
+                    className="flex items-center text-[10px] bg-purple-500/10 text-purple-600 px-2 py-0.5 rounded-full hover:bg-purple-500/20 transition-colors font-bold disabled:opacity-50"
+                  >
+                    <Sparkles size={10} className="mr-1" /> {isAiLoading ? "Đang gợi ý..." : "Gợi ý AI"}
+                  </button>
                 </div>
-                <textarea 
-                  className="w-full mt-1 p-3 border rounded-lg bg-background min-h-[150px] text-sm focus:ring-2 focus:ring-primary/50 outline-none"
-                  value={diaryContent}
-                  onChange={(e) => setDiaryContent(e.target.value)}
-                  placeholder="Nhập nội dung công việc trong ngày..."
+              </div>
+              <textarea 
+                className="w-full mt-1 p-3 border rounded-lg bg-background min-h-[150px] text-sm focus:ring-2 focus:ring-primary/50 outline-none"
+                value={diaryContent}
+                onChange={(e) => setDiaryContent(e.target.value)}
+                placeholder="Nhập nội dung công việc trong ngày..."
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
+                  <Users size={14} className="mr-1" /> Nhân lực
+                </label>
+                <input 
+                  className="w-full mt-1 p-2 border rounded-lg text-sm bg-background" 
+                  value={manpower}
+                  onChange={(e) => setManpower(e.target.value)}
                 />
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
-                    <Users size={14} className="mr-1" /> Nhân lực
-                  </label>
-                  <input 
-                    className="w-full mt-1 p-2 border rounded-lg text-sm bg-background" 
-                    value={manpower}
-                    onChange={(e) => setManpower(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
-                    <Truck size={14} className="mr-1" /> Máy móc
-                  </label>
-                  <input 
-                    className="w-full mt-1 p-2 border rounded-lg text-sm bg-background" 
-                    value={equipment}
-                    onChange={(e) => setEquipment(e.target.value)}
-                  />
-                </div>
+              <div>
+                <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
+                  <Truck size={14} className="mr-1" /> Máy móc
+                </label>
+                <input 
+                  className="w-full mt-1 p-2 border rounded-lg text-sm bg-background" 
+                  value={equipment}
+                  onChange={(e) => setEquipment(e.target.value)}
+                />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-card rounded-xl border p-6">
             <h3 className="font-semibold mb-4 text-sm">Gợi ý từ công việc</h3>
             <p className="text-[10px] text-muted-foreground mb-4 font-medium uppercase tracking-wider">Ngày nghiệm thu: {date}</p>
@@ -183,12 +181,12 @@ export const DiaryModule: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-purple-500/5 border border-purple-500/10 rounded-xl p-4">
-            <h4 className="text-sm font-bold text-purple-700 flex items-center mb-2">
-              <Sparkles size={14} className="mr-1" /> AI Insights
+          <div className="bg-purple-500/5 border border-purple-500/10 rounded-xl p-6 flex flex-col justify-center">
+            <h4 className="text-sm font-bold text-purple-700 flex items-center mb-3">
+              <Sparkles size={16} className="mr-2" /> AI Insights
             </h4>
-            <p className="text-xs text-purple-600 leading-relaxed">
-              Dựa trên danh sách công việc, hôm nay có {mockWorkItems.filter(w => w.inspectionDate === date).length} hạng mục cần hoàn thành hồ sơ. Hãy chú ý kiểm tra lại đầy đủ các biên bản kèm theo.
+            <p className="text-sm text-purple-600 leading-relaxed italic">
+              "Dựa trên danh sách công việc, hôm nay có {mockWorkItems.filter(w => w.inspectionDate === date).length} hạng mục cần hoàn thành hồ sơ. Hãy chú ý kiểm tra lại đầy đủ các biên bản kèm theo để đảm bảo tiến độ thanh toán."
             </p>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { FileText, Download, Eye, Play, CheckCircle2, AlertTriangle, X, Settings2, Sparkles } from 'lucide-react';
+import { FileText, Download, Eye, Play, CheckCircle2, AlertTriangle, X, Settings2, Sparkles, RefreshCw } from 'lucide-react';
 // @ts-ignore
 import { renderAsync } from 'docx-preview';
 import { TemplateService } from '../services/templateService';
@@ -185,61 +185,6 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
         </div>
       </div>
 
-      {/* Preview Modal (Full Screen Overlay) */}
-      {showPreview && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 md:p-8 backdrop-blur-sm">
-          <div className="bg-muted w-full h-full max-w-6xl rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="bg-card border-b p-4 flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="p-2 bg-primary/10 text-primary rounded-lg">
-                  <FileText size={20} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm">Preview: {selectedType}</h3>
-                  <p className="text-xs text-muted-foreground">Word Online View</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <button className="flex items-center px-3 py-1.5 text-xs font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
-                  <Download size={14} className="mr-2" /> Tải về (.docx)
-                </button>
-                <button 
-                  onClick={() => setShowPreview(false)}
-                  className="p-2 hover:bg-accent rounded-full transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-            </div>
-            
-            <div className="flex-1 overflow-auto bg-gray-500 p-8 flex justify-center">
-              <div 
-                ref={previewContainerRef}
-                className="w-full max-w-[800px] min-h-full shadow-2xl"
-              >
-                {/* docx-preview will render here */}
-                {isGenerating && (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent"></div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
-
-// Simple Refresh icon for the spinner
-const RefreshCw = ({ size, className }: any) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width={size} height={size} 
-    viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
-  </svg>
-);

@@ -109,24 +109,38 @@ export const ProjectModule: React.FC = () => {
 
         <div className="space-y-2">
           <label className="text-sm font-medium">Ngày khởi công</label>
-          <input 
-            type="date"
-            name="startDate"
-            value={project.startDate}
-            onChange={handleChange}
-            className="w-full p-2.5 border rounded-lg bg-background focus:ring-2 focus:ring-primary/50 outline-none"
-          />
+          <div className="relative">
+            <input 
+              type="text"
+              name="startDate"
+              value={project.startDate.split('-').reverse().join('/')}
+              onChange={(e) => {
+                const val = e.target.value.split('/').reverse().join('-');
+                setProject(prev => ({ ...prev, startDate: val }));
+              }}
+              className="w-full p-2.5 border rounded-lg bg-background focus:ring-2 focus:ring-primary/50 outline-none"
+              placeholder="dd/mm/yyyy"
+            />
+            <Calendar size={18} className="absolute right-3 top-3 text-muted-foreground pointer-events-none" />
+          </div>
         </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium">Ngày hoàn thành (Dự kiến)</label>
-          <input 
-            type="date"
-            name="endDate"
-            value={project.endDate}
-            onChange={handleChange}
-            className="w-full p-2.5 border rounded-lg bg-background focus:ring-2 focus:ring-primary/50 outline-none"
-          />
+          <div className="relative">
+            <input 
+              type="text"
+              name="endDate"
+              value={project.endDate.split('-').reverse().join('/')}
+              onChange={(e) => {
+                const val = e.target.value.split('/').reverse().join('-');
+                setProject(prev => ({ ...prev, endDate: val }));
+              }}
+              className="w-full p-2.5 border rounded-lg bg-background focus:ring-2 focus:ring-primary/50 outline-none"
+              placeholder="dd/mm/yyyy"
+            />
+            <Calendar size={18} className="absolute right-3 top-3 text-muted-foreground pointer-events-none" />
+          </div>
         </div>
       </div>
     </div>

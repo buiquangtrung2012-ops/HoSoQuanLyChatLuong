@@ -1,4 +1,4 @@
-import { WorkItem, Personnel, Material, Equipment, QualityRecord } from '../types';
+import type { WorkItem, Personnel, Material, Equipment } from '../types';
 
 export const mockWorkItems: WorkItem[] = [
   { id: '1', line: 'Tuyến Lộ 1', category: 'Phần móng', name: 'Lắp dựng móng đúc sẵn M1', code: 'MC-001', unit: 'Cái', quantity: 24, startDate: '2026-05-01', inspectionDate: '2026-05-05' },
@@ -15,14 +15,14 @@ export const mockPersonnel: Personnel[] = [
 ];
 
 export const mockMaterials: Material[] = [
-  { name: "Cột đèn thép H=8m mạ kẽm", source: "Hapulico", lot: "LOT-CP-001", qty: "24 Cột" },
-  { name: "Đèn LED 120W Philips", source: "Philips Việt Nam", lot: "PH-LED-88", qty: "24 Bộ" },
-  { name: "Cáp ngầm 4x16mm2 Cadivi", source: "Cadivi", lot: "CDV-16-4", qty: "1000 m" },
-  { name: "Tủ điện chiếu sáng ngoài trời", source: "Tụ điện Miền Nam", lot: "TD-2026", qty: "02 Tủ" },
+  { id: '1', name: "Cột đèn thép H=8m mạ kẽm", origin: "Việt Nam", supplier: "Hapulico", lotNumber: "LOT-CP-001", quantity: "24 Cột", cocq: "Có", testResult: "Đạt" },
+  { id: '2', name: "Đèn LED 120W Philips", origin: "Hà Lan", supplier: "Philips Việt Nam", lotNumber: "PH-LED-88", quantity: "24 Bộ", cocq: "Có", testResult: "Đạt" },
+  { id: '3', name: "Cáp ngầm 4x16mm2 Cadivi", origin: "Việt Nam", supplier: "Cadivi", lotNumber: "CDV-16-4", quantity: "1000 m", cocq: "Có", testResult: "Đạt" },
+  { id: '4', name: "Tủ điện chiếu sáng ngoài trời", origin: "Việt Nam", supplier: "Tụ điện Miền Nam", lotNumber: "TD-2026", quantity: "02 Tủ", cocq: "Có", testResult: "Đạt" },
 ];
 
 export const mockEquipment: Equipment[] = [
-  { name: "Cần trục tháp POTAIN", serial: "PT-2024-X", lastCheck: "01/01/2026", expiry: "01/01/2027" },
-  { name: "Máy bơm bê tông PUTZMEISTER", serial: "PZ-888", lastCheck: "15/02/2026", expiry: "15/02/2027" },
-  { name: "Máy toàn đạc LEICA TS06", serial: "L-99021", lastCheck: "10/03/2026", expiry: "10/03/2027" },
+  { id: '1', name: "Cần trục tháp POTAIN", serial: "PT-2024-X", inspectionDate: "2026-01-01", expiryDate: "2027-01-01" },
+  { id: '2', name: "Máy bơm bê tông PUTZMEISTER", serial: "PZ-888", inspectionDate: "2026-02-15", expiryDate: "2027-02-15" },
+  { id: '3', name: "Máy toàn đạc LEICA TS06", serial: "L-99021", inspectionDate: "2026-03-10", expiryDate: "2027-03-10" },
 ];

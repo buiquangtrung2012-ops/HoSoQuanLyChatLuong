@@ -80,15 +80,6 @@ export const TemplateModule: React.FC = () => {
           </div>
           <h1 className="text-2xl font-bold tracking-tight uppercase">Tạo Mẫu</h1>
         </div>
-        <div className="flex items-center space-x-3">
-          <span className="text-[10px] font-mono text-muted-foreground">v08052026.1528</span>
-          <button 
-            onClick={() => window.location.reload()}
-            className="flex items-center px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-all shadow-sm font-bold text-xs uppercase tracking-wider"
-          >
-            <RefreshCw size={14} className="mr-2" /> Update
-          </button>
-        </div>
       </div>
 
       <div className="space-y-6">
