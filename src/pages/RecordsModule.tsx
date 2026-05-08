@@ -86,45 +86,41 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
           if (item.tag === 'contractor') item.insertText(formData.contractor, 'Replace');
           if (item.tag === 'recordNumber') item.insertText(formData.recordNumber, 'Replace');
           if (item.tag === 'inspectionDate') item.insertText(formData.inspectionDate, 'Replace');
-          if (item.tag === 'workItemName') item.insertText(formData.workItemName, 'Replace');
+          if (item.tag === 'content') item.insertText(formData.content, 'Replace');
+          if (item.tag === 'standard') item.insertText(formData.standard, 'Replace');
         }
 
         await context.sync();
-        alert('Đã điền thông tin vào các Content Controls trong Word!');
+        setIsGenerating(false);
+        alert('Đã xuất dữ liệu ra file Word thành công!');
       }).catch(err => {
         console.error(err);
-        alert('Lỗi khi xuất file Word: ' + err.message);
-      }).finally(() => {
         setIsGenerating(false);
+        alert('Có lỗi xảy ra khi tương tác với Word.');
       });
     } else {
-      setTimeout(() => {
-        setIsGenerating(false);
-        alert('Đang ở chế độ Web. Tính năng xuất file Word thật sự yêu cầu chạy trong Microsoft Word.');
-      }, 1000);
+      setIsGenerating(false);
+      alert('Đang ở chế độ Web. Tính năng xuất file Word thật sự yêu cầu chạy trong Microsoft Word.');
     }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Hồ sơ chất lượng</h1>
-        <div className="flex space-x-2">
-          <button 
-            onClick={() => setActiveTab('template')}
-            className="flex items-center px-4 py-2 border rounded-lg hover:bg-accent text-sm font-medium transition-colors"
-          >
-            <Settings2 size={18} className="mr-2" /> Cấu hình mẫu
-          </button>
-        </div>
+        <h1 className="text-2xl font-bold tracking-tight uppercase">Hồ sơ chất lượng</h1>
+        <button 
+          onClick={() => setActiveTab('records_config')}
+          className="flex items-center px-4 py-2 border rounded-lg hover:bg-accent transition-all text-sm font-medium"
+        >
+          <Settings2 size={18} className="mr-2" /> Cấu hình mẫu
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Panel: Record Selection */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-card rounded-xl border p-6 space-y-4">
-            <h3 className="font-semibold flex items-center">
-              <FileText size={18} className="mr-2 text-primary" /> Loại hồ sơ chiếu sáng
+        <div className="lg:col-span-1 space-y-4">
+          <div className="bg-card rounded-xl border p-4 shadow-sm">
+            <h3 className="text-sm font-bold text-primary uppercase tracking-wider mb-4 flex items-center">
+              <FileText size={18} className="mr-2" /> Loại hồ sơ chiếu sáng
             </h3>
             <div className="space-y-1 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar text-sm">
               {recordTypes.map((type) => (
@@ -159,44 +155,77 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
           </div>
         </div>
 
-        {/* Right Panel: Form and Controls */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-card rounded-xl border p-6 space-y-6 shadow-sm">
-            <div className="flex items-center justify-between border-b pb-4">
-              <div>
-                <h3 className="font-bold text-lg text-primary">{selectedType}</h3>
-                <p className="text-sm text-muted-foreground font-medium">Thiết lập thông tin biên bản</p>
-              </div>
+          <div className="bg-card rounded-xl border p-6 shadow-sm space-y-6">
+            <div className="border-b pb-4">
+              <h2 className="text-xl font-bold text-primary">{selectedType}</h2>
+              <p className="text-xs text-muted-foreground mt-1">Thiết lập thông tin biên bản</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Tên dự án</label>
-                <input name="projectName" value={formData.projectName} onChange={handleInputChange} className="w-full p-2 border rounded-md text-sm bg-background focus:ring-1 focus:ring-primary outline-none" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tên dự án</label>
+                <input 
+                  type="text" 
+                  name="projectName"
+                  value={formData.projectName}
+                  onChange={handleInputChange}
+                  className="w-full p-2.5 border rounded-lg bg-background text-sm focus:ring-2 focus:ring-primary/50 outline-none" 
+                />
               </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Số biên bản</label>
-                <input name="recordNumber" value={formData.recordNumber} onChange={handleInputChange} className="w-full p-2 border rounded-md text-sm bg-background focus:ring-1 focus:ring-primary outline-none" />
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Số biên bản</label>
+                <input 
+                  type="text" 
+                  name="recordNumber"
+                  value={formData.recordNumber}
+                  onChange={handleInputChange}
+                  className="w-full p-2.5 border rounded-lg bg-background text-sm focus:ring-2 focus:ring-primary/50 outline-none" 
+                />
               </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Chủ đầu tư</label>
-                <input name="investor" value={formData.investor} onChange={handleInputChange} className="w-full p-2 border rounded-md text-sm bg-background" />
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Chủ đầu tư</label>
+                <input 
+                  type="text" 
+                  name="investor"
+                  value={formData.investor}
+                  onChange={handleInputChange}
+                  className="w-full p-2.5 border rounded-lg bg-background text-sm focus:ring-2 focus:ring-primary/50 outline-none" 
+                />
               </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Đơn vị thi công</label>
-                <input name="contractor" value={formData.contractor} onChange={handleInputChange} className="w-full p-2 border rounded-md text-sm bg-background" />
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Đơn vị thi công</label>
+                <input 
+                  type="text" 
+                  name="contractor"
+                  value={formData.contractor}
+                  onChange={handleInputChange}
+                  className="w-full p-2.5 border rounded-lg bg-background text-sm focus:ring-2 focus:ring-primary/50 outline-none" 
+                />
               </div>
-              <div className="space-y-1 md:col-span-2">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Nội dung nghiệm thu</label>
-                <input name="workItemName" value={formData.workItemName} onChange={handleInputChange} className="w-full p-2 border rounded-md text-sm bg-background" />
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Nội dung nghiệm thu</label>
+                <input 
+                  type="text" 
+                  name="content"
+                  value={formData.content}
+                  onChange={handleInputChange}
+                  className="w-full p-2.5 border rounded-lg bg-background text-sm focus:ring-2 focus:ring-primary/50 outline-none" 
+                />
               </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Ngày nghiệm thu</label>
-                <input type="date" name="inspectionDate" value={formData.inspectionDate} onChange={handleInputChange} className="w-full p-2 border rounded-md text-sm bg-background" />
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Ngày nghiệm thu</label>
+                <input 
+                  type="text" 
+                  name="inspectionDate"
+                  value={formData.inspectionDate}
+                  onChange={handleInputChange}
+                  className="w-full p-2.5 border rounded-lg bg-background text-sm focus:ring-2 focus:ring-primary/50 outline-none" 
+                />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Tiêu chuẩn áp dụng</label>
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tiêu chuẩn áp dụng</label>
                   <button 
                     onClick={async () => {
                       const suggestions = await AiService.suggestStandards(formData.workItemName);
