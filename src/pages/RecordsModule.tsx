@@ -21,11 +21,9 @@ const recordTypes = [
   "Biên bản nghiệm thu hoàn thành công trình"
 ];
 
-export const RecordsModule: React.FC = () => {
+export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = ({ setActiveTab }) => {
   const [selectedType, setSelectedType] = useState(recordTypes[6]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
-  const previewContainerRef = useRef<HTMLDivElement>(null);
 
   // Record-specific data
   const [formData, setFormData] = useState({
@@ -46,40 +44,40 @@ export const RecordsModule: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handlePreview = async () => {
-    setShowPreview(true);
+  const handleExport = async () => {
     setIsGenerating(true);
-    
-    // Simulate template processing
-    setTimeout(async () => {
-      setIsGenerating(false);
-      if (previewContainerRef.current) {
-        previewContainerRef.current.innerHTML = `
-          <div class="flex flex-col items-center justify-center h-full text-muted-foreground p-8 text-center">
-            <div class="w-full max-w-2xl bg-white shadow-lg border p-12 text-left text-black font-serif">
-              <h1 class="text-center font-bold text-xl mb-4 uppercase">Cộng hòa xã hội chủ nghĩa Việt Nam</h1>
-              <p class="text-center mb-8 italic">Độc lập - Tự do - Hạnh phúc</p>
-              <h2 class="text-center font-bold text-lg mb-6 uppercase">${selectedType}</h2>
-              <div class="space-y-2 text-sm">
-                <p><strong>Dự án:</strong> ${formData.projectName}</p>
-                <p><strong>Địa điểm:</strong> ${formData.location}</p>
-                <p><strong>Chủ đầu tư:</strong> ${formData.investor}</p>
-                <p><strong>Đơn vị thi công:</strong> ${formData.contractor}</p>
-                <p><strong>Thời gian nghiệm thu:</strong> ${formData.inspectionDate}</p>
-                <p><strong>Nội dung nghiệm thu:</strong> ${formData.workItemName}</p>
-                <p><strong>Số lượng:</strong> ${formData.quantity}</p>
-                <p><strong>Tiêu chuẩn áp dụng:</strong> ${formData.technicalStandard}</p>
-              </div>
-              <div class="mt-12 grid grid-cols-2 text-center text-xs">
-                <div><p class="font-bold uppercase">Giám sát trưởng</p><p class="mt-8 italic">(Ký và ghi rõ họ tên)</p></div>
-                <div><p class="font-bold uppercase">Chỉ huy trưởng</p><p class="mt-8 italic">(Ký và ghi rõ họ tên)</p></div>
-              </div>
-            </div>
-            <p class="mt-4 text-xs italic">Đây là bản xem trước dựa trên mẫu thiết kế. Để xem bản Word Online thực tế, vui lòng nhấn "Mở trong Word".</p>
-          </div>
-        `;
-      }
-    }, 800);
+    // @ts-ignore
+    if (window.Office && window.Word) {
+      // @ts-ignore
+      Word.run(async (context) => {
+        // Logic to fill content controls
+        const contentControls = context.document.contentControls;
+        contentControls.load('items');
+        await context.sync();
+
+        for (let item of contentControls.items) {
+          if (item.tag === 'projectName') item.insertText(formData.projectName, 'Replace');
+          if (item.tag === 'investor') item.insertText(formData.investor, 'Replace');
+          if (item.tag === 'contractor') item.insertText(formData.contractor, 'Replace');
+          if (item.tag === 'recordNumber') item.insertText(formData.recordNumber, 'Replace');
+          if (item.tag === 'inspectionDate') item.insertText(formData.inspectionDate, 'Replace');
+          if (item.tag === 'workItemName') item.insertText(formData.workItemName, 'Replace');
+        }
+
+        await context.sync();
+        alert('Đã điền thông tin vào các Content Controls trong Word!');
+      }).catch(err => {
+        console.error(err);
+        alert('Lỗi khi xuất file Word: ' + err.message);
+      }).finally(() => {
+        setIsGenerating(false);
+      });
+    } else {
+      setTimeout(() => {
+        setIsGenerating(false);
+        alert('Đang ở chế độ Web. Tính năng xuất file Word thật sự yêu cầu chạy trong Microsoft Word.');
+      }, 1000);
+    }
   };
 
   return (
@@ -87,7 +85,10 @@ export const RecordsModule: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Hồ sơ chất lượng</h1>
         <div className="flex space-x-2">
-          <button className="flex items-center px-4 py-2 border rounded-lg hover:bg-accent">
+          <button 
+            onClick={() => setActiveTab('template')}
+            className="flex items-center px-4 py-2 border rounded-lg hover:bg-accent text-sm font-medium transition-colors"
+          >
             <Settings2 size={18} className="mr-2" /> Cấu hình mẫu
           </button>
         </div>
@@ -100,12 +101,12 @@ export const RecordsModule: React.FC = () => {
             <h3 className="font-semibold flex items-center">
               <FileText size={18} className="mr-2 text-primary" /> Loại hồ sơ chiếu sáng
             </h3>
-            <div className="space-y-1 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-1 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar text-sm">
               {recordTypes.map((type) => (
                 <button
                   key={type}
                   onClick={() => setSelectedType(type)}
-                  className={`w-full text-left p-3 text-sm rounded-lg transition-colors ${
+                  className={`w-full text-left p-3 rounded-lg transition-colors ${
                     selectedType === type ? 'bg-primary text-primary-foreground shadow-md' : 'hover:bg-accent'
                   }`}
                 >
@@ -122,38 +123,38 @@ export const RecordsModule: React.FC = () => {
             <div className="flex items-center justify-between border-b pb-4">
               <div>
                 <h3 className="font-bold text-lg text-primary">{selectedType}</h3>
-                <p className="text-sm text-muted-foreground">Thiết lập thông tin biên bản</p>
+                <p className="text-sm text-muted-foreground font-medium">Thiết lập thông tin biên bản</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-muted-foreground uppercase">Tên dự án</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Tên dự án</label>
                 <input name="projectName" value={formData.projectName} onChange={handleInputChange} className="w-full p-2 border rounded-md text-sm bg-background focus:ring-1 focus:ring-primary outline-none" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-muted-foreground uppercase">Số biên bản</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Số biên bản</label>
                 <input name="recordNumber" value={formData.recordNumber} onChange={handleInputChange} className="w-full p-2 border rounded-md text-sm bg-background focus:ring-1 focus:ring-primary outline-none" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-muted-foreground uppercase">Chủ đầu tư</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Chủ đầu tư</label>
                 <input name="investor" value={formData.investor} onChange={handleInputChange} className="w-full p-2 border rounded-md text-sm bg-background" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-muted-foreground uppercase">Đơn vị thi công</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Đơn vị thi công</label>
                 <input name="contractor" value={formData.contractor} onChange={handleInputChange} className="w-full p-2 border rounded-md text-sm bg-background" />
               </div>
               <div className="space-y-1 md:col-span-2">
-                <label className="text-xs font-bold text-muted-foreground uppercase">Nội dung nghiệm thu</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Nội dung nghiệm thu</label>
                 <input name="workItemName" value={formData.workItemName} onChange={handleInputChange} className="w-full p-2 border rounded-md text-sm bg-background" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-muted-foreground uppercase">Ngày nghiệm thu</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Ngày nghiệm thu</label>
                 <input type="date" name="inspectionDate" value={formData.inspectionDate} onChange={handleInputChange} className="w-full p-2 border rounded-md text-sm bg-background" />
               </div>
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-muted-foreground uppercase">Tiêu chuẩn áp dụng</label>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Tiêu chuẩn áp dụng</label>
                   <button 
                     onClick={async () => {
                       const suggestions = await AiService.suggestStandards(formData.workItemName);
@@ -172,15 +173,12 @@ export const RecordsModule: React.FC = () => {
 
             <div className="pt-6 border-t flex justify-end space-x-3">
               <button 
-                onClick={handlePreview}
-                className="flex items-center px-4 py-2 border border-primary text-primary rounded-lg hover:bg-primary/5 transition-colors font-medium"
+                onClick={handleExport}
+                disabled={isGenerating}
+                className="flex items-center px-8 py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 font-bold disabled:opacity-50"
               >
-                <Eye size={18} className="mr-2" /> Xem trước (Word Style)
-              </button>
-              <button 
-                className="flex items-center px-6 py-2.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all shadow-md"
-              >
-                <Play size={18} className="mr-2" /> Xuất File Word
+                {isGenerating ? <RefreshCw size={18} className="mr-2 animate-spin" /> : <Play size={18} className="mr-2" />}
+                {isGenerating ? "Đang xử lý..." : "Xuất File Word"}
               </button>
             </div>
           </div>

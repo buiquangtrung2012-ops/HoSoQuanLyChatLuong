@@ -33,6 +33,7 @@ const navItems = [
   { id: 'lab', label: 'PTN', icon: FlaskConical },
   { id: 'diary', label: 'Nhật ký', icon: BookOpen },
   { id: 'records', label: 'Hồ sơ', icon: FileText },
+  { id: 'template', label: 'Tạo mẫu', icon: Layout },
   { id: 'export', label: 'Xuất file', icon: Download },
 ];
 

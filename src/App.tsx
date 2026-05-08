@@ -10,6 +10,7 @@ import { DiaryModule } from './pages/DiaryModule';
 import { MaterialModule } from './pages/MaterialModule';
 import { EquipmentModule } from './pages/EquipmentModule';
 import { LabModule } from './pages/LabModule';
+import { TemplateModule } from './pages/TemplateModule';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -35,11 +36,12 @@ const App: React.FC = () => {
       case 'project': return <ProjectModule />;
       case 'personnel': return <PersonnelModule />;
       case 'work-items': return <WorkItemsModule />;
-      case 'records': return <RecordsModule />;
+      case 'records': return <RecordsModule setActiveTab={setActiveTab} />;
       case 'diary': return <DiaryModule />;
       case 'materials': return <MaterialModule />;
       case 'equipment': return <EquipmentModule />;
       case 'lab': return <LabModule />;
+      case 'template': return <TemplateModule />;
       default: return <div className="p-8 text-center text-muted-foreground">Tính năng {activeTab} đang được phát triển...</div>;
     }
   };

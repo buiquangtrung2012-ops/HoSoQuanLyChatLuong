@@ -53,3 +53,10 @@ Hệ thống quản lý hồ sơ chất lượng công trình chuyên nghiệp d
 - **Dữ liệu**: Cho phép người dùng nhập thông tin và lưu tạm thời vào danh sách hiển thị trên giao diện (Local State).
 - **Nhật ký thi công**: Kích hoạt nút "Tạo nhật ký mới" (làm mới form) và "Lưu nhật ký" (hiện trạng thái đã lưu).
 - **Công nghệ**: Thêm component `Modal` dùng chung cho toàn bộ ứng dụng.
+
+### v08052026.1528 (08/05/2026)
+- **Topbar**: Cập nhật phiên bản, loại bỏ thông tin Admin User để gọn giao diện.
+- **Nhật ký thi công**: Thêm tính năng "Lấy từ công việc" giúp tự động tổng hợp nội dung thi công từ danh sách công việc nghiệm thu cùng ngày.
+- **Tạo mẫu (Template)**: Triển khai trang "Tạo mẫu" hoàn chỉnh với các nút chèn Content Control (Tên dự án, Số HĐ...) và Bookmark (Bảng nhân sự, vật liệu...) trực tiếp vào Word.
+- **Xuất file**: Kích hoạt tính năng "Xuất file Word" thực tế (điền dữ liệu vào các Content Control trong văn bản).
+- **Tối ưu**: Loại bỏ phần xem trước (Word Style) không cần thiết trong module Hồ sơ.

@@ -21,9 +21,9 @@ export const Topbar: React.FC = () => {
       </div>
 
       <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-2 mr-2 pr-4 border-r">
+        <div className="flex items-center space-x-2 mr-2">
           <span className="text-[10px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">
-            v08052026.1229
+            v08052026.1528
           </span>
           <button 
             onClick={handleUpdate}
@@ -39,15 +39,6 @@ export const Topbar: React.FC = () => {
           <Bell size={20} />
           <span className="absolute top-2 right-2 w-2 h-2 bg-destructive rounded-full border-2 border-card"></span>
         </button>
-        <div className="flex items-center space-x-2 pl-4 border-l">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium leading-none">Admin User</p>
-            <p className="text-xs text-muted-foreground">Chỉ huy trưởng</p>
-          </div>
-          <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center text-primary">
-            <User size={20} />
-          </div>
-        </div>
       </div>
     </div>
   );
