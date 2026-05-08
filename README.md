@@ -47,3 +47,9 @@ Hệ thống quản lý hồ sơ chất lượng công trình chuyên nghiệp d
 - **Phiên bản**: Hiển thị version dạng `ddMMyyyy.hhmm` để dễ quản lý.
 - **Tối ưu UI**: Loại bỏ toàn bộ cột và thông tin **Trạng thái** trong các module (Dashboard, Công việc, Vật liệu, Máy móc) theo yêu cầu.
 - **Kích hoạt nút**: Đã gán sự kiện click cho các nút "Thêm nhân sự", "Nhập vật liệu", "Thêm máy móc", "Thêm PTN", "Thêm công việc" (hiện thông báo phản hồi).
+
+### v08052026.1243 (08/05/2026)
+- **Tính năng mới**: Triển khai toàn bộ các form nhập liệu (Modals) cho các nút "Thêm".
+- **Dữ liệu**: Cho phép người dùng nhập thông tin và lưu tạm thời vào danh sách hiển thị trên giao diện (Local State).
+- **Nhật ký thi công**: Kích hoạt nút "Tạo nhật ký mới" (làm mới form) và "Lưu nhật ký" (hiện trạng thái đã lưu).
+- **Công nghệ**: Thêm component `Modal` dùng chung cho toàn bộ ứng dụng.

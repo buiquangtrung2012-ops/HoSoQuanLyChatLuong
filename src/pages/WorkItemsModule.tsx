@@ -1,22 +1,51 @@
 import React, { useState } from 'react';
-import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, Save } from 'lucide-react';
 import type { WorkItem } from '../types';
+import { Modal } from '../components/Modal';
 
-const mockWorkItems: WorkItem[] = [
+const initialWorkItems: WorkItem[] = [
   { id: '1', line: 'Tuyến Lộ 1', category: 'Phần móng', name: 'Lắp dựng móng đúc sẵn M1', code: 'MC-001', unit: 'Cái', quantity: 24, startDate: '2026-05-01', inspectionDate: '2026-05-03' },
   { id: '2', line: 'Tuyến Lộ 1', category: 'Phần cột', name: 'Lắp dựng cột đèn bát giác H=8m', code: 'CD-001', unit: 'Cột', quantity: 24, startDate: '2026-05-04', inspectionDate: '2026-05-05' },
   { id: '3', line: 'Tuyến Lộ 2', category: 'Cáp điện', name: 'Rải cáp ngầm Cu/XLPE/PVC 4x16mm2', code: 'CN-002', unit: 'm', quantity: 850, startDate: '2026-05-05', inspectionDate: '2026-05-10' },
   { id: '4', line: 'Tuyến Lộ 1', category: 'Thiết bị', name: 'Lắp đặt đèn LED 120W và cần đèn', code: 'LD-001', unit: 'Bộ', quantity: 24, startDate: '2026-05-12', inspectionDate: '2026-05-15' },
 ];
 
-
 export const WorkItemsModule: React.FC = () => {
+  const [workItems, setWorkItems] = useState<WorkItem[]>(initialWorkItems);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newItem, setNewItem] = useState<Partial<WorkItem>>({
+    line: 'Tuyến Lộ 1',
+    category: 'Phần móng',
+    unit: 'Cái',
+    quantity: 0,
+    startDate: new Date().toISOString().split('T')[0],
+    inspectionDate: new Date().toISOString().split('T')[0],
+  });
+
+  const handleAdd = () => {
+    const item: WorkItem = {
+      ...newItem as WorkItem,
+      id: Math.random().toString(36).substr(2, 9),
+    };
+    setWorkItems([item, ...workItems]);
+    setIsModalOpen(false);
+    // Reset form
+    setNewItem({
+      line: 'Tuyến Lộ 1',
+      category: 'Phần móng',
+      unit: 'Cái',
+      quantity: 0,
+      startDate: new Date().toISOString().split('T')[0],
+      inspectionDate: new Date().toISOString().split('T')[0],
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Quản lý công việc</h1>
         <button 
-          onClick={() => alert('Tính năng "Thêm công việc" đang được phát triển')}
+          onClick={() => setIsModalOpen(true)}
           className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
         >
           <Plus size={18} className="mr-2" /> Thêm công việc
@@ -40,14 +69,6 @@ export const WorkItemsModule: React.FC = () => {
               <Filter size={16} className="mr-2" /> Lọc
             </button>
           </div>
-          
-          <div className="flex space-x-2">
-            <select className="bg-background border rounded-md px-2 py-1.5 text-sm focus:outline-none">
-              <option>Tất cả hạng mục</option>
-              <option>Phần móng</option>
-              <option>Phần thân</option>
-            </select>
-          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -62,7 +83,7 @@ export const WorkItemsModule: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {mockWorkItems.map((item) => (
+              {workItems.map((item) => (
                 <tr key={item.id} className="hover:bg-accent/50 transition-colors">
                   <td className="px-6 py-4 font-mono text-xs">{item.code}</td>
                   <td className="px-6 py-4">
@@ -80,6 +101,105 @@ export const WorkItemsModule: React.FC = () => {
           </table>
         </div>
       </div>
+
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title="Thêm công việc mới"
+        footer={
+          <>
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-lg"
+            >
+              Hủy
+            </button>
+            <button 
+              onClick={handleAdd}
+              className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm font-medium"
+            >
+              <Save size={16} className="mr-2" /> Lưu công việc
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-muted-foreground uppercase">Tuyến</label>
+              <input 
+                value={newItem.line}
+                onChange={e => setNewItem({...newItem, line: e.target.value})}
+                className="w-full p-2 border rounded-md text-sm bg-background" 
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-muted-foreground uppercase">Hạng mục</label>
+              <input 
+                value={newItem.category}
+                onChange={e => setNewItem({...newItem, category: e.target.value})}
+                className="w-full p-2 border rounded-md text-sm bg-background" 
+              />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-muted-foreground uppercase">Tên công việc</label>
+            <input 
+              value={newItem.name}
+              onChange={e => setNewItem({...newItem, name: e.target.value})}
+              placeholder="Ví dụ: Lắp dựng cột đèn..."
+              className="w-full p-2 border rounded-md text-sm bg-background" 
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-muted-foreground uppercase">Mã CV</label>
+              <input 
+                value={newItem.code}
+                onChange={e => setNewItem({...newItem, code: e.target.value})}
+                className="w-full p-2 border rounded-md text-sm bg-background font-mono" 
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-muted-foreground uppercase">Đơn vị</label>
+              <input 
+                value={newItem.unit}
+                onChange={e => setNewItem({...newItem, unit: e.target.value})}
+                className="w-full p-2 border rounded-md text-sm bg-background" 
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-muted-foreground uppercase">Khối lượng</label>
+              <input 
+                type="number"
+                value={newItem.quantity}
+                onChange={e => setNewItem({...newItem, quantity: Number(e.target.value)})}
+                className="w-full p-2 border rounded-md text-sm bg-background" 
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-muted-foreground uppercase">Ngày bắt đầu</label>
+              <input 
+                type="date"
+                value={newItem.startDate}
+                onChange={e => setNewItem({...newItem, startDate: e.target.value})}
+                className="w-full p-2 border rounded-md text-sm bg-background" 
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-muted-foreground uppercase">Ngày nghiệm thu</label>
+              <input 
+                type="date"
+                value={newItem.inspectionDate}
+                onChange={e => setNewItem({...newItem, inspectionDate: e.target.value})}
+                className="w-full p-2 border rounded-md text-sm bg-background" 
+              />
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

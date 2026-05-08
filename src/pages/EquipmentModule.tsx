@@ -1,13 +1,35 @@
-import React from 'react';
-import { Truck, Search, Plus, Calendar, ShieldCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { Truck, Search, Plus, Calendar, ShieldCheck, Save } from 'lucide-react';
+import { Modal } from '../components/Modal';
+
+const initialEquipment = [
+  { name: "Cần trục tháp POTAIN", serial: "PT-2024-X", lastCheck: "01/01/2026", expiry: "01/01/2027" },
+  { name: "Máy bơm bê tông PUTZMEISTER", serial: "PZ-888", lastCheck: "15/02/2026", expiry: "15/02/2027" },
+  { name: "Máy toàn đạc LEICA TS06", serial: "L-99021", lastCheck: "10/03/2026", expiry: "10/03/2027" },
+];
 
 export const EquipmentModule: React.FC = () => {
+  const [equipment, setEquipment] = useState(initialEquipment);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newEquip, setNewEquip] = useState({
+    name: '',
+    serial: '',
+    lastCheck: '',
+    expiry: '',
+  });
+
+  const handleAdd = () => {
+    setEquipment([newEquip, ...equipment]);
+    setIsModalOpen(false);
+    setNewEquip({ name: '', serial: '', lastCheck: '', expiry: '' });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Quản lý máy móc thiết bị</h1>
         <button 
-          onClick={() => alert('Tính năng "Thêm máy móc" đang được phát triển')}
+          onClick={() => setIsModalOpen(true)}
           className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
         >
           <Plus size={18} className="mr-2" /> Thêm máy móc
@@ -39,11 +61,7 @@ export const EquipmentModule: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {[
-                { name: "Cần trục tháp POTAIN", serial: "PT-2024-X", lastCheck: "01/01/2026", expiry: "01/01/2027" },
-                { name: "Máy bơm bê tông PUTZMEISTER", serial: "PZ-888", lastCheck: "15/02/2026", expiry: "15/02/2027" },
-                { name: "Máy toàn đạc LEICA TS06", serial: "L-99021", lastCheck: "10/03/2026", expiry: "10/03/2027" },
-              ].map((item, i) => (
+              {equipment.map((item, i) => (
                 <tr key={i} className="hover:bg-accent/50 transition-colors">
                   <td className="px-6 py-4 font-medium">{item.name}</td>
                   <td className="px-6 py-4 font-mono text-xs">{item.serial}</td>
@@ -55,6 +73,69 @@ export const EquipmentModule: React.FC = () => {
           </table>
         </div>
       </div>
+
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title="Thêm thiết bị mới"
+        footer={
+          <>
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-lg"
+            >
+              Hủy
+            </button>
+            <button 
+              onClick={handleAdd}
+              className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm font-medium"
+            >
+              <Save size={16} className="mr-2" /> Lưu thiết bị
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-muted-foreground uppercase">Tên thiết bị</label>
+            <input 
+              value={newEquip.name}
+              onChange={e => setNewEquip({...newEquip, name: e.target.value})}
+              className="w-full p-2 border rounded-md text-sm bg-background" 
+              placeholder="Xe cẩu tự hành 5 tấn"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-muted-foreground uppercase">Số Serial / Biển số</label>
+            <input 
+              value={newEquip.serial}
+              onChange={e => setNewEquip({...newEquip, serial: e.target.value})}
+              className="w-full p-2 border rounded-md text-sm bg-background font-mono" 
+              placeholder="29C-123.45"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-muted-foreground uppercase">Ngày kiểm định</label>
+              <input 
+                type="date"
+                value={newEquip.lastCheck}
+                onChange={e => setNewEquip({...newEquip, lastCheck: e.target.value})}
+                className="w-full p-2 border rounded-md text-sm bg-background" 
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-muted-foreground uppercase">Ngày hết hạn</label>
+              <input 
+                type="date"
+                value={newEquip.expiry}
+                onChange={e => setNewEquip({...newEquip, expiry: e.target.value})}
+                className="w-full p-2 border rounded-md text-sm bg-background" 
+              />
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

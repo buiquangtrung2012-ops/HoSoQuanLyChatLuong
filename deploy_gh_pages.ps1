@@ -1,6 +1,6 @@
 # Script to deploy the dist folder to GitHub Pages (gh-pages branch)
 
-$remoteUrl = "origin"
+$remoteUrl = "https://github.com/buiquangtrung2012-ops/HoSoQuanLyChatLuong.git"
 
 Write-Host "1. Building the project..." -ForegroundColor Cyan
 npm run build

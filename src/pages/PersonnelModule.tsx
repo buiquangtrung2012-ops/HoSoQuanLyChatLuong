@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Plus, Search, MoreHorizontal, UserPlus } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, UserPlus, Save } from 'lucide-react';
 import type { Personnel, PersonnelRole } from '../types';
+import { Modal } from '../components/Modal';
 
-const mockPersonnel: Personnel[] = [
+const initialPersonnel: Personnel[] = [
   { id: '1', name: 'Nguyễn Văn A', position: 'Chỉ huy trưởng', unit: 'Coteccons', role: 'Chỉ huy trưởng' },
   { id: '2', name: 'Trần Văn B', position: 'Giám sát trưởng', unit: 'CONINCO', role: 'Giám sát trưởng' },
   { id: '3', name: 'Lê Văn C', position: 'Giám sát viên', unit: 'CONINCO', role: 'Tư vấn giám sát' },
@@ -10,14 +11,31 @@ const mockPersonnel: Personnel[] = [
 ];
 
 export const PersonnelModule: React.FC = () => {
-  const [personnelList, setPersonnelList] = useState<Personnel[]>(mockPersonnel);
+  const [personnelList, setPersonnelList] = useState<Personnel[]>(initialPersonnel);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newPerson, setNewPerson] = useState<Partial<Personnel>>({
+    name: '',
+    position: '',
+    unit: '',
+    role: 'Tư vấn giám sát',
+  });
+
+  const handleAdd = () => {
+    const person: Personnel = {
+      ...newPerson as Personnel,
+      id: Math.random().toString(36).substr(2, 9),
+    };
+    setPersonnelList([person, ...personnelList]);
+    setIsModalOpen(false);
+    setNewPerson({ name: '', position: '', unit: '', role: 'Tư vấn giám sát' });
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Quản lý nhân sự</h1>
         <button 
-          onClick={() => alert('Tính năng "Thêm nhân sự" đang được phát triển')}
+          onClick={() => setIsModalOpen(true)}
           className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
         >
           <UserPlus size={18} className="mr-2" /> Thêm nhân sự
@@ -35,13 +53,6 @@ export const PersonnelModule: React.FC = () => {
               placeholder="Tìm nhân sự..." 
               className="w-full pl-9 pr-4 py-1.5 bg-background border rounded-md text-sm focus:outline-none"
             />
-          </div>
-          <div className="flex space-x-2">
-            <select className="bg-background border rounded-md px-2 py-1.5 text-sm focus:outline-none">
-              <option>Tất cả vai trò</option>
-              <option>Chỉ huy trưởng</option>
-              <option>Giám sát trưởng</option>
-            </select>
           </div>
         </div>
 
@@ -78,6 +89,72 @@ export const PersonnelModule: React.FC = () => {
           </table>
         </div>
       </div>
+
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title="Thêm nhân sự mới"
+        footer={
+          <>
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-lg"
+            >
+              Hủy
+            </button>
+            <button 
+              onClick={handleAdd}
+              className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm font-medium"
+            >
+              <Save size={16} className="mr-2" /> Lưu nhân sự
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-muted-foreground uppercase">Họ và tên</label>
+            <input 
+              value={newPerson.name}
+              onChange={e => setNewPerson({...newPerson, name: e.target.value})}
+              className="w-full p-2 border rounded-md text-sm bg-background" 
+              placeholder="Nguyễn Văn A"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-muted-foreground uppercase">Chức vụ</label>
+            <input 
+              value={newPerson.position}
+              onChange={e => setNewPerson({...newPerson, position: e.target.value})}
+              className="w-full p-2 border rounded-md text-sm bg-background" 
+              placeholder="Kỹ sư hiện trường"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-muted-foreground uppercase">Đơn vị công tác</label>
+            <input 
+              value={newPerson.unit}
+              onChange={e => setNewPerson({...newPerson, unit: e.target.value})}
+              className="w-full p-2 border rounded-md text-sm bg-background" 
+              placeholder="Công ty CP Xây dựng..."
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-muted-foreground uppercase">Vai trò ký hồ sơ</label>
+            <select 
+              value={newPerson.role}
+              onChange={e => setNewPerson({...newPerson, role: e.target.value as PersonnelRole})}
+              className="w-full p-2 border rounded-md text-sm bg-background outline-none"
+            >
+              <option value="Chỉ huy trưởng">Chỉ huy trưởng</option>
+              <option value="Giám sát trưởng">Giám sát trưởng</option>
+              <option value="Tư vấn giám sát">Tư vấn giám sát</option>
+              <option value="Chủ đầu tư">Chủ đầu tư</option>
+              <option value="Tư vấn thiết kế">Tư vấn thiết kế</option>
+            </select>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

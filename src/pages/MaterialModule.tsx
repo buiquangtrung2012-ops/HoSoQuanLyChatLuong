@@ -1,13 +1,36 @@
-import React from 'react';
-import { Package, Search, Plus, Filter, Tag } from 'lucide-react';
+import React, { useState } from 'react';
+import { Package, Search, Plus, Filter, Tag, Save } from 'lucide-react';
+import { Modal } from '../components/Modal';
+
+const initialMaterials = [
+  { name: "Cột đèn thép H=8m mạ kẽm", source: "Hapulico", lot: "LOT-CP-001", qty: "24 Cột" },
+  { name: "Đèn LED 120W Philips", source: "Philips Việt Nam", lot: "PH-LED-88", qty: "24 Bộ" },
+  { name: "Cáp ngầm 4x16mm2 Cadivi", source: "Cadivi", lot: "CDV-16-4", qty: "1000 m" },
+  { name: "Tủ điện chiếu sáng ngoài trời", source: "Tụ điện Miền Nam", lot: "TD-2026", qty: "02 Tủ" },
+];
 
 export const MaterialModule: React.FC = () => {
+  const [materials, setMaterials] = useState(initialMaterials);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newMaterial, setNewMaterial] = useState({
+    name: '',
+    source: '',
+    lot: '',
+    qty: '',
+  });
+
+  const handleAdd = () => {
+    setMaterials([newMaterial, ...materials]);
+    setIsModalOpen(false);
+    setNewMaterial({ name: '', source: '', lot: '', qty: '' });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Quản lý vật liệu</h1>
         <button 
-          onClick={() => alert('Tính năng "Nhập vật liệu" đang được phát triển')}
+          onClick={() => setIsModalOpen(true)}
           className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
         >
           <Plus size={18} className="mr-2" /> Nhập vật liệu
@@ -42,12 +65,7 @@ export const MaterialModule: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {[
-                { name: "Cột đèn thép H=8m mạ kẽm", source: "Hapulico", lot: "LOT-CP-001", qty: "24 Cột", status: "Đạt" },
-                { name: "Đèn LED 120W Philips", source: "Philips Việt Nam", lot: "PH-LED-88", qty: "24 Bộ", status: "Đang kiểm tra" },
-                { name: "Cáp ngầm 4x16mm2 Cadivi", source: "Cadivi", lot: "CDV-16-4", qty: "1000 m", status: "Đạt" },
-                { name: "Tủ điện chiếu sáng ngoài trời", source: "Tụ điện Miền Nam", lot: "TD-2026", qty: "02 Tủ", status: "Đạt" },
-              ].map((item, i) => (
+              {materials.map((item, i) => (
                 <tr key={i} className="hover:bg-accent/50 transition-colors">
                   <td className="px-6 py-4 font-medium">{item.name}</td>
                   <td className="px-6 py-4 text-xs">
@@ -61,6 +79,69 @@ export const MaterialModule: React.FC = () => {
           </table>
         </div>
       </div>
+
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title="Nhập vật liệu mới"
+        footer={
+          <>
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-lg"
+            >
+              Hủy
+            </button>
+            <button 
+              onClick={handleAdd}
+              className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm font-medium"
+            >
+              <Save size={16} className="mr-2" /> Lưu vật liệu
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-muted-foreground uppercase">Tên vật liệu</label>
+            <input 
+              value={newMaterial.name}
+              onChange={e => setNewMaterial({...newMaterial, name: e.target.value})}
+              className="w-full p-2 border rounded-md text-sm bg-background" 
+              placeholder="Cáp điện Cu/XLPE/PVC..."
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-muted-foreground uppercase">Nguồn gốc/Nhà cung cấp</label>
+            <input 
+              value={newMaterial.source}
+              onChange={e => setNewMaterial({...newMaterial, source: e.target.value})}
+              className="w-full p-2 border rounded-md text-sm bg-background" 
+              placeholder="Công ty Cadivi"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-muted-foreground uppercase">Số lô / CO-CQ</label>
+              <input 
+                value={newMaterial.lot}
+                onChange={e => setNewMaterial({...newMaterial, lot: e.target.value})}
+                className="w-full p-2 border rounded-md text-sm bg-background font-mono" 
+                placeholder="LOT-2026-001"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-muted-foreground uppercase">Số lượng / Đơn vị</label>
+              <input 
+                value={newMaterial.qty}
+                onChange={e => setNewMaterial({...newMaterial, qty: e.target.value})}
+                className="w-full p-2 border rounded-md text-sm bg-background" 
+                placeholder="1000 m"
+              />
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

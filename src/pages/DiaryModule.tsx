@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import { Calendar, Cloud, Users, Truck, Plus, Sparkles, MapPin, Wind } from 'lucide-react';
+import { Calendar, Cloud, Users, Truck, Plus, Sparkles, MapPin, Wind, Save, CheckCircle } from 'lucide-react';
 import { AiService } from '../services/AiService';
 
 export const DiaryModule: React.FC = () => {
   const [diaryContent, setDiaryContent] = useState("- Triển khai lắp dựng cột đèn tuyến Lộ 1 (24 cột).\n- Đấu nối dây lên đèn và lắp cần đèn.\n- Kiểm tra độ thẳng đứng của cột và siết bu lông móng.");
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [weather, setWeather] = useState("Nắng ráo");
+  const [temp, setTemp] = useState("32°C");
+  const [manpower, setManpower] = useState("12 công nhân, 1 kỹ thuật");
+  const [equipment, setEquipment] = useState("1 Xe cẩu tự hành, 1 máy thủy bình");
 
   const handleAiFill = async () => {
     setIsAiLoading(true);
@@ -14,13 +20,34 @@ export const DiaryModule: React.FC = () => {
     setIsAiLoading(false);
   };
 
+  const handleNew = () => {
+    setDiaryContent("");
+    setDate(new Date().toISOString().split('T')[0]);
+    setIsSaved(false);
+  };
+
+  const handleSave = () => {
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 3000);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Nhật ký thi công</h1>
         <div className="flex space-x-2">
-          <button className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 shadow-sm transition-all">
+          <button 
+            onClick={handleNew}
+            className="flex items-center px-4 py-2 border rounded-lg hover:bg-accent transition-all"
+          >
             <Plus size={18} className="mr-2" /> Tạo nhật ký mới
+          </button>
+          <button 
+            onClick={handleSave}
+            className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 shadow-sm transition-all"
+          >
+            {isSaved ? <CheckCircle size={18} className="mr-2" /> : <Save size={18} className="mr-2" />}
+            {isSaved ? "Đã lưu" : "Lưu nhật ký"}
           </button>
         </div>
       </div>
@@ -33,13 +60,22 @@ export const DiaryModule: React.FC = () => {
                 <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
                   <Calendar size={14} className="mr-1" /> Ngày tháng
                 </label>
-                <input type="date" className="w-full p-2 border rounded-lg text-sm bg-background" defaultValue="2026-05-05" />
+                <input 
+                  type="date" 
+                  className="w-full p-2 border rounded-lg text-sm bg-background" 
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
                   <Cloud size={14} className="mr-1" /> Thời tiết
                 </label>
-                <select className="w-full p-2 border rounded-lg text-sm bg-background">
+                <select 
+                  className="w-full p-2 border rounded-lg text-sm bg-background"
+                  value={weather}
+                  onChange={(e) => setWeather(e.target.value)}
+                >
                   <option>Nắng ráo</option>
                   <option>Có mưa</option>
                   <option>Nhiều mây</option>
@@ -49,7 +85,11 @@ export const DiaryModule: React.FC = () => {
                 <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
                   <Thermometer size={14} className="mr-1" /> Nhiệt độ
                 </label>
-                <input className="w-full p-2 border rounded-lg text-sm bg-background" defaultValue="32°C" />
+                <input 
+                  className="w-full p-2 border rounded-lg text-sm bg-background" 
+                  value={temp}
+                  onChange={(e) => setTemp(e.target.value)}
+                />
               </div>
             </div>
             
@@ -69,6 +109,7 @@ export const DiaryModule: React.FC = () => {
                   className="w-full mt-1 p-3 border rounded-lg bg-background min-h-[150px] text-sm focus:ring-2 focus:ring-primary/50 outline-none"
                   value={diaryContent}
                   onChange={(e) => setDiaryContent(e.target.value)}
+                  placeholder="Nhập nội dung công việc trong ngày..."
                 />
               </div>
 
@@ -77,13 +118,21 @@ export const DiaryModule: React.FC = () => {
                   <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
                     <Users size={14} className="mr-1" /> Nhân lực
                   </label>
-                  <input className="w-full mt-1 p-2 border rounded-lg text-sm bg-background" defaultValue="12 công nhân, 1 kỹ thuật" />
+                  <input 
+                    className="w-full mt-1 p-2 border rounded-lg text-sm bg-background" 
+                    value={manpower}
+                    onChange={(e) => setManpower(e.target.value)}
+                  />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-muted-foreground uppercase flex items-center">
                     <Truck size={14} className="mr-1" /> Máy móc
                   </label>
-                  <input className="w-full mt-1 p-2 border rounded-lg text-sm bg-background" defaultValue="1 Xe cẩu tự hành, 1 máy thủy bình" />
+                  <input 
+                    className="w-full mt-1 p-2 border rounded-lg text-sm bg-background" 
+                    value={equipment}
+                    onChange={(e) => setEquipment(e.target.value)}
+                  />
                 </div>
               </div>
             </div>
@@ -96,8 +145,8 @@ export const DiaryModule: React.FC = () => {
             <p className="text-xs text-muted-foreground mb-4">Dựa trên các công việc đã thực hiện trong ngày:</p>
             <div className="space-y-3">
               {[
-                "Lắp dựng cột đèn H=8m (Đã NT)",
-                "Rải cáp ngầm 4x16mm2 (Đang TC)",
+                "Lắp dựng cột đèn H=8m (Tuyến 1)",
+                "Rải cáp ngầm 4x16mm2 (Tuyến 2)",
               ].map((work, i) => (
                 <div key={i} className="flex items-center text-sm p-2 border-l-2 border-primary bg-primary/5">
                   {work}
@@ -111,7 +160,7 @@ export const DiaryModule: React.FC = () => {
               <Sparkles size={14} className="mr-1" /> AI Insights
             </h4>
             <p className="text-xs text-purple-600 leading-relaxed">
-              Tiến độ lắp dựng cột đang nhanh hơn kế hoạch 5%. Bạn có thể điều phối thêm nhân lực rải cáp để hoàn thành sớm tuyến Lộ 1.
+              Dữ liệu từ các module khác cho thấy tiến độ lắp dựng đang ổn định. Bạn nên tập trung hoàn thiện hồ sơ nghiệm thu cho các cột đã lắp xong.
             </p>
           </div>
         </div>
