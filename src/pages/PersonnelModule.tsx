@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, MoreHorizontal, UserPlus, Save, Trash2 } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, UserPlus, Save, Trash2, AlertCircle } from 'lucide-react';
 import type { Personnel, PersonnelRole } from '../types';
 import { Modal } from '../components/Modal';
 import { StorageService } from '../services/storageService';
@@ -14,6 +14,7 @@ const initialPersonnel: Personnel[] = [
 export const PersonnelModule: React.FC = () => {
   const [personnelList, setPersonnelList] = useState<Personnel[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [newPerson, setNewPerson] = useState<Partial<Personnel>>({
     name: '',
     position: '',
@@ -44,10 +45,15 @@ export const PersonnelModule: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('Bạn có chắc chắn muốn xóa nhân sự này?')) {
-      const updated = personnelList.filter(p => p.id !== id);
+    setItemToDelete(id);
+  };
+
+  const confirmDelete = () => {
+    if (itemToDelete) {
+      const updated = personnelList.filter(p => p.id !== itemToDelete);
       setPersonnelList(updated);
       StorageService.save('hoso_personnel', updated);
+      setItemToDelete(null);
     }
   };
 
@@ -182,6 +188,35 @@ export const PersonnelModule: React.FC = () => {
               <option value="Chủ đầu tư">Chủ đầu tư</option>
               <option value="Tư vấn thiết kế">Tư vấn thiết kế</option>
             </select>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        title="Xác nhận xóa"
+        footer={
+          <>
+            <button 
+              onClick={() => setItemToDelete(null)}
+              className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-lg"
+            >
+              Hủy
+            </button>
+            <button 
+              onClick={confirmDelete}
+              className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 text-sm font-medium"
+            >
+              Xóa nhân sự
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex items-center space-x-3 text-amber-600 bg-amber-50 p-4 rounded-lg border border-amber-200">
+            <AlertCircle size={24} />
+            <p className="text-sm font-medium">Bạn có chắc chắn muốn xóa nhân sự này? Thao tác này không thể hoàn tác.</p>
           </div>
         </div>
       </Modal>

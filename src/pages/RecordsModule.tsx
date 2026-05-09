@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Download, Eye, Play, CheckCircle2, AlertTriangle, X, Settings2, Sparkles, RefreshCw, Trash2, RotateCcw, User, Layers, Package, Truck, FlaskConical } from 'lucide-react';
+import { Modal } from '../components/Modal';
 import { AiService } from '../services/AiService';
 import { StorageService } from '../services/storageService';
 import PizZip from 'pizzip';
@@ -10,6 +11,7 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
   const [recordTypes, setRecordTypes] = useState<string[]>([]);
   const [selectedType, setSelectedType] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState<string | null>(null);
 
   // Source data for auto-fill
   const [workItems, setWorkItems] = useState<any[]>([]);
@@ -32,12 +34,18 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
   }, []);
 
   const handleDeleteRecord = (e: React.MouseEvent, type: string) => {
+    e.preventDefault();
     e.stopPropagation();
-    if (confirm(`Bạn có chắc muốn xóa mẫu "${type}"?`)) {
-      const updated = recordTypes.filter(t => t !== type);
+    setRecordToDelete(type);
+  };
+
+  const confirmDeleteRecord = () => {
+    if (recordToDelete) {
+      const updated = recordTypes.filter(t => t !== recordToDelete);
       StorageService.saveRecordTypes(updated);
       setRecordTypes(updated);
-      if (selectedType === type && updated.length > 0) setSelectedType(updated[0]);
+      if (selectedType === recordToDelete && updated.length > 0) setSelectedType(updated[0]);
+      setRecordToDelete(null);
     }
   };
 
@@ -215,11 +223,7 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
                     {selectedType === type && <Play size={14} className="flex-shrink-0 ml-2" />}
                   </button>
                   <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleDeleteRecord(e, type);
-                    }}
+                    onClick={(e) => handleDeleteRecord(e, type)}
                     className="p-3 text-destructive hover:bg-destructive/10 rounded-xl transition-all opacity-0 group-hover:opacity-100 flex-shrink-0 border border-transparent hover:border-destructive/20"
                     title="Xóa mẫu biên bản này"
                   >
@@ -399,6 +403,36 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
           </div>
         </div>
       </div>
+
+      <Modal
+        isOpen={!!recordToDelete}
+        onClose={() => setRecordToDelete(null)}
+        title="Xác nhận xóa"
+        footer={
+          <>
+            <button 
+              onClick={() => setRecordToDelete(null)}
+              className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-lg"
+            >
+              Hủy
+            </button>
+            <button 
+              onClick={confirmDeleteRecord}
+              className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 text-sm font-medium"
+            >
+              Xóa mẫu
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex items-center space-x-3 text-amber-600 bg-amber-50 p-4 rounded-lg border border-amber-200">
+            <AlertTriangle size={24} />
+            <p className="text-sm font-medium">Bạn có chắc chắn muốn xóa mẫu biên bản <strong>"{recordToDelete}"</strong>? Thao tác này không thể hoàn tác.</p>
+          </div>
+        </div>
+      </Modal>
+
     </div>
   );
 };

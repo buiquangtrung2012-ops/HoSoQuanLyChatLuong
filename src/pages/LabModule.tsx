@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FlaskConical, Search, Plus, FileText, UserCheck, Save, Trash2 } from 'lucide-react';
+import { FlaskConical, Search, Plus, FileText, UserCheck, Save, Trash2, AlertCircle } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { StorageService } from '../services/storageService';
 
@@ -11,6 +11,7 @@ const initialLabs = [
 export const LabModule: React.FC = () => {
   const [labs, setLabs] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<number | null>(null);
   const [newLab, setNewLab] = useState({
     name: '',
     code: '',
@@ -37,11 +38,16 @@ export const LabModule: React.FC = () => {
   };
 
   const handleDelete = (index: number) => {
-    if (confirm('Bạn có chắc chắn muốn xóa phòng thí nghiệm này?')) {
+    setItemToDelete(index);
+  };
+
+  const confirmDelete = () => {
+    if (itemToDelete !== null) {
       const updated = [...labs];
-      updated.splice(index, 1);
+      updated.splice(itemToDelete, 1);
       setLabs(updated);
       StorageService.save('hoso_labs', updated);
+      setItemToDelete(null);
     }
   };
 
@@ -153,6 +159,35 @@ export const LabModule: React.FC = () => {
               className="w-full p-2 border rounded-md text-sm bg-background min-h-[80px]" 
               placeholder="Máy nén, máy kéo, thiết bị thí nghiệm..."
             />
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={itemToDelete !== null}
+        onClose={() => setItemToDelete(null)}
+        title="Xác nhận xóa"
+        footer={
+          <>
+            <button 
+              onClick={() => setItemToDelete(null)}
+              className="px-4 py-2 text-sm font-medium hover:bg-accent rounded-lg"
+            >
+              Hủy
+            </button>
+            <button 
+              onClick={confirmDelete}
+              className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 text-sm font-medium"
+            >
+              Xóa PTN
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex items-center space-x-3 text-amber-600 bg-amber-50 p-4 rounded-lg border border-amber-200">
+            <AlertCircle size={24} />
+            <p className="text-sm font-medium">Bạn có chắc chắn muốn xóa phòng thí nghiệm này? Thao tác này không thể hoàn tác.</p>
           </div>
         </div>
       </Modal>
