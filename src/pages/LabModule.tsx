@@ -1,27 +1,48 @@
-import React, { useState } from 'react';
-import { FlaskConical, Search, Plus, FileText, UserCheck, Save } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { FlaskConical, Search, Plus, FileText, UserCheck, Save, Trash2 } from 'lucide-react';
 import { Modal } from '../components/Modal';
+import { StorageService } from '../services/storageService';
 
 const initialLabs = [
-  { name: "Phòng thí nghiệm LAS-XD 123", code: "LAS-XD 123", expiry: "30/12/2027", staff: "5 kỹ thuật viên", equipment: "Đầy đủ thiết bị nén tĩnh, kéo thép" },
-  { name: "Trung tâm Kiểm định Xây dựng Miền Nam", code: "LAS-XD 456", expiry: "15/06/2028", staff: "12 chuyên gia", equipment: "Phòng Lab hóa học, cơ lý" },
+  { name: "Phòng thí nghiệm LAS-XD 123", code: "LAS-XD 123", expiry: "30/12/2027", equipment: "Đầy đủ thiết bị nén tĩnh, kéo thép" },
+  { name: "Trung tâm Kiểm định Xây dựng Miền Nam", code: "LAS-XD 456", expiry: "15/06/2028", equipment: "Phòng Lab hóa học, cơ lý" },
 ];
 
 export const LabModule: React.FC = () => {
-  const [labs, setLabs] = useState(initialLabs);
+  const [labs, setLabs] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newLab, setNewLab] = useState({
     name: '',
     code: '',
     expiry: '',
-    staff: '',
     equipment: '',
   });
 
+  useEffect(() => {
+    const saved = StorageService.get('hoso_labs');
+    if (saved && saved.length > 0) {
+      setLabs(saved);
+    } else {
+      setLabs(initialLabs);
+      StorageService.save('hoso_labs', initialLabs);
+    }
+  }, []);
+
   const handleAdd = () => {
-    setLabs([newLab, ...labs]);
+    const updated = [newLab, ...labs];
+    setLabs(updated);
+    StorageService.save('hoso_labs', updated);
     setIsModalOpen(false);
-    setNewLab({ name: '', code: '', expiry: '', staff: '', equipment: '' });
+    setNewLab({ name: '', code: '', expiry: '', equipment: '' });
+  };
+
+  const handleDelete = (index: number) => {
+    if (confirm('Bạn có chắc chắn muốn xóa phòng thí nghiệm này?')) {
+      const updated = [...labs];
+      updated.splice(index, 1);
+      setLabs(updated);
+      StorageService.save('hoso_labs', updated);
+    }
   };
 
   return (
@@ -38,7 +59,15 @@ export const LabModule: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {labs.map((lab, i) => (
-          <div key={i} className="bg-card rounded-xl border p-6 space-y-4 hover:shadow-md transition-shadow">
+          <div key={i} className="bg-card rounded-xl border p-6 space-y-4 hover:shadow-md transition-shadow relative group">
+            <button 
+              onClick={() => handleDelete(i)}
+              className="absolute top-4 right-4 p-2 text-destructive opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 rounded-md"
+              title="Xóa PTN"
+            >
+              <Trash2 size={18} />
+            </button>
+            
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-3">
                 <div className="p-2 bg-primary/10 text-primary rounded-lg">
@@ -54,9 +83,6 @@ export const LabModule: React.FC = () => {
             <div className="space-y-2 pt-2">
               <div className="flex items-center text-sm text-muted-foreground">
                 <FileText size={14} className="mr-2" /> Hiệu lực chứng chỉ: {lab.expiry}
-              </div>
-              <div className="flex items-center text-sm text-muted-foreground">
-                <UserCheck size={14} className="mr-2" /> Nhân sự: {lab.staff}
               </div>
             </div>
 
@@ -118,15 +144,6 @@ export const LabModule: React.FC = () => {
                 className="w-full p-2 border rounded-md text-sm bg-background" 
               />
             </div>
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-muted-foreground uppercase">Nhân sự chủ chốt</label>
-            <input 
-              value={newLab.staff}
-              onChange={e => setNewLab({...newLab, staff: e.target.value})}
-              className="w-full p-2 border rounded-md text-sm bg-background" 
-              placeholder="Ví dụ: 10 kỹ thuật viên"
-            />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-bold text-muted-foreground uppercase">Thiết bị chính</label>

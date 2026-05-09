@@ -20,20 +20,50 @@ import { StorageService } from '../services/storageService';
 import { useEffect } from 'react';
 
 const contentControls = [
-  { id: 'projectName', label: 'Tên Dự án', icon: FileText },
-  { id: 'contractNumber', label: 'Số Hợp đồng', icon: Hash },
-  { id: 'packageName', label: 'Tên Gói thầu', icon: Briefcase },
-  { id: 'contractor', label: 'Đơn vị Thi công', icon: Building2 },
-  { id: 'investorRep', label: 'Đại diện CDT', icon: User },
-  { id: 'supervisorRep', label: 'Tư vấn Giám sát', icon: Users },
-  { id: 'startDate', label: 'Ngày Khởi công', icon: Calendar },
-  { id: 'endDate', label: 'Ngày Hoàn thành', icon: Calendar },
+  // Thông tin chung dự án
+  { id: 'projectName', label: 'Tên Dự án', icon: FileText, category: 'Dự án' },
+  { id: 'contractNumber', label: 'Số Hợp đồng', icon: Hash, category: 'Dự án' },
+  { id: 'packageName', label: 'Tên Gói thầu', icon: Briefcase, category: 'Dự án' },
+  { id: 'contractor', label: 'Đơn vị Thi công', icon: Building2, category: 'Dự án' },
+  { id: 'investorRep', label: 'Đại diện CDT', icon: User, category: 'Dự án' },
+  { id: 'supervisorRep', label: 'Tư vấn Giám sát', icon: Users, category: 'Dự án' },
+  
+  // Thông tin Công việc
+  { id: 'workName', label: 'Tên Công việc', icon: Layers, category: 'Công việc' },
+  { id: 'workCode', label: 'Mã CV', icon: Hash, category: 'Công việc' },
+  { id: 'workLine', label: 'Tuyến', icon: Layout, category: 'Công việc' },
+  { id: 'workCategory', label: 'Hạng mục', icon: Layout, category: 'Công việc' },
+  { id: 'workQty', label: 'Khối lượng', icon: Hash, category: 'Công việc' },
+  { id: 'workUnit', label: 'Đơn vị tính', icon: FileText, category: 'Công việc' },
+  { id: 'workInspectDate', label: 'Ngày nghiệm thu', icon: Calendar, category: 'Công việc' },
+
+  // Thông tin Nhân sự
+  { id: 'staffName', label: 'Tên Nhân sự', icon: User, category: 'Nhân sự' },
+  { id: 'staffPosition', label: 'Chức vụ', icon: FileText, category: 'Nhân sự' },
+  { id: 'staffUnit', label: 'Đơn vị công tác', icon: Building2, category: 'Nhân sự' },
+
+  // Thông tin Vật liệu
+  { id: 'matName', label: 'Tên Vật liệu', icon: Package, category: 'Vật liệu' },
+  { id: 'matSource', label: 'Nguồn gốc', icon: MapPin, category: 'Vật liệu' },
+  { id: 'matLot', label: 'Số lô/CO-CQ', icon: Hash, category: 'Vật liệu' },
+  { id: 'matQty', label: 'Số lượng vật liệu', icon: Hash, category: 'Vật liệu' },
+
+  // Thông tin Máy móc
+  { id: 'equipName', label: 'Tên Máy móc', icon: Truck, category: 'Máy móc' },
+  { id: 'equipSerial', label: 'Số Serial/Biển số', icon: Hash, category: 'Máy móc' },
+  { id: 'equipExpiry', label: 'Hạn kiểm định', icon: Calendar, category: 'Máy móc' },
+
+  // Thông tin Phòng thí nghiệm
+  { id: 'labName', label: 'Tên PTN', icon: FlaskConical, category: 'PTN' },
+  { id: 'labCode', label: 'Mã LAS-XD', icon: Hash, category: 'PTN' },
+  { id: 'labExpiry', label: 'Hạn chứng chỉ PTN', icon: Calendar, category: 'PTN' },
 ];
 
 const bookmarks = [
-  { id: 'personnelTable', label: 'Danh sách Nhân sự', icon: Users },
-  { id: 'materialsTable', label: 'Danh sách Vật liệu', icon: Package },
-  { id: 'equipmentTable', label: 'Danh sách Máy móc', icon: Truck },
+  { id: 'personnelTable', label: 'Bảng Nhân sự', icon: Users },
+  { id: 'materialsTable', label: 'Bảng Vật liệu', icon: Package },
+  { id: 'equipmentTable', label: 'Bảng Máy móc', icon: Truck },
+  { id: 'workTable', label: 'Bảng Công việc', icon: Layers },
 ];
 
 export const TemplateModule: React.FC = () => {
@@ -42,13 +72,13 @@ export const TemplateModule: React.FC = () => {
   const [customRecords, setCustomRecords] = useState<string[]>([]);
 
   useEffect(() => {
-    setCustomRecords(StorageService.getCustomRecords());
+    setCustomRecords(StorageService.getRecordTypes());
   }, []);
 
   const handleDeleteRecord = (type: string) => {
     if (confirm(`Bạn có chắc muốn xóa mẫu "${type}"?`)) {
       const updated = customRecords.filter(t => t !== type);
-      StorageService.saveCustomRecords(updated);
+      StorageService.saveRecordTypes(updated);
       setCustomRecords(updated);
     }
   };
@@ -59,10 +89,10 @@ export const TemplateModule: React.FC = () => {
       return;
     }
     setIsSaving(true);
-    const currentRecords = StorageService.getCustomRecords();
+    const currentRecords = StorageService.getRecordTypes();
     if (!currentRecords.includes(recordName)) {
       const updated = [...currentRecords, recordName];
-      StorageService.saveCustomRecords(updated);
+      StorageService.saveRecordTypes(updated);
       setCustomRecords(updated);
     }
     setTimeout(() => {
@@ -170,32 +200,32 @@ export const TemplateModule: React.FC = () => {
         )}
       </div>
 
-      <div className="space-y-6">
-        {/* Content Controls Section */}
-        <section className="space-y-4">
-          <div className="border-l-4 border-primary pl-4">
-            <h2 className="text-sm font-black text-primary uppercase tracking-widest">Trường dữ liệu (Content Controls)</h2>
-            <p className="text-xs text-muted-foreground mt-1 font-medium">Chèn các ô chứa thông tin văn bản. Add-in sẽ tự động điền giá trị vào các ô này.</p>
-          </div>
+      <div className="space-y-12">
+        {['Dự án', 'Công việc', 'Nhân sự', 'Vật liệu', 'Máy móc', 'PTN'].map((category) => (
+          <section key={category} className="space-y-4">
+            <div className="border-l-4 border-primary pl-4">
+              <h2 className="text-sm font-black text-primary uppercase tracking-widest">{category}</h2>
+            </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {contentControls.map((cc) => (
-              <button
-                key={cc.id}
-                onClick={() => insertContentControl(cc.id, cc.label)}
-                className="flex flex-col items-center justify-center p-6 bg-card border border-border rounded-2xl hover:border-primary hover:shadow-lg hover:shadow-primary/5 transition-all group relative overflow-hidden"
-              >
-                <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Plus size={14} className="text-primary" />
-                </div>
-                <div className="p-3 bg-muted rounded-xl mb-4 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                  <cc.icon size={24} />
-                </div>
-                <span className="text-sm font-bold text-center">{cc.label}</span>
-              </button>
-            ))}
-          </div>
-        </section>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {contentControls.filter(cc => cc.category === category).map((cc) => (
+                <button
+                  key={cc.id}
+                  onClick={() => insertContentControl(cc.id, cc.label)}
+                  className="flex flex-col items-center justify-center p-6 bg-card border border-border rounded-2xl hover:border-primary hover:shadow-lg hover:shadow-primary/5 transition-all group relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Plus size={14} className="text-primary" />
+                  </div>
+                  <div className="p-3 bg-muted rounded-xl mb-4 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                    <cc.icon size={24} />
+                  </div>
+                  <span className="text-sm font-bold text-center">{cc.label}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        ))}
 
         {/* Bookmarks Section */}
         <section className="space-y-4 pt-6">

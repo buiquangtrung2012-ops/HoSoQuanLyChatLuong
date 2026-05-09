@@ -59,7 +59,6 @@ export interface Lab {
   name: string;
   lasxd: string;
   expiryDate: string;
-  personnel: string;
   equipment: string;
 }
 

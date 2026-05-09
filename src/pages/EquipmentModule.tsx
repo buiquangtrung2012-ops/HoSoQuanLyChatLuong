@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Truck, Search, Plus, Calendar, ShieldCheck, Save } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Truck, Search, Plus, Calendar, ShieldCheck, Save, Trash2 } from 'lucide-react';
 import { Modal } from '../components/Modal';
+import { StorageService } from '../services/storageService';
 
 const initialEquipment = [
   { name: "Cần trục tháp POTAIN", serial: "PT-2024-X", lastCheck: "01/01/2026", expiry: "01/01/2027" },
@@ -9,7 +10,7 @@ const initialEquipment = [
 ];
 
 export const EquipmentModule: React.FC = () => {
-  const [equipment, setEquipment] = useState(initialEquipment);
+  const [equipment, setEquipment] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newEquip, setNewEquip] = useState({
     name: '',
@@ -18,10 +19,31 @@ export const EquipmentModule: React.FC = () => {
     expiry: '',
   });
 
+  useEffect(() => {
+    const saved = StorageService.get('hoso_equipment');
+    if (saved && saved.length > 0) {
+      setEquipment(saved);
+    } else {
+      setEquipment(initialEquipment);
+      StorageService.save('hoso_equipment', initialEquipment);
+    }
+  }, []);
+
   const handleAdd = () => {
-    setEquipment([newEquip, ...equipment]);
+    const updated = [newEquip, ...equipment];
+    setEquipment(updated);
+    StorageService.save('hoso_equipment', updated);
     setIsModalOpen(false);
     setNewEquip({ name: '', serial: '', lastCheck: '', expiry: '' });
+  };
+
+  const handleDelete = (index: number) => {
+    if (confirm('Bạn có chắc chắn muốn xóa thiết bị này?')) {
+      const updated = [...equipment];
+      updated.splice(index, 1);
+      setEquipment(updated);
+      StorageService.save('hoso_equipment', updated);
+    }
   };
 
   return (
@@ -58,6 +80,7 @@ export const EquipmentModule: React.FC = () => {
                 <th className="px-6 py-3">Số Serial / Biển số</th>
                 <th className="px-6 py-3">Ngày kiểm định</th>
                 <th className="px-6 py-3">Hiệu lực đến</th>
+                <th className="px-6 py-3 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -67,6 +90,15 @@ export const EquipmentModule: React.FC = () => {
                   <td className="px-6 py-4 font-mono text-xs">{item.serial}</td>
                   <td className="px-6 py-4 text-muted-foreground">{item.lastCheck}</td>
                   <td className="px-6 py-4 font-medium text-primary">{item.expiry}</td>
+                  <td className="px-6 py-4 text-right">
+                    <button 
+                      onClick={() => handleDelete(i)}
+                      className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                      title="Xóa thiết bị"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, Save } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, Save, Trash2 } from 'lucide-react';
 import type { WorkItem } from '../types';
 import { Modal } from '../components/Modal';
+import { StorageService } from '../services/storageService';
 
 const initialWorkItems: WorkItem[] = [
   { id: '1', line: 'Tuyến Lộ 1', category: 'Phần móng', name: 'Lắp dựng móng đúc sẵn M1', code: 'MC-001', unit: 'Cái', quantity: 24, startDate: '2026-05-01', inspectionDate: '2026-05-03' },
@@ -11,7 +12,7 @@ const initialWorkItems: WorkItem[] = [
 ];
 
 export const WorkItemsModule: React.FC = () => {
-  const [workItems, setWorkItems] = useState<WorkItem[]>(initialWorkItems);
+  const [workItems, setWorkItems] = useState<WorkItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newItem, setNewItem] = useState<Partial<WorkItem>>({
     line: 'Tuyến Lộ 1',
@@ -22,12 +23,24 @@ export const WorkItemsModule: React.FC = () => {
     inspectionDate: new Date().toISOString().split('T')[0],
   });
 
+  useEffect(() => {
+    const saved = StorageService.getWorkItems();
+    if (saved && saved.length > 0) {
+      setWorkItems(saved);
+    } else {
+      setWorkItems(initialWorkItems);
+      StorageService.saveWorkItems(initialWorkItems);
+    }
+  }, []);
+
   const handleAdd = () => {
     const item: WorkItem = {
       ...newItem as WorkItem,
       id: Math.random().toString(36).substr(2, 9),
     };
-    setWorkItems([item, ...workItems]);
+    const updated = [item, ...workItems];
+    setWorkItems(updated);
+    StorageService.saveWorkItems(updated);
     setIsModalOpen(false);
     // Reset form
     setNewItem({
@@ -38,6 +51,14 @@ export const WorkItemsModule: React.FC = () => {
       startDate: new Date().toISOString().split('T')[0],
       inspectionDate: new Date().toISOString().split('T')[0],
     });
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Bạn có chắc chắn muốn xóa công việc này?')) {
+      const updated = workItems.filter(item => item.id !== id);
+      setWorkItems(updated);
+      StorageService.saveWorkItems(updated);
+    }
   };
 
   return (
@@ -93,7 +114,16 @@ export const WorkItemsModule: React.FC = () => {
                   <td className="px-6 py-4">{item.quantity} {item.unit}</td>
                   <td className="px-6 py-4">{item.inspectionDate}</td>
                   <td className="px-6 py-4 text-right">
-                    <button className="text-primary hover:underline font-medium">Chi tiết</button>
+                    <div className="flex items-center justify-end space-x-2">
+                      <button className="text-primary hover:underline font-medium text-xs">Chi tiết</button>
+                      <button 
+                        onClick={() => handleDelete(item.id)}
+                        className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                        title="Xóa công việc"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

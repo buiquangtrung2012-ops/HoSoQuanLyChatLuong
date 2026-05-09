@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Package, Search, Plus, Filter, Tag, Save } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Package, Search, Plus, Filter, Tag, Save, Trash2 } from 'lucide-react';
 import { Modal } from '../components/Modal';
+import { StorageService } from '../services/storageService';
 
 const initialMaterials = [
   { name: "Cột đèn thép H=8m mạ kẽm", source: "Hapulico", lot: "LOT-CP-001", qty: "24 Cột" },
@@ -10,7 +11,7 @@ const initialMaterials = [
 ];
 
 export const MaterialModule: React.FC = () => {
-  const [materials, setMaterials] = useState(initialMaterials);
+  const [materials, setMaterials] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newMaterial, setNewMaterial] = useState({
     name: '',
@@ -19,10 +20,31 @@ export const MaterialModule: React.FC = () => {
     qty: '',
   });
 
+  useEffect(() => {
+    const saved = StorageService.get('hoso_materials');
+    if (saved && saved.length > 0) {
+      setMaterials(saved);
+    } else {
+      setMaterials(initialMaterials);
+      StorageService.save('hoso_materials', initialMaterials);
+    }
+  }, []);
+
   const handleAdd = () => {
-    setMaterials([newMaterial, ...materials]);
+    const updated = [newMaterial, ...materials];
+    setMaterials(updated);
+    StorageService.save('hoso_materials', updated);
     setIsModalOpen(false);
     setNewMaterial({ name: '', source: '', lot: '', qty: '' });
+  };
+
+  const handleDelete = (index: number) => {
+    if (confirm('Bạn có chắc chắn muốn xóa vật liệu này?')) {
+      const updated = [...materials];
+      updated.splice(index, 1);
+      setMaterials(updated);
+      StorageService.save('hoso_materials', updated);
+    }
   };
 
   return (
@@ -62,6 +84,7 @@ export const MaterialModule: React.FC = () => {
                 <th className="px-6 py-3">Nguồn gốc/Nhà cung cấp</th>
                 <th className="px-6 py-3">Lô/CO-CQ</th>
                 <th className="px-6 py-3">Số lượng</th>
+                <th className="px-6 py-3 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -73,6 +96,15 @@ export const MaterialModule: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 text-xs font-mono">{item.lot}</td>
                   <td className="px-6 py-4">{item.qty}</td>
+                  <td className="px-6 py-4 text-right">
+                    <button 
+                      onClick={() => handleDelete(i)}
+                      className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                      title="Xóa vật liệu"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

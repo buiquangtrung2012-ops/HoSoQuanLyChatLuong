@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Plus, Search, MoreHorizontal, UserPlus, Save } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Search, MoreHorizontal, UserPlus, Save, Trash2 } from 'lucide-react';
 import type { Personnel, PersonnelRole } from '../types';
 import { Modal } from '../components/Modal';
+import { StorageService } from '../services/storageService';
 
 const initialPersonnel: Personnel[] = [
   { id: '1', name: 'Nguyễn Văn A', position: 'Chỉ huy trưởng', unit: 'Coteccons', role: 'Chỉ huy trưởng' },
@@ -11,7 +12,7 @@ const initialPersonnel: Personnel[] = [
 ];
 
 export const PersonnelModule: React.FC = () => {
-  const [personnelList, setPersonnelList] = useState<Personnel[]>(initialPersonnel);
+  const [personnelList, setPersonnelList] = useState<Personnel[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newPerson, setNewPerson] = useState<Partial<Personnel>>({
     name: '',
@@ -20,14 +21,34 @@ export const PersonnelModule: React.FC = () => {
     role: 'Tư vấn giám sát',
   });
 
+  useEffect(() => {
+    const saved = StorageService.get('hoso_personnel');
+    if (saved && saved.length > 0) {
+      setPersonnelList(saved);
+    } else {
+      setPersonnelList(initialPersonnel);
+      StorageService.save('hoso_personnel', initialPersonnel);
+    }
+  }, []);
+
   const handleAdd = () => {
     const person: Personnel = {
       ...newPerson as Personnel,
       id: Math.random().toString(36).substr(2, 9),
     };
-    setPersonnelList([person, ...personnelList]);
+    const updated = [person, ...personnelList];
+    setPersonnelList(updated);
+    StorageService.save('hoso_personnel', updated);
     setIsModalOpen(false);
     setNewPerson({ name: '', position: '', unit: '', role: 'Tư vấn giám sát' });
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Bạn có chắc chắn muốn xóa nhân sự này?')) {
+      const updated = personnelList.filter(p => p.id !== id);
+      setPersonnelList(updated);
+      StorageService.save('hoso_personnel', updated);
+    }
   };
 
   return (
@@ -79,9 +100,18 @@ export const PersonnelModule: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button className="p-1 hover:bg-muted rounded-md">
-                      <MoreHorizontal size={18} />
-                    </button>
+                    <div className="flex items-center justify-end space-x-2">
+                      <button 
+                        onClick={() => handleDelete(person.id)}
+                        className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                        title="Xóa nhân sự"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                      <button className="p-1.5 hover:bg-muted rounded-md text-muted-foreground">
+                        <MoreHorizontal size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

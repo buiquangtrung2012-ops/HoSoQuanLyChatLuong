@@ -1,4 +1,7 @@
-import { RotateCcw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { FileText, Download, Eye, Play, CheckCircle2, AlertTriangle, X, Settings2, Sparkles, RefreshCw, Trash2, RotateCcw, User, Layers, Package, Truck, FlaskConical } from 'lucide-react';
+import { AiService } from '../services/AiService';
+import { StorageService } from '../services/storageService';
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import { saveAs } from 'file-saver';
@@ -8,10 +11,24 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
   const [selectedType, setSelectedType] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // Source data for auto-fill
+  const [workItems, setWorkItems] = useState<any[]>([]);
+  const [personnel, setPersonnel] = useState<any[]>([]);
+  const [materials, setMaterials] = useState<any[]>([]);
+  const [equipment, setEquipment] = useState<any[]>([]);
+  const [labs, setLabs] = useState<any[]>([]);
+
   useEffect(() => {
     const records = StorageService.getRecordTypes();
     setRecordTypes(records);
     if (records.length > 0) setSelectedType(records[0]);
+
+    // Load source data
+    setWorkItems(StorageService.getWorkItems());
+    setPersonnel(StorageService.get('hoso_personnel') || []);
+    setMaterials(StorageService.get('hoso_materials') || []);
+    setEquipment(StorageService.get('hoso_equipment') || []);
+    setLabs(StorageService.get('hoso_labs') || []);
   }, []);
 
   const handleDeleteRecord = (e: React.MouseEvent, type: string) => {
@@ -41,7 +58,27 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
     recordNumber: 'NTCV-2026-001',
     content: 'Lắp dựng cột đèn H=8m tuyến lộ 1',
     inspectionDate: '05/05/2026',
-    standard: 'TCVN 4474:1987'
+    standard: 'TCVN 4474:1987',
+    // Dynamic fields
+    workName: '',
+    workCode: '',
+    workLine: '',
+    workCategory: '',
+    workQty: '',
+    workUnit: '',
+    staffName: '',
+    staffPosition: '',
+    staffUnit: '',
+    matName: '',
+    matSource: '',
+    matLot: '',
+    matQty: '',
+    equipName: '',
+    equipSerial: '',
+    equipExpiry: '',
+    labName: '',
+    labCode: '',
+    labExpiry: ''
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -49,10 +86,60 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const fillWorkData = (item: any) => {
+    setFormData(prev => ({
+      ...prev,
+      content: item.name,
+      workName: item.name,
+      workCode: item.code,
+      workLine: item.line,
+      workCategory: item.category,
+      workQty: item.quantity.toString(),
+      workUnit: item.unit,
+      inspectionDate: item.inspectionDate.split('-').reverse().join('/')
+    }));
+  };
+
+  const fillStaffData = (item: any) => {
+    setFormData(prev => ({
+      ...prev,
+      staffName: item.name,
+      staffPosition: item.position,
+      staffUnit: item.unit
+    }));
+  };
+
+  const fillMaterialData = (item: any) => {
+    setFormData(prev => ({
+      ...prev,
+      matName: item.name,
+      matSource: item.source,
+      matLot: item.lot,
+      matQty: item.qty
+    }));
+  };
+
+  const fillEquipData = (item: any) => {
+    setFormData(prev => ({
+      ...prev,
+      equipName: item.name,
+      equipSerial: item.serial,
+      equipExpiry: item.expiry
+    }));
+  };
+
+  const fillLabData = (item: any) => {
+    setFormData(prev => ({
+      ...prev,
+      labName: item.name,
+      labCode: item.code,
+      labExpiry: item.expiry
+    }));
+  };
+
   const handleExport = async () => {
     setIsGenerating(true);
     
-    // Improved detection: check if window.Word is available or if Office is in Word host
     // @ts-ignore
     const isWordHost = window.Office && window.Office.context && (window.Office.context.host === 'Word' || window.Office.context.host === 'WordOnline');
     // @ts-ignore
@@ -66,13 +153,10 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
         await context.sync();
 
         for (let item of contentControls.items) {
-          if (item.tag === 'projectName') item.insertText(formData.projectName, 'Replace');
-          if (item.tag === 'investor') item.insertText(formData.investor, 'Replace');
-          if (item.tag === 'contractor') item.insertText(formData.contractor, 'Replace');
-          if (item.tag === 'recordNumber') item.insertText(formData.recordNumber, 'Replace');
-          if (item.tag === 'inspectionDate') item.insertText(formData.inspectionDate, 'Replace');
-          if (item.tag === 'content') item.insertText(formData.content, 'Replace');
-          if (item.tag === 'standard') item.insertText(formData.standard, 'Replace');
+          const tag = item.tag;
+          if (formData[tag as keyof typeof formData]) {
+            item.insertText(formData[tag as keyof typeof formData], 'Replace');
+          }
         }
 
         await context.sync();
@@ -84,30 +168,8 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
         alert('Có lỗi xảy ra khi tương tác với Word.');
       });
     } else {
-      // Browser-based fallback using docxtemplater
-      try {
-        // Since we don't have a physical template file to read easily in this environment without a server,
-        // we'll simulate the download or explain that for real templates, they need to be uploaded.
-        // For now, let's at least show that the "Detection" works and we CAN generate a file.
-        
-        const zip = new PizZip();
-        const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-        
-        // This is a very simplified example as we don't have the actual .docx binary here
-        // In a real app, you'd fetch the template.docx as an arraybuffer
-        alert(`Đang ở chế độ Web. Đang khởi tạo tải xuống file Word cho mẫu: ${selectedType}`);
-        
-        // Simulating a delay
-        setTimeout(() => {
-          setIsGenerating(false);
-          alert('Tính năng tải file mẫu đã sẵn sàng. Hệ thống sẽ tải về bản nháp của: ' + selectedType);
-        }, 1500);
-
-      } catch (error) {
-        console.error(error);
-        setIsGenerating(false);
-        alert('Lỗi khi tạo file Word trên trình duyệt.');
-      }
+      setIsGenerating(false);
+      alert('Đang ở chế độ Web. Tính năng điền dữ liệu tự động yêu cầu mở trong Microsoft Word.');
     }
   };
 
@@ -132,150 +194,208 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1 space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-1 space-y-6">
           <div className="bg-card rounded-xl border p-4 shadow-sm">
-            <h3 className="text-sm font-bold text-primary uppercase tracking-wider mb-4 flex items-center">
-              <FileText size={18} className="mr-2" /> Loại hồ sơ chiếu sáng
+            <h3 className="text-xs font-bold text-primary uppercase tracking-wider mb-4 flex items-center">
+              <FileText size={16} className="mr-2" /> Danh mục Hồ sơ
             </h3>
-            <div className="space-y-1 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar text-sm">
+            <div className="space-y-1 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar text-sm">
               {recordTypes.map((type) => (
                 <div key={type} className="group relative">
                   <button
                     onClick={() => setSelectedType(type)}
-                    onDoubleClick={handleExport}
-                    className={`w-full text-left px-4 py-3 rounded-lg transition-all flex items-center justify-between ${
+                    className={`w-full text-left px-3 py-2.5 rounded-lg transition-all flex items-center justify-between ${
                       selectedType === type 
                         ? 'bg-primary text-primary-foreground shadow-md' 
                         : 'hover:bg-accent text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <span className="text-sm font-medium pr-8">{type}</span>
-                    {selectedType === type && <Play size={14} className="flex-shrink-0" />}
+                    <span className="text-[11px] font-medium pr-6">{type}</span>
+                    {selectedType === type && <Play size={12} className="flex-shrink-0" />}
                   </button>
-                  
                   <button
                     onClick={(e) => handleDeleteRecord(e, type)}
-                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md transition-opacity ${
+                    className={`absolute right-1 top-1/2 -translate-y-1/2 p-1.5 rounded-md transition-opacity ${
                       selectedType === type ? 'text-primary-foreground/70 hover:text-primary-foreground' : 'text-destructive hover:bg-destructive/10'
                     }`}
-                    title="Xóa mẫu này"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={14} />
                   </button>
                 </div>
               ))}
             </div>
           </div>
+
+          <div className="bg-primary/5 rounded-xl border border-primary/10 p-4 space-y-4">
+            <h3 className="text-xs font-bold text-primary uppercase tracking-wider flex items-center">
+              <Sparkles size={16} className="mr-2" /> Lấy dữ liệu nhanh
+            </h3>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] font-bold text-muted-foreground uppercase flex items-center mb-1">
+                  <Layers size={12} className="mr-1" /> Chọn Công việc
+                </label>
+                <select 
+                  className="w-full p-2 bg-background border rounded-lg text-xs"
+                  onChange={(e) => {
+                    const item = workItems.find(w => w.id === e.target.value);
+                    if (item) fillWorkData(item);
+                  }}
+                >
+                  <option value="">-- Chọn công việc --</option>
+                  {workItems.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-muted-foreground uppercase flex items-center mb-1">
+                  <User size={12} className="mr-1" /> Chọn Nhân sự
+                </label>
+                <select 
+                  className="w-full p-2 bg-background border rounded-lg text-xs"
+                  onChange={(e) => {
+                    const item = personnel.find(p => p.id === e.target.value);
+                    if (item) fillStaffData(item);
+                  }}
+                >
+                  <option value="">-- Chọn nhân sự --</option>
+                  {personnel.map(p => <option key={p.id} value={p.id}>{p.name} - {p.position}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-muted-foreground uppercase flex items-center mb-1">
+                  <Package size={12} className="mr-1" /> Chọn Vật liệu
+                </label>
+                <select 
+                  className="w-full p-2 bg-background border rounded-lg text-xs"
+                  onChange={(e) => {
+                    const item = materials[parseInt(e.target.value)];
+                    if (item) fillMaterialData(item);
+                  }}
+                >
+                  <option value="">-- Chọn vật liệu --</option>
+                  {materials.map((m, i) => <option key={i} value={i}>{m.name}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-muted-foreground uppercase flex items-center mb-1">
+                  <Truck size={12} className="mr-1" /> Chọn Máy móc
+                </label>
+                <select 
+                  className="w-full p-2 bg-background border rounded-lg text-xs"
+                  onChange={(e) => {
+                    const item = equipment[parseInt(e.target.value)];
+                    if (item) fillEquipData(item);
+                  }}
+                >
+                  <option value="">-- Chọn máy móc --</option>
+                  {equipment.map((e, i) => <option key={i} value={i}>{e.name}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-muted-foreground uppercase flex items-center mb-1">
+                  <FlaskConical size={12} className="mr-1" /> Chọn PTN
+                </label>
+                <select 
+                  className="w-full p-2 bg-background border rounded-lg text-xs"
+                  onChange={(e) => {
+                    const item = labs[parseInt(e.target.value)];
+                    if (item) fillLabData(item);
+                  }}
+                >
+                  <option value="">-- Chọn PTN --</option>
+                  {labs.map((l, i) => <option key={i} value={i}>{l.name}</option>)}
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-3 space-y-6">
           <div className="bg-card rounded-xl border p-6 shadow-sm space-y-6">
-            <div className="border-b pb-4">
-              <h2 className="text-xl font-bold text-primary">{selectedType}</h2>
-              <p className="text-xs text-muted-foreground mt-1">Thiết lập thông tin biên bản</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tên dự án</label>
-                <input 
-                  type="text" 
-                  name="projectName"
-                  value={formData.projectName}
-                  onChange={handleInputChange}
-                  className="w-full p-2.5 border rounded-lg bg-background text-sm focus:ring-2 focus:ring-primary/50 outline-none" 
-                />
+            <div className="border-b pb-4 flex justify-between items-end">
+              <div>
+                <h2 className="text-xl font-bold text-primary">{selectedType}</h2>
+                <p className="text-xs text-muted-foreground mt-1">Thông tin chi tiết biên bản sẽ được điền vào các Content Control tương ứng.</p>
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Số biên bản</label>
-                <input 
-                  type="text" 
-                  name="recordNumber"
-                  value={formData.recordNumber}
-                  onChange={handleInputChange}
-                  className="w-full p-2.5 border rounded-lg bg-background text-sm focus:ring-2 focus:ring-primary/50 outline-none" 
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Chủ đầu tư</label>
-                <input 
-                  type="text" 
-                  name="investor"
-                  value={formData.investor}
-                  onChange={handleInputChange}
-                  className="w-full p-2.5 border rounded-lg bg-background text-sm focus:ring-2 focus:ring-primary/50 outline-none" 
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Đơn vị thi công</label>
-                <input 
-                  type="text" 
-                  name="contractor"
-                  value={formData.contractor}
-                  onChange={handleInputChange}
-                  className="w-full p-2.5 border rounded-lg bg-background text-sm focus:ring-2 focus:ring-primary/50 outline-none" 
-                />
-              </div>
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Nội dung nghiệm thu</label>
-                <input 
-                  type="text" 
-                  name="content"
-                  value={formData.content}
-                  onChange={handleInputChange}
-                  className="w-full p-2.5 border rounded-lg bg-background text-sm focus:ring-2 focus:ring-primary/50 outline-none" 
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Ngày nghiệm thu</label>
-                <input 
-                  type="text" 
-                  name="inspectionDate"
-                  value={formData.inspectionDate}
-                  onChange={handleInputChange}
-                  className="w-full p-2.5 border rounded-lg bg-background text-sm focus:ring-2 focus:ring-primary/50 outline-none" 
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tiêu chuẩn áp dụng</label>
-                  <button 
-                    onClick={async () => {
-                      const suggestions = await AiService.suggestStandards(formData.content);
-                      if (suggestions.length > 0) {
-                        setFormData(prev => ({ ...prev, standard: suggestions[0] }));
-                      }
-                    }}
-                    className="flex items-center text-[10px] bg-purple-500/10 text-purple-600 px-2 py-0.5 rounded-full hover:bg-purple-500/20 transition-colors font-bold"
-                  >
-                    <Sparkles size={10} className="mr-1" /> Gợi ý AI
-                  </button>
-                </div>
-                <input 
-                  type="text"
-                  name="standard" 
-                  value={formData.standard} 
-                  onChange={handleInputChange} 
-                  className="w-full p-2.5 border rounded-lg bg-background text-sm focus:ring-2 focus:ring-primary/50 outline-none" 
-                />
-              </div>
-            </div>
-
-            <div className="pt-6 border-t flex justify-end space-x-3">
               <button 
                 onClick={handleExport}
                 disabled={isGenerating}
-                className="flex items-center px-8 py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 font-bold disabled:opacity-50"
+                className="flex items-center px-6 py-2.5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 font-bold disabled:opacity-50 text-sm"
               >
-                {isGenerating ? <RefreshCw size={18} className="mr-2 animate-spin" /> : <Play size={18} className="mr-2" />}
+                {isGenerating ? <RefreshCw size={18} className="mr-2 animate-spin" /> : <Download size={18} className="mr-2" />}
                 {isGenerating ? "Đang xử lý..." : "Xuất File Word"}
               </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Project Info */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase">Tên dự án</label>
+                <input name="projectName" value={formData.projectName} onChange={handleInputChange} className="w-full p-2 border rounded-lg bg-background text-xs" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase">Số biên bản</label>
+                <input name="recordNumber" value={formData.recordNumber} onChange={handleInputChange} className="w-full p-2 border rounded-lg bg-background text-xs" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase">Ngày nghiệm thu</label>
+                <input name="inspectionDate" value={formData.inspectionDate} onChange={handleInputChange} className="w-full p-2 border rounded-lg bg-background text-xs" />
+              </div>
+
+              {/* Work Details */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase text-primary">Tên công việc</label>
+                <input name="workName" value={formData.workName} onChange={handleInputChange} className="w-full p-2 border border-primary/30 rounded-lg bg-background text-xs" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase text-primary">Khối lượng</label>
+                <div className="flex space-x-1">
+                  <input name="workQty" value={formData.workQty} onChange={handleInputChange} className="flex-1 p-2 border border-primary/30 rounded-lg bg-background text-xs" />
+                  <input name="workUnit" value={formData.workUnit} onChange={handleInputChange} className="w-16 p-2 border border-primary/30 rounded-lg bg-background text-xs" placeholder="ĐVT" />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase text-primary">Tiêu chuẩn áp dụng</label>
+                <input name="standard" value={formData.standard} onChange={handleInputChange} className="w-full p-2 border border-primary/30 rounded-lg bg-background text-xs" />
+              </div>
+
+              {/* Personnel */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase text-orange-600">Họ tên nhân sự</label>
+                <input name="staffName" value={formData.staffName} onChange={handleInputChange} className="w-full p-2 border border-orange-200 rounded-lg bg-background text-xs" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase text-orange-600">Chức vụ</label>
+                <input name="staffPosition" value={formData.staffPosition} onChange={handleInputChange} className="w-full p-2 border border-orange-200 rounded-lg bg-background text-xs" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase text-orange-600">Đơn vị</label>
+                <input name="staffUnit" value={formData.staffUnit} onChange={handleInputChange} className="w-full p-2 border border-orange-200 rounded-lg bg-background text-xs" />
+              </div>
+
+              {/* Materials */}
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase text-green-600">Vật liệu</label>
+                <input name="matName" value={formData.matName} onChange={handleInputChange} className="w-full p-2 border border-green-200 rounded-lg bg-background text-xs" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase text-green-600">Nguồn gốc/Lô</label>
+                <input name="matSource" value={formData.matSource} onChange={handleInputChange} className="w-full p-2 border border-green-200 rounded-lg bg-background text-xs" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase text-green-600">Số lượng VL</label>
+                <input name="matQty" value={formData.matQty} onChange={handleInputChange} className="w-full p-2 border border-green-200 rounded-lg bg-background text-xs" />
+              </div>
             </div>
           </div>
         </div>
       </div>
-
     </div>
   );
 };
