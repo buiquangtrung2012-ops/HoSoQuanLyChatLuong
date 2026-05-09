@@ -24,10 +24,30 @@ const contentControls = [
   { id: 'workUnit', label: 'Đơn vị tính', icon: FileText, category: 'Công việc' },
   { id: 'workInspectDate', label: 'Ngày nghiệm thu', icon: Calendar, category: 'Công việc' },
 
-  // Thông tin Nhân sự
+  // Thông tin Nhân sự chung (cũ)
   { id: 'staffName', label: 'Tên Nhân sự', icon: User, category: 'Nhân sự' },
   { id: 'staffPosition', label: 'Chức vụ', icon: FileText, category: 'Nhân sự' },
   { id: 'staffUnit', label: 'Đơn vị công tác', icon: Building2, category: 'Nhân sự' },
+
+  // Thành phần tham gia (CĐT)
+  { id: 'cdt1_name', label: 'CĐT 1 - Tên', icon: User, category: 'Thành phần tham gia' },
+  { id: 'cdt1_pos', label: 'CĐT 1 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
+  { id: 'cdt2_name', label: 'CĐT 2 - Tên', icon: User, category: 'Thành phần tham gia' },
+  { id: 'cdt2_pos', label: 'CĐT 2 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
+
+  // Thành phần tham gia (Thi công)
+  { id: 'tc1_name', label: 'Thi công 1 - Tên', icon: User, category: 'Thành phần tham gia' },
+  { id: 'tc1_pos', label: 'Thi công 1 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
+  { id: 'tc2_name', label: 'Thi công 2 - Tên', icon: User, category: 'Thành phần tham gia' },
+  { id: 'tc2_pos', label: 'Thi công 2 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
+  { id: 'tc3_name', label: 'Thi công 3 - Tên', icon: User, category: 'Thành phần tham gia' },
+  { id: 'tc3_pos', label: 'Thi công 3 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
+
+  // Thành phần tham gia (Tư vấn)
+  { id: 'tv1_name', label: 'Tư vấn 1 - Tên', icon: User, category: 'Thành phần tham gia' },
+  { id: 'tv1_pos', label: 'Tư vấn 1 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
+  { id: 'tv2_name', label: 'Tư vấn 2 - Tên', icon: User, category: 'Thành phần tham gia' },
+  { id: 'tv2_pos', label: 'Tư vấn 2 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
 
   // Thông tin Vật liệu
   { id: 'matName', label: 'Tên Vật liệu', icon: Package, category: 'Vật liệu' },

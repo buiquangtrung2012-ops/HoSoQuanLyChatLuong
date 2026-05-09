@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, Eye, Play, CheckCircle2, AlertTriangle, X, Settings2, Sparkles, RefreshCw, Trash2, RotateCcw, User, Layers, Package, Truck, FlaskConical } from 'lucide-react';
+import { FileText, Download, Eye, Play, CheckCircle2, AlertTriangle, X, Settings2, Sparkles, RefreshCw, Trash2, RotateCcw, User, Users, Layers, Package, Truck, FlaskConical } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { AiService } from '../services/AiService';
 import { StorageService } from '../services/storageService';
@@ -86,8 +86,33 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
     equipExpiry: '',
     labName: '',
     labCode: '',
-    labExpiry: ''
+    labExpiry: '',
+    // Thành phần tham gia
+    cdt1_name: '', cdt1_pos: '',
+    cdt2_name: '', cdt2_pos: '',
+    tc1_name: '', tc1_pos: '',
+    tc2_name: '', tc2_pos: '',
+    tc3_name: '', tc3_pos: '',
+    tv1_name: '', tv1_pos: '',
+    tv2_name: '', tv2_pos: '',
   });
+
+  const handleParticipantSelect = (prefix: string, index: number, personId: string) => {
+    const person = personnel.find(p => p.id === personId);
+    if (person) {
+      setFormData(prev => ({
+        ...prev,
+        [`${prefix}${index}_name`]: person.name,
+        [`${prefix}${index}_pos`]: person.position,
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [`${prefix}${index}_name`]: '',
+        [`${prefix}${index}_pos`]: '',
+      }));
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -109,6 +134,7 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
   };
 
   const fillStaffData = (item: any) => {
+    // Legacy fill for single staff (kept for backward compatibility)
     setFormData(prev => ({
       ...prev,
       staffName: item.name,
@@ -256,21 +282,7 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
                 </select>
               </div>
 
-              <div>
-                <label className="text-[10px] font-bold text-muted-foreground uppercase flex items-center mb-1">
-                  <User size={12} className="mr-1" /> Chọn Nhân sự
-                </label>
-                <select 
-                  className="w-full p-2 bg-background border rounded-lg text-xs"
-                  onChange={(e) => {
-                    const item = personnel.find(p => p.id === e.target.value);
-                    if (item) fillStaffData(item);
-                  }}
-                >
-                  <option value="">-- Chọn nhân sự --</option>
-                  {personnel.map(p => <option key={p.id} value={p.id}>{p.name} - {p.position}</option>)}
-                </select>
-              </div>
+
 
               <div>
                 <label className="text-[10px] font-bold text-muted-foreground uppercase flex items-center mb-1">
@@ -372,18 +384,80 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
                 <input name="standard" value={formData.standard} onChange={handleInputChange} className="w-full p-2 border border-primary/30 rounded-lg bg-background text-xs" />
               </div>
 
-              {/* Personnel */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase text-orange-600">Họ tên nhân sự</label>
-                <input name="staffName" value={formData.staffName} onChange={handleInputChange} className="w-full p-2 border border-orange-200 rounded-lg bg-background text-xs" />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase text-orange-600">Chức vụ</label>
-                <input name="staffPosition" value={formData.staffPosition} onChange={handleInputChange} className="w-full p-2 border border-orange-200 rounded-lg bg-background text-xs" />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase text-orange-600">Đơn vị</label>
-                <input name="staffUnit" value={formData.staffUnit} onChange={handleInputChange} className="w-full p-2 border border-orange-200 rounded-lg bg-background text-xs" />
+              {/* Thành phần tham gia */}
+              <div className="md:col-span-2 lg:col-span-3 space-y-4 pt-4 border-t">
+                <h3 className="text-sm font-bold text-primary uppercase flex items-center">
+                  <Users size={16} className="mr-2" /> Thành phần tham gia
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  
+                  {/* CĐT */}
+                  <div className="bg-slate-50 p-3 rounded-xl border space-y-3">
+                    <h4 className="text-[11px] font-bold text-slate-700 uppercase">Chủ đầu tư</h4>
+                    {[1, 2].map(num => (
+                      <div key={`cdt${num}`} className="space-y-1 p-2 bg-white rounded border border-slate-100">
+                        <select 
+                          className="w-full p-1.5 border border-slate-200 rounded text-xs bg-slate-50"
+                          onChange={(e) => handleParticipantSelect('cdt', num, e.target.value)}
+                        >
+                          <option value="">-- Chọn CĐT {num} --</option>
+                          {personnel.filter(p => p.role?.includes('đầu tư')).map(p => (
+                            <option key={p.id} value={p.id}>{p.name} - {p.position}</option>
+                          ))}
+                        </select>
+                        <div className="flex space-x-1">
+                          <input name={`cdt${num}_name`} value={formData[`cdt${num}_name` as keyof typeof formData]} onChange={handleInputChange} placeholder="Họ tên" className="w-1/2 p-1.5 border border-slate-200 rounded text-xs" />
+                          <input name={`cdt${num}_pos`} value={formData[`cdt${num}_pos` as keyof typeof formData]} onChange={handleInputChange} placeholder="Chức vụ" className="w-1/2 p-1.5 border border-slate-200 rounded text-xs" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Thi công */}
+                  <div className="bg-blue-50 p-3 rounded-xl border border-blue-100 space-y-3">
+                    <h4 className="text-[11px] font-bold text-blue-800 uppercase">Đơn vị thi công</h4>
+                    {[1, 2, 3].map(num => (
+                      <div key={`tc${num}`} className="space-y-1 p-2 bg-white rounded border border-blue-50">
+                        <select 
+                          className="w-full p-1.5 border border-blue-200 rounded text-xs bg-blue-50"
+                          onChange={(e) => handleParticipantSelect('tc', num, e.target.value)}
+                        >
+                          <option value="">-- Chọn Thi công {num} --</option>
+                          {personnel.filter(p => p.role?.includes('Chỉ huy') || p.role?.includes('Kỹ thuật')).map(p => (
+                            <option key={p.id} value={p.id}>{p.name} - {p.position}</option>
+                          ))}
+                        </select>
+                        <div className="flex space-x-1">
+                          <input name={`tc${num}_name`} value={formData[`tc${num}_name` as keyof typeof formData]} onChange={handleInputChange} placeholder="Họ tên" className="w-1/2 p-1.5 border border-blue-200 rounded text-xs" />
+                          <input name={`tc${num}_pos`} value={formData[`tc${num}_pos` as keyof typeof formData]} onChange={handleInputChange} placeholder="Chức vụ" className="w-1/2 p-1.5 border border-blue-200 rounded text-xs" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Tư vấn */}
+                  <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-100 space-y-3">
+                    <h4 className="text-[11px] font-bold text-emerald-800 uppercase">Tư vấn giám sát/TK</h4>
+                    {[1, 2].map(num => (
+                      <div key={`tv${num}`} className="space-y-1 p-2 bg-white rounded border border-emerald-50">
+                        <select 
+                          className="w-full p-1.5 border border-emerald-200 rounded text-xs bg-emerald-50"
+                          onChange={(e) => handleParticipantSelect('tv', num, e.target.value)}
+                        >
+                          <option value="">-- Chọn Tư vấn {num} --</option>
+                          {personnel.filter(p => p.role?.includes('giám sát') || p.role?.includes('Tư vấn')).map(p => (
+                            <option key={p.id} value={p.id}>{p.name} - {p.position}</option>
+                          ))}
+                        </select>
+                        <div className="flex space-x-1">
+                          <input name={`tv${num}_name`} value={formData[`tv${num}_name` as keyof typeof formData]} onChange={handleInputChange} placeholder="Họ tên" className="w-1/2 p-1.5 border border-emerald-200 rounded text-xs" />
+                          <input name={`tv${num}_pos`} value={formData[`tv${num}_pos` as keyof typeof formData]} onChange={handleInputChange} placeholder="Chức vụ" className="w-1/2 p-1.5 border border-emerald-200 rounded text-xs" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                </div>
               </div>
 
               {/* Materials */}
