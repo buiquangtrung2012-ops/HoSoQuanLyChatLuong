@@ -200,27 +200,30 @@ export const RecordsModule: React.FC<{ setActiveTab: (tab: string) => void }> = 
             <h3 className="text-xs font-bold text-primary uppercase tracking-wider mb-4 flex items-center">
               <FileText size={16} className="mr-2" /> Danh mục Hồ sơ
             </h3>
-            <div className="space-y-1 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar text-sm">
+            <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar text-sm">
               {recordTypes.map((type) => (
-                <div key={type} className="group relative">
+                <div key={type} className="flex items-center space-x-2 group">
                   <button
                     onClick={() => setSelectedType(type)}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg transition-all flex items-center justify-between ${
+                    className={`flex-1 text-left px-4 py-3 rounded-xl transition-all flex items-center justify-between border ${
                       selectedType === type 
-                        ? 'bg-primary text-primary-foreground shadow-md' 
-                        : 'hover:bg-accent text-muted-foreground hover:text-foreground'
+                        ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 ring-2 ring-primary/20' 
+                        : 'bg-card border-transparent hover:border-border text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    <span className="text-[11px] font-medium pr-6">{type}</span>
-                    {selectedType === type && <Play size={12} className="flex-shrink-0" />}
+                    <span className="text-[12px] font-bold leading-snug">{type}</span>
+                    {selectedType === type && <Play size={14} className="flex-shrink-0 ml-2" />}
                   </button>
                   <button
-                    onClick={(e) => handleDeleteRecord(e, type)}
-                    className={`absolute right-1 top-1/2 -translate-y-1/2 p-1.5 rounded-md transition-opacity ${
-                      selectedType === type ? 'text-primary-foreground/70 hover:text-primary-foreground' : 'text-destructive hover:bg-destructive/10'
-                    }`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleDeleteRecord(e, type);
+                    }}
+                    className="p-3 text-destructive hover:bg-destructive/10 rounded-xl transition-all opacity-0 group-hover:opacity-100 flex-shrink-0 border border-transparent hover:border-destructive/20"
+                    title="Xóa mẫu biên bản này"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={18} />
                   </button>
                 </div>
               ))}
