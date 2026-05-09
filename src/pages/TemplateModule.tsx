@@ -1,20 +1,7 @@
 import React, { useState } from 'react';
 import { 
-  FileText, 
-  Hash, 
-  Briefcase, 
-  Building2, 
-  User, 
-  Users, 
-  Calendar, 
-  Layout,
-  Package,
-  Truck,
-  Plus,
-  RefreshCw,
-  Save,
-  CheckCircle2,
-  Trash2
+  FileText, Hash, Briefcase, Building2, User, Users, Calendar, Plus, Save, 
+  Layers, Layout, MapPin, Package, Truck, FlaskConical, RefreshCw, Trash2
 } from 'lucide-react';
 import { StorageService } from '../services/storageService';
 import { useEffect } from 'react';
