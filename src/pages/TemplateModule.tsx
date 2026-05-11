@@ -359,7 +359,8 @@ export const TemplateModule: React.FC = () => {
       const range = context.document.getSelection();
       const table = range.insertTable(totalTableRows, numCols, 'After');
       table.style = 'Table Normal'; // No border
-      table.load('id');
+      table.alignment = 'Centered';
+      table.load('id, rows');
       await context.sync();
 
       for (let i = 0; i < numItems; i++) {
@@ -374,6 +375,8 @@ export const TemplateModule: React.FC = () => {
         p1.insertText(colData.header, 'Replace');
         p1.font.bold = true;
         p1.alignment = 'Centered';
+        p1.spacingBefore = 0;
+        p1.spacingAfter = 0;
         
         if (colData.sub) {
           p1.insertText('\n' + colData.sub, 'End');
@@ -387,8 +390,13 @@ export const TemplateModule: React.FC = () => {
         p2.font.italic = true;
         p2.alignment = 'Centered';
         p2.font.size = 9;
+        p2.spacingBefore = 0;
+        p2.spacingAfter = 0;
 
-        // Row 2: Blank space for signing (already blank)
+        // Row 2: Blank space for signing (Red boxes area)
+        // Set fixed height for this row
+        const signingRow = table.rows.getItemAt(startRowIdx + 2);
+        signingRow.height = 70; // Tăng chiều cao lên ~2.5cm (72 points = 1 inch = 2.54cm)
       }
 
       await context.sync();
