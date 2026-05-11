@@ -8,6 +8,7 @@ export interface Project {
   supervisor: string;
   designer: string;
   contractNumber: string;
+  packageName: string;
   location: string;
   startDate: string;
   endDate: string;

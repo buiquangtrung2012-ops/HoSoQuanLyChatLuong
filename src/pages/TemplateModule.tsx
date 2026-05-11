@@ -287,6 +287,14 @@ export const TemplateModule: React.FC = () => {
               color: existingFont.color
             });
             
+            // Hide borders (No border)
+            table.borders.insideHorizontal.style = 'None';
+            table.borders.insideVertical.style = 'None';
+            table.borders.outsideTop.style = 'None';
+            table.borders.outsideBottom.style = 'None';
+            table.borders.outsideLeft.style = 'None';
+            table.borders.outsideRight.style = 'None';
+            
             for (let i = 0; i < rowCount; i++) {
               const s = actualSigners[i] || {};
               const honorific = resolveGender(s.name || '', s.gender) + ': ';
@@ -364,6 +372,14 @@ export const TemplateModule: React.FC = () => {
         italic: userFont.italic,
         color: userFont.color
       });
+      
+      // Hide borders (No border)
+      table.borders.insideHorizontal.style = 'None';
+      table.borders.insideVertical.style = 'None';
+      table.borders.outsideTop.style = 'None';
+      table.borders.outsideBottom.style = 'None';
+      table.borders.outsideLeft.style = 'None';
+      table.borders.outsideRight.style = 'None';
       
       for (let i = 0; i < rowCount; i++) {
         const s = signers[i] || {};

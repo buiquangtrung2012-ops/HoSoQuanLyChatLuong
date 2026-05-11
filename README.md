@@ -60,9 +60,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 > 💡 **Tại sao phải 2 bước?** Bước 1 chỉ lưu source code lên `main`. Bước 2 mới thực sự **build** ra file tĩnh và **deploy** lên `gh-pages` — là nhánh mà GitHub Pages phục vụ. Thiếu Bước 2 thì Add-in vẫn cũ.
 
-### Phiên bản v11052026.1610 (Mới nhất)
-- **Định dạng theo vị trí con trỏ:** Bảng Thành phần tham gia giờ đây sẽ tự động kế thừa định dạng (Font chữ, cỡ chữ, bôi đậm/không bôi đậm) từ chính dòng mà bạn đang đặt con trỏ chuột.
-- **Duy trì định dạng khi cập nhật:** Khi nhấn nút **Cập nhật dữ liệu (Sét)**, các bảng động sẽ ghi nhớ và duy trì định dạng mà bạn đã thiết lập trước đó.
+### Phiên bản v11052026.1615 (Mới nhất)
+- **Ẩn viền bảng tuyệt đối (No Border):** Các bảng Thành phần tham gia giờ đây được thiết lập ẩn toàn bộ viền ngay khi chèn và khi làm mới.
+- **Thêm trường Gói thầu:** Bổ sung ô nhập "Tên gói thầu" trong Tab **Dự án**, ngay sau tên dự án để quản lý thông tin chi tiết hơn.
 - **Tắt kiểm tra chính tả:** Bổ sung `spellCheck={false}` trên toàn bộ các input/textarea.
 - **Tính năng Chỉnh sửa:** Triển khai nút "Sửa" và logic cập nhật dữ liệu cho tất cả các module.
 - **Gộp Chức vụ/Vai trò:** Trong quản lý nhân sự, gộp 2 trường này thành một để tối ưu giao diện.

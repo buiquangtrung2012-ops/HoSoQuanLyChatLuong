@@ -14,6 +14,7 @@ export const ProjectModule: React.FC = () => {
     supervisor: 'Công ty Tư vấn Giám sát XYZ',
     designer: 'Công ty Thiết kế DEF',
     contractNumber: '123/HĐ-MB',
+    packageName: 'Gói thầu số 01: Thi công hệ thống chiếu sáng',
     location: 'Đường Lê Lợi, Quận 1, TP.HCM',
     startDate: '2026-05-01',
     endDate: '2027-12-31',
@@ -99,8 +100,9 @@ export const ProjectModule: React.FC = () => {
       </div>
 
       <div className="bg-card rounded-xl border shadow-sm p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2 md:col-span-2">
-               <input 
+         <div className="space-y-2 md:col-span-2">
+            <label className="text-sm font-medium">Tên dự án</label>
+            <input 
               name="name"
               value={project.name}
               onChange={handleChange}
@@ -108,6 +110,19 @@ export const ProjectModule: React.FC = () => {
               autoComplete="off"
               className="w-full p-2.5 border rounded-lg bg-background focus:ring-2 focus:ring-primary/50 outline-none"
               placeholder="Nhập tên dự án..."
+            />
+          </div>
+
+          <div className="space-y-2 md:col-span-2">
+            <label className="text-sm font-medium">Tên gói thầu</label>
+            <input 
+              name="packageName"
+              value={project.packageName}
+              onChange={handleChange}
+              spellCheck={false}
+              autoComplete="off"
+              className="w-full p-2.5 border rounded-lg bg-background focus:ring-2 focus:ring-primary/50 outline-none"
+              placeholder="Nhập tên gói thầu..."
             />
           </div>
   
