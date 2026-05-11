@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, MoreHorizontal, UserPlus, Save, Trash2, AlertCircle } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, UserPlus, Save, Trash2, AlertCircle, Edit2 } from 'lucide-react';
 import type { Personnel, PersonnelRole } from '../types';
 import { Modal } from '../components/Modal';
 import { StorageService } from '../services/storageService';
@@ -133,7 +133,7 @@ export const PersonnelModule: React.FC = () => {
                         className="p-1.5 text-primary hover:bg-primary/10 rounded-md transition-colors"
                         title="Sửa nhân sự"
                       >
-                        <Plus size={16} className="rotate-45" /> {/* Just an icon for edit or use Lucide Edit */}
+                        <Edit2 size={16} />
                       </button>
                       <button 
                         onClick={() => handleDelete(person.id)}

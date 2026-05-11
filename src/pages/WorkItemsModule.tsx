@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, Save, Trash2 } from 'lucide-react';
+import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, Save, Trash2, Edit2 } from 'lucide-react';
 import type { WorkItem } from '../types';
 import { Modal } from '../components/Modal';
 import { StorageService } from '../services/storageService';
@@ -145,7 +145,7 @@ export const WorkItemsModule: React.FC = () => {
                         className="p-1.5 text-primary hover:bg-primary/10 rounded-md transition-colors"
                         title="Sửa công việc"
                       >
-                        <Plus size={16} className="rotate-45" />
+                        <Edit2 size={16} />
                       </button>
                       <button 
                         onClick={() => handleDelete(item.id)}

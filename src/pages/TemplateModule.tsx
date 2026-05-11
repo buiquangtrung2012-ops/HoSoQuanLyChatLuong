@@ -393,54 +393,50 @@ export const TemplateModule: React.FC = () => {
 
     await context.sync();
 
-    // ===== Format table =====
-    for (let r = 0; r < totalRows; r++) {
-      const row = table.rows.getItemAt(r);
-      if (r % numRowsPerItem === 2) {
+    // ===== Final Aggressive Formatting Pass =====
+    table.load('rows/items/cells/items/body/paragraphs/items');
+    await context.sync();
+
+    table.rows.items.forEach((row: any, rIdx: number) => {
+      // Set Heights
+      if (rIdx % numRowsPerItem === 2) {
         row.heightRule = 'Exactly';
-        row.height = 140; // ~5cm
+        row.height = 150; // Increased
       } else {
         row.heightRule = 'Exactly';
-        row.height = 25;
+        row.height = 24;
       }
 
-      for (let c = 0; c < numCols; c++) {
-        const cell = table.getCell(r, c);
-        try { cell.verticalAlignment = 'Center'; } catch {}
-        
-        // Clear padding
+      row.cells.items.forEach((cell: any) => {
+        cell.verticalAlignment = 'Center';
         cell.topPadding = 0;
         cell.bottomPadding = 0;
         cell.leftPadding = 0;
         cell.rightPadding = 0;
 
-        const paragraphs = cell.body.paragraphs;
-        paragraphs.load("items");
-        await context.sync();
-
-        for (const p of paragraphs.items) {
-          // Force alignment and spacing
+        cell.body.paragraphs.items.forEach((p: any) => {
+          // Reset style to Normal to clear any weird formatting
+          try { p.style = 'Normal'; } catch {}
+          
           p.set({
             alignment: 'Centered',
             leftIndent: 0,
             rightIndent: 0,
             firstLineIndent: 0,
-            spaceBefore: 0,
-            spaceAfter: 0,
+            spacingBefore: 0,
+            spacingAfter: 0,
             lineSpacing: 12
           });
 
-          // Font styles
           p.font.set({
             name: 'Times New Roman',
-            size: (r % numRowsPerItem === 1) ? 9 : 11,
-            bold: (r % numRowsPerItem === 0),
-            italic: (r % numRowsPerItem === 1)
+            size: (rIdx % numRowsPerItem === 1) ? 9 : 11,
+            bold: (rIdx % numRowsPerItem === 0),
+            italic: (rIdx % numRowsPerItem === 1)
           });
-        }
-        await context.sync();
-      }
-    }
+        });
+      });
+    });
 
     await context.sync();
 
@@ -455,12 +451,11 @@ export const TemplateModule: React.FC = () => {
     } catch {}
 
     await context.sync();
-
     table.getRange('After').select();
     await context.sync();
 
     setShowSigModal(false);
-    alert('Đã chèn bảng ký tên chuẩn (v1540)!');
+    alert('Đã chèn bảng ký tên chuẩn (v1550)!');
   }).catch((err: any) => {
     console.error(err);
     alert('Lỗi chèn bảng: ' + err.message);

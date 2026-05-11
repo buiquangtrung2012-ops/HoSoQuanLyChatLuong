@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, Search, Plus, Calendar, ShieldCheck, Save, Trash2, AlertCircle } from 'lucide-react';
+import { Truck, Search, Plus, Calendar, ShieldCheck, Save, Trash2, AlertCircle, Edit2 } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { StorageService } from '../services/storageService';
 
@@ -124,7 +124,7 @@ export const EquipmentModule: React.FC = () => {
                         className="p-1.5 text-primary hover:bg-primary/10 rounded-md transition-colors"
                         title="Sửa thiết bị"
                       >
-                        <Plus size={16} className="rotate-45" />
+                        <Edit2 size={16} />
                       </button>
                       <button 
                         onClick={() => handleDelete(i)}
