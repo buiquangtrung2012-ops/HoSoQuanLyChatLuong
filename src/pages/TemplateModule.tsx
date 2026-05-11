@@ -280,12 +280,16 @@ export const TemplateModule: React.FC = () => {
             wrapper.clear();
             const table = wrapper.insertTable(rowCount, 2, 'Start');
             
-            // Re-apply existing formatting individually
-            if (existingFont.name) table.font.name = existingFont.name;
-            if (existingFont.size) table.font.size = existingFont.size;
-            table.font.bold = existingFont.bold;
-            table.font.italic = existingFont.italic;
-            if (existingFont.color) table.font.color = existingFont.color;
+            // Re-apply existing formatting individually and safely
+            try {
+              if (existingFont.name) table.font.name = existingFont.name;
+              if (existingFont.size) table.font.size = existingFont.size;
+              if (existingFont.color) table.font.color = existingFont.color;
+              table.font.bold = existingFont.bold || false;
+              table.font.italic = existingFont.italic || false;
+            } catch (e) {
+              console.warn("Could not apply existing font to table", e);
+            }
             
             // Hide borders (No border)
             table.borders.insideHorizontal.style = 'None';
@@ -475,13 +479,17 @@ export const TemplateModule: React.FC = () => {
       });
 
       const table = wrapper.insertTable(rowCount, 2, 'Start');
-      
-      // Apply user font to the whole table individually to avoid null object issues
-      if (userFont.name) table.font.name = userFont.name;
-      if (userFont.size) table.font.size = userFont.size;
-      table.font.bold = userFont.bold;
-      table.font.italic = userFont.italic;
-      if (userFont.color) table.font.color = userFont.color;
+
+      // Apply user font individually and safely
+      try {
+        if (userFont.name) table.font.name = userFont.name;
+        if (userFont.size) table.font.size = userFont.size;
+        if (userFont.color) table.font.color = userFont.color;
+        table.font.bold = userFont.bold || false;
+        table.font.italic = userFont.italic || false;
+      } catch (e) {
+        console.warn("Could not apply selection font to table", e);
+      }
       
       // Hide borders (No border)
       table.borders.insideHorizontal.style = 'None';

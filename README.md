@@ -83,6 +83,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > **QUY ƯỚC ĐÁNH VERSION:**
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v11052026.1021`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
+### v11052026.1744 (11/05/2026)
+- **Sửa lỗi cực kỳ quan trọng**: Khắc phục triệt để lỗi không chèn được bảng Thành phần tham gia bằng cách bọc khối xử lý Font trong `try-catch` và kiểm tra giá trị `null` kỹ lưỡng hơn. Đảm bảo tính ổn định trên mọi phiên bản Word.
+
 ### v11052026.1736 (11/05/2026)
 - **Sửa lỗi – Bảng Thành phần tham gia**: Khắc phục lỗi không chèn được bảng Thành phần tham gia do xung đột định dạng Font trong Word API. Bổ sung thông báo phản hồi sau khi chèn bảng thành công.
 
