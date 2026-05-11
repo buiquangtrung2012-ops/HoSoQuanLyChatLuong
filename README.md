@@ -83,6 +83,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > **QUY ƯỚC ĐÁNH VERSION:**
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v11052026.1021`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
+### v11052026.1736 (11/05/2026)
+- **Sửa lỗi – Bảng Thành phần tham gia**: Khắc phục lỗi không chèn được bảng Thành phần tham gia do xung đột định dạng Font trong Word API. Bổ sung thông báo phản hồi sau khi chèn bảng thành công.
+
 ### v11052026.1731 (11/05/2026)
 - **Tính năng mới – Bảng Tổng hợp PTN**: Tab **Tạo mẫu** bổ sung nút chèn bảng tổng hợp Phòng thí nghiệm (PTN). Dữ liệu được tổng hợp tự động từ tab PTN.
 - **Tính năng mới – Địa điểm dự án**: Bổ sung trường "Địa điểm" vào danh sách Content Control của tab **Tạo mẫu** để chèn vị trí xây dựng vào biên bản.

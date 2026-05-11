@@ -280,14 +280,12 @@ export const TemplateModule: React.FC = () => {
             wrapper.clear();
             const table = wrapper.insertTable(rowCount, 2, 'Start');
             
-            // Re-apply existing formatting
-            table.font.set({
-              name: existingFont.name,
-              size: existingFont.size,
-              bold: existingFont.bold,
-              italic: existingFont.italic,
-              color: existingFont.color
-            });
+            // Re-apply existing formatting individually
+            if (existingFont.name) table.font.name = existingFont.name;
+            if (existingFont.size) table.font.size = existingFont.size;
+            table.font.bold = existingFont.bold;
+            table.font.italic = existingFont.italic;
+            if (existingFont.color) table.font.color = existingFont.color;
             
             // Hide borders (No border)
             table.borders.insideHorizontal.style = 'None';
@@ -478,14 +476,12 @@ export const TemplateModule: React.FC = () => {
 
       const table = wrapper.insertTable(rowCount, 2, 'Start');
       
-      // Apply user font to the whole table
-      table.font.set({
-        name: userFont.name,
-        size: userFont.size,
-        bold: userFont.bold,
-        italic: userFont.italic,
-        color: userFont.color
-      });
+      // Apply user font to the whole table individually to avoid null object issues
+      if (userFont.name) table.font.name = userFont.name;
+      if (userFont.size) table.font.size = userFont.size;
+      table.font.bold = userFont.bold;
+      table.font.italic = userFont.italic;
+      if (userFont.color) table.font.color = userFont.color;
       
       // Hide borders (No border)
       table.borders.insideHorizontal.style = 'None';
@@ -525,6 +521,7 @@ export const TemplateModule: React.FC = () => {
       await context.sync();
       wrapper.getRange('After').select();
       await context.sync();
+      alert(`Đã chèn Bảng ${role.toUpperCase()}. Nhấn nút "Cập nhật dữ liệu" để đổ dữ liệu vào bảng.`);
     }).catch((err: any) => alert('Lỗi khi chèn bảng: ' + err.message));
   };
 
