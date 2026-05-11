@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
 import { 
   FileText, Hash, Briefcase, Building2, User, Users, Calendar, Plus, Save, 
-  Layers, Layout, MapPin, Package, Truck, FlaskConical, RefreshCw, Trash2
+  Layers, Layout, MapPin, Package, Truck, FlaskConical, RefreshCw, Trash2, Zap
 } from 'lucide-react';
 import { StorageService } from '../services/storageService';
 import { useEffect } from 'react';
+
+const isWordApiAvailable = () => {
+  try {
+    // @ts-ignore
+    return typeof Word !== 'undefined';
+  } catch {
+    return false;
+  }
+};
 
 const contentControls = [
   // Thông tin chung dự án
@@ -110,10 +119,9 @@ export const TemplateModule: React.FC = () => {
   };
 
   const insertContentControl = (id: string, label: string) => {
-    // @ts-ignore
-    if (window.Office && window.Word) {
+    if (isWordApiAvailable()) {
       // @ts-ignore
-      Word.run(async (context) => {
+      Word.run(async (context: any) => {
         const range = context.document.getSelection();
         const cc = range.insertContentControl();
         cc.title = label;
@@ -121,38 +129,69 @@ export const TemplateModule: React.FC = () => {
         cc.placeholderText = `[${label}]`;
         cc.appearance = 'BoundingBox';
         await context.sync();
-      }).catch(err => {
+      }).catch((err: any) => {
         console.error(err);
         alert('Lỗi khi chèn Content Control vào Word.');
       });
     } else {
-      alert(`Đang ở chế độ Web. Sẽ chèn: ${label} (${id})`);
+      alert(`Chức năng này chỉ hoạt động khi mở trong Microsoft Word.\n\nTag sẽ chèn: ${id}`);
     }
   };
 
   const insertBookmark = (id: string, label: string) => {
-    // @ts-ignore
-    if (window.Office && window.Word) {
+    if (isWordApiAvailable()) {
       // @ts-ignore
-      Word.run(async (context) => {
+      Word.run(async (context: any) => {
         const range = context.document.getSelection();
         range.insertBookmark(id);
         await context.sync();
         alert(`Đã chèn Bookmark: ${id}`);
-      }).catch(err => {
+      }).catch((err: any) => {
         console.error(err);
         alert('Lỗi khi chèn Bookmark vào Word.');
       });
     } else {
-      alert(`Đang ở chế độ Web. Sẽ chèn Bookmark: ${id}`);
+      alert(`Chức năng này chỉ hoạt động khi mở trong Microsoft Word.\n\nBookmark: ${id}`);
     }
   };
 
-  const insertParticipantTable = (role: 'cdt' | 'tc' | 'tv') => {
+  const fillDataToDocument = () => {
+    const participants = StorageService.get('hoso_participants') || {};
+    const project = StorageService.getProject();
+    const allData: Record<string, string> = {
+      ...participants,
+      projectName: project?.name || '',
+      contractNumber: project?.contractNumber || '',
+      packageName: project?.packageName || '',
+      contractor: project?.contractor || '',
+    };
+
+    if (!isWordApiAvailable()) {
+      alert('Chức năng này chỉ hoạt động khi mở trong Microsoft Word.');
+      return;
+    }
     // @ts-ignore
-    if (window.Office && window.Word) {
+    Word.run(async (context: any) => {
+      const ccs = context.document.contentControls;
+      ccs.load('items');
+      await context.sync();
+      for (const item of ccs.items) {
+        if (allData[item.tag]) {
+          item.insertText(allData[item.tag], 'Replace');
+        }
+      }
+      await context.sync();
+      alert('Đã cập nhật dữ liệu vào tất cả các trường trong tài liệu!');
+    }).catch((err: any) => {
+      console.error(err);
+      alert('Lỗi khi cập nhật dữ liệu: ' + err.message);
+    });
+  };
+
+  const insertParticipantTable = (role: 'cdt' | 'tc' | 'tv') => {
+    if (isWordApiAvailable()) {
       // @ts-ignore
-      Word.run(async (context) => {
+      Word.run(async (context: any) => {
         const range = context.document.getSelection();
         
         let rowCount = 2;
@@ -160,18 +199,12 @@ export const TemplateModule: React.FC = () => {
         if (role === 'tc') { rowCount = 3; prefix = 'tc'; }
         if (role === 'tv') { rowCount = 2; prefix = 'tv'; }
 
-        // Insert a table with rowCount rows and 2 columns
         const table = range.insertTable(rowCount, 2, "After");
         
-        // Hide borders by setting style to something with no borders, or modifying border properties
-        // Actually table.borders.getBorder isn't the standard Word JS API way. It's:
         // @ts-ignore
         table.borders.outsideBorderColor = "White";
         // @ts-ignore
         table.borders.insideBorderColor = "White";
-        
-        // Ensure the cells have no visible borders by setting border width/type if necessary
-        // "None" is a valid BorderType in Word API
         // @ts-ignore
         table.borders.insideHorizontalBorderType = "None";
         // @ts-ignore
@@ -188,7 +221,6 @@ export const TemplateModule: React.FC = () => {
         for (let i = 0; i < rowCount; i++) {
           const nameCellRange = table.getCell(i, 0).body.getRange();
           nameCellRange.insertText("Ông: ", "Start");
-          // To insert Content Control AFTER "Ông: ", we get the range after the text
           const nameCCRange = table.getCell(i, 0).body.getRange("End");
           const nameCC = nameCCRange.insertContentControl();
           nameCC.title = `${role.toUpperCase()} ${i+1} - Tên`;
@@ -206,12 +238,12 @@ export const TemplateModule: React.FC = () => {
 
         await context.sync();
         alert(`Đã chèn bảng Thành phần tham gia (${role.toUpperCase()})`);
-      }).catch(err => {
+      }).catch((err: any) => {
         console.error(err);
-        alert('Lỗi khi chèn Bảng vào Word. Bạn có thể cần tạo bảng thủ công và chèn từng Content Control.');
+        alert('Lỗi khi chèn bảng: ' + err.message);
       });
     } else {
-      alert(`Đang ở chế độ Web. Sẽ chèn Bảng cho: ${role}`);
+      alert(`Chức năng này chỉ hoạt động khi mở trong Microsoft Word.`);
     }
   };
 
@@ -224,6 +256,12 @@ export const TemplateModule: React.FC = () => {
           </div>
           <h1 className="text-2xl font-bold tracking-tight uppercase">Tạo Mẫu</h1>
         </div>
+        <button
+          onClick={fillDataToDocument}
+          className="flex items-center px-5 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all font-bold text-sm shadow-lg shadow-green-600/20 gap-2"
+        >
+          <Zap size={16} /> Cập nhật dữ liệu vào tài liệu
+        </button>
       </div>
 
       {/* Save to Records Feature */}

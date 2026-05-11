@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Layers, FileCheck, AlertCircle, Briefcase, Calendar, BookOpen, MapPin, User, Building2 } from 'lucide-react';
-import { mockWorkItems } from '../data/mockData';
 import { StorageService } from '../services/storageService';
 
 const StatCard = ({ title, value, icon: Icon, color, trend }: any) => (
@@ -30,6 +29,7 @@ export const Dashboard: React.FC = () => {
     endDate: '30/12/2027',
   });
   const [diaryEntries, setDiaryEntries] = useState<any[]>([]);
+  const [workItems, setWorkItems] = useState<any[]>([]);
 
   useEffect(() => {
     const savedProject = StorageService.getProject();
@@ -46,6 +46,9 @@ export const Dashboard: React.FC = () => {
 
     const savedDiary = StorageService.getDiary() || [];
     setDiaryEntries(savedDiary.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+
+    const savedItems = StorageService.getWorkItems();
+    setWorkItems(savedItems || []);
   }, []);
 
   return (
@@ -109,10 +112,10 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard 
           title="Tổng công việc" 
-          value={mockWorkItems.length} 
+          value={workItems.length} 
           icon={Layers} 
           color="bg-blue-500/10 text-blue-500"
-          trend="Đang thực hiện"
+          trend={workItems.length > 0 ? 'Đang thực hiện' : undefined}
         />
         <StatCard 
           title="Hồ sơ đã tạo" 
@@ -138,7 +141,7 @@ export const Dashboard: React.FC = () => {
             </h3>
           </div>
           <div className="space-y-3 flex-1 overflow-auto max-h-[300px] pr-2 custom-scrollbar">
-            {mockWorkItems.map((item) => (
+            {workItems.length > 0 ? workItems.map((item) => (
               <div key={item.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors border-l-4 border-primary/20 hover:border-primary">
                 <div className="flex flex-col">
                   <span className="text-sm font-bold">{item.name}</span>
@@ -146,10 +149,15 @@ export const Dashboard: React.FC = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-bold text-primary">{item.quantity} {item.unit}</p>
-                  <p className="text-[10px] text-muted-foreground italic">NT: {item.inspectionDate.split('-').reverse().join('/')}</p>
+                  <p className="text-[10px] text-muted-foreground italic">NT: {item.inspectionDate?.split('-').reverse().join('/')}</p>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="flex flex-col items-center justify-center py-10 text-muted-foreground opacity-50">
+                <Layers size={40} className="mb-2" />
+                <p className="text-sm">Chưa có công việc nào được thêm</p>
+              </div>
+            )}
           </div>
         </div>
 
