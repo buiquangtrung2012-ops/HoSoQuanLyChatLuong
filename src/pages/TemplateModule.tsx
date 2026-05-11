@@ -245,15 +245,71 @@ export const TemplateModule: React.FC = () => {
         item.load('tag');
       }
       await context.sync();
+
+      // 1. Fill normal text controls
       for (const item of ccs.items) {
         const val = allData[item.tag];
-        if (val !== undefined && val !== '') {
+        if (val !== undefined && val !== '' && !item.tag.startsWith('table_')) {
           item.insertText(val, 'Replace');
           filled++;
         }
       }
+
+      // 2. Refresh dynamic participant tables
+      const savedGroups = StorageService.get('hoso_participants_v2') || [];
+      const tableTags = ['table_cdt', 'table_tc', 'table_tv'];
+      let tablesRefreshed = 0;
+
+      for (const tag of tableTags) {
+        const role = tag.replace('table_', '') as 'cdt' | 'tc' | 'tv';
+        const foundTables = ccs.items.filter(cc => cc.tag === tag);
+        
+        if (foundTables.length > 0) {
+          const group = savedGroups.find((g: any) => g.prefix === role);
+          const signers = group ? group.signers : [];
+          const rowCount = signers.length || (role === 'tc' ? 3 : 2);
+          const actualSigners = signers.length > 0 ? signers : Array(rowCount).fill({ name: '', position: '', gender: 'auto' });
+
+          for (const wrapper of foundTables) {
+            wrapper.clear();
+            const table = wrapper.insertTable(rowCount, 2, 'Start');
+            table.style = 'Table Normal';
+            
+            for (let i = 0; i < rowCount; i++) {
+              const s = actualSigners[i] || {};
+              const honorific = resolveGender(s.name || '', s.gender) + ': ';
+              
+              const nameCell = table.getCell(i, 0);
+              nameCell.body.insertText(honorific, 'Replace');
+              const nameCC = nameCell.body.getRange('End').insertContentControl();
+              nameCC.set({
+                title: `${role.toUpperCase()} ${i + 1} - Tên`,
+                tag: `${role}${i + 1}_name`,
+                placeholderText: '[Họ tên]',
+                appearance: 'BoundingBox'
+              });
+              if (s.name) nameCC.insertText(s.name, 'Replace');
+
+              const posCell = table.getCell(i, 1);
+              posCell.body.insertText('Chức vụ: ', 'Replace');
+              const posCC = posCell.body.getRange('End').insertContentControl();
+              posCC.set({
+                title: `${role.toUpperCase()} ${i + 1} - Chức vụ`,
+                tag: `${role}${i + 1}_pos`,
+                placeholderText: '[Chức vụ]',
+                appearance: 'BoundingBox'
+              });
+              if (s.position) posCC.insertText(s.position, 'Replace');
+            }
+            tablesRefreshed++;
+          }
+        }
+      }
+
       await context.sync();
-      alert(`Đã cập nhật ${filled}/${ccs.items.length} trường trong tài liệu!`);
+      let msg = `Đã cập nhật ${filled} trường dữ liệu`;
+      if (tablesRefreshed > 0) msg += ` và làm mới ${tablesRefreshed} bảng thành phần`;
+      alert(msg + '!');
     }).catch((err: any) => {
       console.error(err);
       alert('Lỗi khi cập nhật dữ liệu: ' + err.message);
@@ -268,43 +324,54 @@ export const TemplateModule: React.FC = () => {
     const savedGroups = StorageService.get('hoso_participants_v2') || [];
     const group = savedGroups.find((g: any) => g.prefix === role);
     const rowCount = group ? group.signers.length : (role === 'tc' ? 3 : 2);
-    const signers: any[] = group ? group.signers : Array(rowCount).fill({ name: '', gender: 'auto' });
+    const signers: any[] = group ? group.signers : Array(rowCount).fill({ name: '', position: '', gender: 'auto' });
 
     // @ts-ignore
     Word.run(async (context: any) => {
       const range = context.document.getSelection();
-      const table = range.insertTable(rowCount, 2, 'After');
-      table.style = 'Table Normal';
-      table.load('id');
-      await context.sync();
+      
+      // Wrap table in a wrapper Content Control for future dynamic updates
+      const wrapper = range.insertContentControl();
+      wrapper.set({
+        tag: `table_${role}`,
+        title: `Bảng ${role.toUpperCase()}`,
+        appearance: 'Hidden'
+      });
 
+      const table = wrapper.insertTable(rowCount, 2, 'Start');
+      table.style = 'Table Normal';
+      
       for (let i = 0; i < rowCount; i++) {
-        const signer = signers[i] || {};
-        const honorific = resolveGender(signer.name || '', signer.gender) + ': ';
+        const s = signers[i] || {};
+        const honorific = resolveGender(s.name || '', s.gender) + ': ';
 
         const nameCell = table.getCell(i, 0);
-        nameCell.body.clear();
-        nameCell.body.getRange('Start').insertText(honorific, 'Replace');
-        await context.sync();
+        nameCell.body.insertText(honorific, 'Replace');
         const nameCC = nameCell.body.getRange('End').insertContentControl();
-        nameCC.title = `${role.toUpperCase()} ${i + 1} - Tên`;
-        nameCC.tag = `${role}${i + 1}_name`;
-        nameCC.placeholderText = '[Họ tên]';
-        nameCC.appearance = 'BoundingBox';
+        nameCC.set({
+          title: `${role.toUpperCase()} ${i + 1} - Tên`,
+          tag: `${role}${i + 1}_name`,
+          placeholderText: '[Họ tên]',
+          appearance: 'BoundingBox'
+        });
+        if (s.name) nameCC.insertText(s.name, 'Replace');
 
         const posCell = table.getCell(i, 1);
-        posCell.body.clear();
-        posCell.body.getRange('Start').insertText('Chức vụ: ', 'Replace');
-        await context.sync();
+        posCell.body.insertText('Chức vụ: ', 'Replace');
         const posCC = posCell.body.getRange('End').insertContentControl();
-        posCC.title = `${role.toUpperCase()} ${i + 1} - Chức vụ`;
-        posCC.tag = `${role}${i + 1}_pos`;
-        posCC.placeholderText = '[Chức vụ]';
-        posCC.appearance = 'BoundingBox';
+        posCC.set({
+          title: `${role.toUpperCase()} ${i + 1} - Chức vụ`,
+          tag: `${role}${i + 1}_pos`,
+          placeholderText: '[Chức vụ]',
+          appearance: 'BoundingBox'
+        });
+        if (s.position) posCC.insertText(s.position, 'Replace');
       }
-      table.getRange('After').select();
+
       await context.sync();
-      alert(`Đã chèn bảng Thành phần tham gia (${role.toUpperCase()}) với ${rowCount} người!`);
+      wrapper.getRange('After').select();
+      await context.sync();
+      alert(`Đã chèn bảng Thành phần tham gia (${role.toUpperCase()}) động (v1605)!`);
     }).catch((err: any) => alert('Lỗi khi chèn bảng: ' + err.message));
   };
 
