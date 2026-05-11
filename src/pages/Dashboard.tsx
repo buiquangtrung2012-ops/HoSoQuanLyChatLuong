@@ -44,7 +44,7 @@ export const Dashboard: React.FC = () => {
       });
     }
 
-    const savedDiary = StorageService.getDiary();
+    const savedDiary = StorageService.getDiary() || [];
     setDiaryEntries(savedDiary.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()));
   }, []);
 

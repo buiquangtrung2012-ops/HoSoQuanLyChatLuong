@@ -29,6 +29,16 @@ Hệ thống quản lý hồ sơ chất lượng công trình chuyên nghiệp d
    - Chọn file `manifest.xml` trong thư mục gốc của dự án.
    - Lưu ý: Đảm bảo server đang chạy tại `https://localhost:3000`.
 
+## Triển khai (Deployment) lên GitHub Pages
+Dự án này đã được cấu hình tự động (CI/CD) thông qua GitHub Actions:
+- Mỗi khi bạn `git push` code lên nhánh `main`, hệ thống sẽ tự động chạy lệnh build.
+- Sản phẩm được đưa vào thư mục `dist` và tự động đẩy lên nhánh `gh-pages`.
+- GitHub Pages sẽ lấy nội dung từ nhánh `gh-pages` để phát trực tiếp lên mạng.
+
+**Lưu ý khi Cập nhật:**
+- Bạn chỉ cần commit và push code lên nhánh `main`. Không cần build thủ công.
+- Đợi 1-2 phút để GitHub chạy Action và Deploy xong, sau đó bấm nút **"Cập nhật"** trên giao diện Add-in là sẽ có phiên bản mới nhất.
+
 ## Các tính năng chính
 - Quản lý thông tin dự án, nhân sự và vai trò ký tên.
 - Quản lý danh mục công việc, vật liệu, thiết bị và phòng thí nghiệm (LAS-XD).
@@ -43,6 +53,10 @@ Hệ thống quản lý hồ sơ chất lượng công trình chuyên nghiệp d
 ## Lịch sử cập nhật
 > **QUY ƯỚC ĐÁNH VERSION:**
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v11052026.1021`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
+
+### v11052026.1035 (11/05/2026)
+- **Hệ thống (DevOps)**: Sửa lỗi cập nhật phiên bản. Khởi tạo quy trình **GitHub Actions** (`.github/workflows/deploy.yml`) để tự động `build` và `deploy` thư mục `dist` sang nhánh `gh-pages` mỗi khi đẩy code lên `main`.
+- **Sửa lỗi Code**: Khắc phục các lỗi TypeScript build failure (Lỗi biến `null` trong `Dashboard.tsx` và lỗi kiểu dữ liệu viền bảng trong `TemplateModule.tsx`).
 
 ### v11052026.1021 (11/05/2026)
 - **Tái cấu trúc (Refactor)**: 

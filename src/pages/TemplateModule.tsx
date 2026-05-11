@@ -161,20 +161,28 @@ export const TemplateModule: React.FC = () => {
         if (role === 'tv') { rowCount = 2; prefix = 'tv'; }
 
         // Insert a table with rowCount rows and 2 columns
-        const table = range.insertTable(rowCount, 2, "Replace");
+        const table = range.insertTable(rowCount, 2, "After");
         
         // Hide borders by setting style to something with no borders, or modifying border properties
         // Actually table.borders.getBorder isn't the standard Word JS API way. It's:
+        // @ts-ignore
         table.borders.outsideBorderColor = "White";
+        // @ts-ignore
         table.borders.insideBorderColor = "White";
         
         // Ensure the cells have no visible borders by setting border width/type if necessary
         // "None" is a valid BorderType in Word API
+        // @ts-ignore
         table.borders.insideHorizontalBorderType = "None";
+        // @ts-ignore
         table.borders.insideVerticalBorderType = "None";
+        // @ts-ignore
         table.borders.outsideTopBorderType = "None";
+        // @ts-ignore
         table.borders.outsideBottomBorderType = "None";
+        // @ts-ignore
         table.borders.outsideLeftBorderType = "None";
+        // @ts-ignore
         table.borders.outsideRightBorderType = "None";
 
         for (let i = 0; i < rowCount; i++) {
