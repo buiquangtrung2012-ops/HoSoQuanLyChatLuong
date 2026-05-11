@@ -271,9 +271,21 @@ export const TemplateModule: React.FC = () => {
           const actualSigners = signers.length > 0 ? signers : Array(rowCount).fill({ name: '', position: '', gender: 'auto' });
 
           for (const wrapper of foundTables) {
+            wrapper.load('font');
+            await context.sync();
+            const existingFont = wrapper.font;
+
             wrapper.clear();
             const table = wrapper.insertTable(rowCount, 2, 'Start');
-            table.style = 'Table Normal';
+            
+            // Re-apply existing formatting
+            table.font.set({
+              name: existingFont.name,
+              size: existingFont.size,
+              bold: existingFont.bold,
+              italic: existingFont.italic,
+              color: existingFont.color
+            });
             
             for (let i = 0; i < rowCount; i++) {
               const s = actualSigners[i] || {};
@@ -329,6 +341,10 @@ export const TemplateModule: React.FC = () => {
     // @ts-ignore
     Word.run(async (context: any) => {
       const range = context.document.getSelection();
+      range.load('font');
+      await context.sync();
+
+      const userFont = range.font;
       
       // Wrap table in a wrapper Content Control for future dynamic updates
       const wrapper = range.insertContentControl();
@@ -339,7 +355,15 @@ export const TemplateModule: React.FC = () => {
       });
 
       const table = wrapper.insertTable(rowCount, 2, 'Start');
-      table.style = 'Table Normal';
+      
+      // Apply user font to the whole table
+      table.font.set({
+        name: userFont.name,
+        size: userFont.size,
+        bold: userFont.bold,
+        italic: userFont.italic,
+        color: userFont.color
+      });
       
       for (let i = 0; i < rowCount; i++) {
         const s = signers[i] || {};
