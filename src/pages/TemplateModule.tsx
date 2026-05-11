@@ -49,6 +49,7 @@ const contentControls = [
   { id: 'contractor', label: 'Đơn vị Thi công', icon: Building2, category: 'Dự án' },
   { id: 'investorRep', label: 'Đại diện CDT', icon: User, category: 'Dự án' },
   { id: 'supervisorRep', label: 'Tư vấn Giám sát', icon: Users, category: 'Dự án' },
+  { id: 'projectLocation', label: 'Địa điểm', icon: MapPin, category: 'Dự án' },
   
   // Thông tin Công việc
   { id: 'workName', label: 'Tên Công việc', icon: Layers, category: 'Công việc' },
@@ -101,11 +102,11 @@ const contentControls = [
   { id: 'labExpiry', label: 'Hạn chứng chỉ PTN', icon: Calendar, category: 'PTN' },
 ];
 
-const bookmarks = [
-  { id: 'personnelTable', label: 'Bảng Nhân sự', icon: Users },
-  { id: 'materialsTable', label: 'Bảng Vật liệu', icon: Package },
-  { id: 'equipmentTable', label: 'Bảng Máy móc', icon: Truck },
-  { id: 'workTable', label: 'Bảng Công việc', icon: Layers },
+const summaryTables = [
+  { id: 'personnel', label: 'Bảng Nhân sự', icon: Users },
+  { id: 'materials', label: 'Bảng Vật liệu', icon: Package },
+  { id: 'equipment', label: 'Bảng Máy móc', icon: Truck },
+  { id: 'workitems', label: 'Bảng Công việc', icon: Layers },
 ];
 
 
@@ -206,6 +207,7 @@ export const TemplateModule: React.FC = () => {
       packageName: project.packageName || '',
       contractor: project.contractor || '',
       investorRep: project.investor || '',
+      projectLocation: project.location || '',
       // Work
       workName: work.name || '',
       workCode: work.code || '',
@@ -326,14 +328,126 @@ export const TemplateModule: React.FC = () => {
         }
       }
 
+      // 3. Refresh summary tables (Personnel, Materials, Equipment, WorkItems)
+      const summaryTags = Object.keys(SUMMARY_CONFIG).map(k => `summary_${k}`);
+      for (const tag of summaryTags) {
+        const type = tag.replace('summary_', '');
+        const foundSummaries = ccs.items.filter((cc: any) => cc.tag === tag);
+        
+        if (foundSummaries.length > 0) {
+          const config = SUMMARY_CONFIG[type];
+          let dataList: any[] = [];
+          if (type === 'personnel') dataList = StorageService.get('hoso_personnel') || [];
+          if (type === 'materials') dataList = StorageService.get('hoso_materials') || [];
+          if (type === 'equipment') dataList = StorageService.get('hoso_equipment') || [];
+          if (type === 'lab') dataList = StorageService.get('hoso_labs') || [];
+          if (type === 'workitems') dataList = StorageService.getWorkItems() || [];
+          
+          const rowCount = dataList.length + 1; // +1 for header
+          
+          for (const wrapper of foundSummaries) {
+            wrapper.clear();
+            const table = wrapper.insertTable(rowCount, config.columns.length, 'Start');
+            table.style = 'Table Normal';
+            
+            // Header
+            config.columns.forEach((col, i) => {
+              const cell = table.getCell(0, i);
+              cell.body.insertText(col, 'Replace');
+              cell.body.paragraphs.getFirst().font.bold = true;
+              cell.shadingColor = '#F3F4F6';
+            });
+            
+            // Data
+            dataList.forEach((item, rIdx) => {
+              const row = rIdx + 1;
+              table.getCell(row, 0).body.insertText((rIdx + 1).toString(), 'Replace');
+              
+              if (type === 'personnel') {
+                table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+                table.getCell(row, 2).body.insertText(item.position || '', 'Replace');
+                table.getCell(row, 3).body.insertText(item.unit || '', 'Replace');
+              }
+              if (type === 'materials') {
+                table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+                table.getCell(row, 2).body.insertText(item.origin || '', 'Replace');
+                table.getCell(row, 3).body.insertText(item.supplier || '', 'Replace');
+                table.getCell(row, 4).body.insertText(item.qty?.toString() || '', 'Replace');
+              }
+              if (type === 'equipment') {
+                table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+                table.getCell(row, 2).body.insertText(item.serial || '', 'Replace');
+                table.getCell(row, 3).body.insertText(item.inspectionDate?.split('-').reverse().join('/') || '', 'Replace');
+                table.getCell(row, 4).body.insertText(item.expiryDate?.split('-').reverse().join('/') || '', 'Replace');
+              }
+              if (type === 'workitems') {
+                table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+                table.getCell(row, 2).body.insertText(item.code || '', 'Replace');
+                table.getCell(row, 3).body.insertText(item.quantity?.toString() || '', 'Replace');
+                table.getCell(row, 4).body.insertText(item.unit || '', 'Replace');
+              }
+              if (type === 'lab') {
+                table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+                table.getCell(row, 2).body.insertText(item.code || '', 'Replace');
+                table.getCell(row, 3).body.insertText(item.expiry || '', 'Replace');
+                table.getCell(row, 4).body.insertText(item.equipment || '', 'Replace');
+              }
+            });
+            tablesRefreshed++;
+          }
+        }
+      }
+
       await context.sync();
       let msg = `Đã cập nhật ${filled} trường dữ liệu`;
-      if (tablesRefreshed > 0) msg += ` và làm mới ${tablesRefreshed} bảng thành phần`;
+      if (tablesRefreshed > 0) msg += ` và làm mới ${tablesRefreshed} bảng dữ liệu`;
       alert(msg + '!');
     }).catch((err: any) => {
       console.error(err);
       alert('Lỗi khi cập nhật dữ liệu: ' + err.message);
     });
+  };
+
+  const SUMMARY_CONFIG: Record<string, { label: string, columns: string[] }> = {
+    personnel: { label: 'Nhân sự', columns: ['STT', 'Họ tên', 'Chức vụ', 'Đơn vị'] },
+    materials: { label: 'Vật liệu', columns: ['STT', 'Tên vật tư', 'Xuất xứ', 'Nhà cung cấp', 'Khối lượng'] },
+    equipment: { label: 'Máy móc', columns: ['STT', 'Tên thiết bị', 'Số hiệu', 'Ngày KĐ', 'Hạn KĐ'] },
+    lab: { label: 'PTN', columns: ['STT', 'Tên PTN', 'Mã số', 'Hạn CC', 'Thiết bị'] },
+    workitems: { label: 'Công việc', columns: ['STT', 'Nội dung công việc', 'Mã hiệu', 'Khối lượng', 'Đơn vị'] },
+  };
+
+  const insertSummaryTable = (type: string) => {
+    if (!isWordApiAvailable()) {
+      alert('Chức năng này chỉ hoạt động trong Word.');
+      return;
+    }
+    const config = SUMMARY_CONFIG[type];
+    // @ts-ignore
+    Word.run(async (context: any) => {
+      const range = context.document.getSelection();
+      const wrapper = range.insertContentControl();
+      wrapper.set({
+        tag: `summary_${type}`,
+        title: `Bảng Tổng hợp ${config.label}`,
+        appearance: 'BoundingBox'
+      });
+
+      const table = wrapper.insertTable(2, config.columns.length, 'Start');
+      table.style = 'Table Normal';
+      
+      // Header
+      config.columns.forEach((col, i) => {
+        const cell = table.getCell(0, i);
+        cell.body.insertText(col, 'Replace');
+        cell.body.paragraphs.getFirst().font.bold = true;
+        cell.shadingColor = '#F3F4F6';
+      });
+
+      await context.sync();
+      wrapper.getRange('After').select();
+      await context.sync();
+      alert(`Đã chèn khung Bảng ${config.label}. Nhấn nút "Cập nhật dữ liệu" để đổ dữ liệu vào bảng.`);
+    }).catch((err: any) => alert('Lỗi chèn bảng tổng hợp: ' + err.message));
   };
 
   const insertParticipantTable = (role: 'cdt' | 'tc' | 'tv') => {
@@ -359,7 +473,7 @@ export const TemplateModule: React.FC = () => {
       wrapper.set({
         tag: `table_${role}`,
         title: `Bảng ${role.toUpperCase()}`,
-        appearance: 'Hidden'
+        appearance: 'BoundingBox'
       });
 
       const table = wrapper.insertTable(rowCount, 2, 'Start');
@@ -411,7 +525,6 @@ export const TemplateModule: React.FC = () => {
       await context.sync();
       wrapper.getRange('After').select();
       await context.sync();
-      alert(`Đã chèn bảng Thành phần tham gia (${role.toUpperCase()}) động (v1605)!`);
     }).catch((err: any) => alert('Lỗi khi chèn bảng: ' + err.message));
   };
 
@@ -518,10 +631,15 @@ export const TemplateModule: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-4 gap-3">
-            {bookmarks.map((bm) => (
+            {[
+              { id: 'personnel', label: 'Bảng Nhân sự', icon: Users },
+              { id: 'materials', label: 'Bảng Vật liệu', icon: Package },
+              { id: 'equipment', label: 'Bảng Máy móc', icon: Truck },
+              { id: 'lab', label: 'Bảng PTN', icon: FlaskConical },
+            ].map((bm) => (
                <button
                  key={bm.id}
-                 onClick={() => insertBookmark(bm.id, bm.label)}
+                 onClick={() => insertSummaryTable(bm.id)}
                  className="flex flex-col items-center justify-center p-3 bg-card border border-border rounded-xl hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/5 transition-all group"
                >
                   <div className="p-2 bg-muted rounded-lg mb-2 group-hover:bg-indigo-500/10 group-hover:text-indigo-600 transition-colors">
