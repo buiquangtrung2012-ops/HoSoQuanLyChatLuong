@@ -393,11 +393,10 @@ export const TemplateModule: React.FC = () => {
 
     await context.sync();
 
-    // ===== Format table =====
+        // ===== Format table =====
     for (let r = 0; r < totalRows; r++) {
       const row = table.rows.getItemAt(r);
 
-      // chiều cao từng loại row
       if (r % numRowsPerItem === 0 || r % numRowsPerItem === 1) {
         row.heightRule = 'Exactly';
         row.height = 22;
@@ -411,51 +410,55 @@ export const TemplateModule: React.FC = () => {
       for (let c = 0; c < numCols; c++) {
         const cell = table.getCell(r, c);
 
-        // căn giữa dọc
         try {
           cell.verticalAlignment = 'Center';
         } catch {}
 
-        // bỏ padding
-        try {
-          cell.topPadding = 0;
-          cell.bottomPadding = 0;
-          cell.leftPadding = 0;
-          cell.rightPadding = 0;
-        } catch {}
+        const paragraphs = cell.body.paragraphs;
+        paragraphs.load("items");
 
-        const cellRange = cell.body.getRange();
+        await context.sync();
 
-        // paragraph format giống ảnh 3
-        try {
-          cellRange.paragraphFormat.alignment = 'Centered';
-          cellRange.paragraphFormat.leftIndent = 0;
-          cellRange.paragraphFormat.rightIndent = 0;
-          cellRange.paragraphFormat.firstLineIndent = 0;
-          cellRange.paragraphFormat.spaceBefore = 0;
-          cellRange.paragraphFormat.spaceAfter = 0;
-          cellRange.paragraphFormat.lineSpacing = 12;
-        } catch {}
+        for (const p of paragraphs.items) {
+          // paragraph format
+          try {
+            p.alignment = 'Centered';
+            p.leftIndent = 0;
+            p.rightIndent = 0;
+            p.firstLineIndent = 0;
+            p.spaceBefore = 0;
+            p.spaceAfter = 0;
+            p.lineSpacing = 12;
+          } catch {}
 
-        // font mặc định
-        cellRange.font.name = 'Times New Roman';
-        cellRange.font.size = 11;
-        cellRange.font.bold = false;
-        cellRange.font.italic = false;
+          // font mặc định
+          p.font.set({
+            name: 'Times New Roman',
+            size: 11,
+            bold: false,
+            italic: false
+          });
 
-        // dòng header
-        if (r % numRowsPerItem === 0) {
-          cellRange.font.bold = true;
-          cellRange.font.size = 11;
-        }
+          // Header
+          if (r % numRowsPerItem === 0) {
+            p.font.set({
+              bold: true,
+              size: 11
+            });
+          }
 
-        // dòng note
-        if (r % numRowsPerItem === 1) {
-          cellRange.font.italic = true;
-          cellRange.font.size = 9;
+          // Note
+          if (r % numRowsPerItem === 1) {
+            p.font.set({
+              italic: true,
+              size: 9
+            });
+          }
         }
       }
     }
+
+    await context.sync();
 
     // ===== Borders =====
     try {
