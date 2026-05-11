@@ -1,10 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FileText, Hash, Briefcase, Building2, User, Users, Calendar, Plus, Save, 
-  Layers, Layout, MapPin, Package, Truck, FlaskConical, RefreshCw, Trash2, Zap
+  Layers, Layout, MapPin, Package, Truck, FlaskConical, RefreshCw, Trash2, Zap,
+  PenLine, X, CheckSquare, Square
 } from 'lucide-react';
 import { StorageService } from '../services/storageService';
-import { useEffect } from 'react';
+
+// ---- Nhận diện giới tính từ tên tiếng Việt ----
+const FEMALE_GIVEN_NAMES = new Set([
+  'lan','hoa','thu','mai','linh','thảo','trang','nhung','yến','uyên','phương',
+  'hằng','dung','hiền','liên','quyên','thủy','thúy','hồng','ngọc','vân','chi',
+  'loan','tuyết','xuân','hạnh','lệ','ly','nga','nhi','oanh','trinh','trúc',
+  'huệ','diệp','thoa','nhàn','châu','diễm','giang','quỳnh','kim','bích','lam',
+  'my','mỹ','nha','nhi','thương','thắm','vi','vy','huyền','thanh','thị',
+]);
+const FEMALE_MIDDLE = new Set(['thị']);
+
+export const detectGender = (fullName: string): 'Ông' | 'Bà' => {
+  if (!fullName.trim()) return 'Ông';
+  const parts = fullName.trim().toLowerCase().split(/\s+/);
+  // Kiểm tra tên đệm "Thị"
+  if (parts.some(p => FEMALE_MIDDLE.has(p))) return 'Bà';
+  // Kiểm tra tên cuối
+  const given = parts[parts.length - 1];
+  return FEMALE_GIVEN_NAMES.has(given) ? 'Bà' : 'Ông';
+};
+
+const resolveGender = (name: string, gender?: string): string => {
+  if (gender === 'male') return 'Ông';
+  if (gender === 'female') return 'Bà';
+  return detectGender(name);
+};
 
 const isWordApiAvailable = () => {
   try {
@@ -82,10 +108,20 @@ const bookmarks = [
   { id: 'workTable', label: 'Bảng Công việc', icon: Layers },
 ];
 
+// Parties available for signature table
+const SIGNATURE_PARTIES = [
+  { id: 'cdt',  label: 'Đại diện Chủ đầu tư',          short: 'ĐẠI DIỆN CHỦ ĐẦU TƯ' },
+  { id: 'tvtk', label: 'Đại diện Tư vấn Thiết kế',       short: 'ĐẠI DIỆN TƯ VẤN THIẾT KẾ' },
+  { id: 'tc',   label: 'Đại diện Đơn vị Thi công',       short: 'ĐẠI DIỆN ĐƠN VỊ THI CÔNG' },
+  { id: 'tv',   label: 'Đại diện Tư vấn Giám sát',       short: 'ĐẠI DIỆN TƯ VẤN GIÁM SÁT' },
+];
+
 export const TemplateModule: React.FC = () => {
   const [recordName, setRecordName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [customRecords, setCustomRecords] = useState<string[]>([]);
+  const [showSigModal, setShowSigModal] = useState(false);
+  const [selectedParties, setSelectedParties] = useState<string[]>(['cdt', 'tvtk', 'tc']);
 
   useEffect(() => {
     setCustomRecords(StorageService.getRecordTypes());
@@ -238,64 +274,128 @@ export const TemplateModule: React.FC = () => {
       alert('Chức năng này chỉ hoạt động khi mở trong Microsoft Word.');
       return;
     }
-
-    // Đọc số người từ RecordsModule (hoso_participants_v2)
     const savedGroups = StorageService.get('hoso_participants_v2') || [];
-    const prefixMap: Record<string, string> = { cdt: 'cdt', tc: 'tc', tv: 'tv' };
     const group = savedGroups.find((g: any) => g.prefix === role);
-    const prefix = prefixMap[role];
     const rowCount = group ? group.signers.length : (role === 'tc' ? 3 : 2);
+    const signers: any[] = group ? group.signers : Array(rowCount).fill({ name: '', gender: 'auto' });
 
     // @ts-ignore
     Word.run(async (context: any) => {
       const range = context.document.getSelection();
-
-      // Chèn bảng sau vị trí hiện tại
       const table = range.insertTable(rowCount, 2, 'After');
-
-      // Xóa viền bằng cách dùng style không có viền
-      // 'Table Normal' là style mặc định không có viền trong Word
       table.style = 'Table Normal';
       table.load('id');
       await context.sync();
 
-      // Chèn nội dung và Content Control vào từng ô
       for (let i = 0; i < rowCount; i++) {
-        // Ô cột 0: Tên
+        const signer = signers[i] || {};
+        const honorific = resolveGender(signer.name || '', signer.gender) + ': ';
+
         const nameCell = table.getCell(i, 0);
         nameCell.body.clear();
-        const nameRange = nameCell.body.getRange('Start');
-        nameRange.insertText('Ông: ', 'Replace');
+        nameCell.body.getRange('Start').insertText(honorific, 'Replace');
         await context.sync();
-        const nameCCRange = nameCell.body.getRange('End');
-        const nameCC = nameCCRange.insertContentControl();
+        const nameCC = nameCell.body.getRange('End').insertContentControl();
         nameCC.title = `${role.toUpperCase()} ${i + 1} - Tên`;
-        nameCC.tag = `${prefix}${i + 1}_name`;
+        nameCC.tag = `${role}${i + 1}_name`;
         nameCC.placeholderText = '[Họ tên]';
         nameCC.appearance = 'BoundingBox';
 
-        // Ô cột 1: Chức vụ
         const posCell = table.getCell(i, 1);
         posCell.body.clear();
-        const posRange = posCell.body.getRange('Start');
-        posRange.insertText('Chức vụ: ', 'Replace');
+        posCell.body.getRange('Start').insertText('Chức vụ: ', 'Replace');
         await context.sync();
-        const posCCRange = posCell.body.getRange('End');
-        const posCC = posCCRange.insertContentControl();
+        const posCC = posCell.body.getRange('End').insertContentControl();
         posCC.title = `${role.toUpperCase()} ${i + 1} - Chức vụ`;
-        posCC.tag = `${prefix}${i + 1}_pos`;
+        posCC.tag = `${role}${i + 1}_pos`;
         posCC.placeholderText = '[Chức vụ]';
         posCC.appearance = 'BoundingBox';
       }
-
-      // Đưa con trỏ ra sau bảng
       table.getRange('After').select();
       await context.sync();
       alert(`Đã chèn bảng Thành phần tham gia (${role.toUpperCase()}) với ${rowCount} người!`);
-    }).catch((err: any) => {
-      console.error(err);
-      alert('Lỗi khi chèn bảng: ' + err.message);
-    });
+    }).catch((err: any) => alert('Lỗi khi chèn bảng: ' + err.message));
+  };
+
+  const insertSignatureTable = () => {
+    if (!isWordApiAvailable()) {
+      alert('Chức năng này chỉ hoạt động khi mở trong Microsoft Word.');
+      return;
+    }
+    const project = StorageService.getProject() || {};
+    const isJV = project.isJointVenture;
+    const jvMembers: string[] = project.contractorMembers || [];
+
+    // Build columns based on selectedParties
+    const colDefs = selectedParties.map(pid => {
+      const party = SIGNATURE_PARTIES.find(p => p.id === pid);
+      if (pid === 'tc' && isJV && jvMembers.length > 0) {
+        // Each JV member gets its own column
+        return jvMembers.map(m => ({ header: party?.short || '', sub: m.toUpperCase() }));
+      }
+      return [{ header: party?.short || '', sub: '' }];
+    }).flat();
+
+    const numCols = colDefs.length;
+    // Rows: 0=header, 1=sub/company (if JV), 2=instruction italic, 3-5=blank signing space
+    const hasSubRow = isJV && jvMembers.length > 0 && selectedParties.includes('tc');
+    const totalRows = hasSubRow ? 6 : 5;
+
+    // @ts-ignore
+    Word.run(async (context: any) => {
+      const range = context.document.getSelection();
+      const table = range.insertTable(totalRows, numCols, 'After');
+      table.style = 'Table Grid';
+      table.load('id');
+      await context.sync();
+
+      let row = 0;
+      // Row 0: Headers (bold, centered)
+      for (let c = 0; c < numCols; c++) {
+        const cell = table.getCell(row, c);
+        cell.body.clear();
+        const p = cell.body.paragraphs.getFirst();
+        p.insertText(colDefs[c].header, 'Replace');
+        p.font.bold = true;
+        p.alignment = 'Centered';
+      }
+      row++;
+
+      // Sub row (JV company names)
+      if (hasSubRow) {
+        for (let c = 0; c < numCols; c++) {
+          const cell = table.getCell(row, c);
+          cell.body.clear();
+          const p = cell.body.paragraphs.getFirst();
+          p.insertText(colDefs[c].sub || '', 'Replace');
+          p.font.bold = true;
+          p.alignment = 'Centered';
+        }
+        row++;
+      }
+
+      // Instruction row (italic, centered)
+      for (let c = 0; c < numCols; c++) {
+        const cell = table.getCell(row, c);
+        cell.body.clear();
+        const p = cell.body.paragraphs.getFirst();
+        p.insertText('(Ký, ghi rõ họ tên và đóng dấu)', 'Replace');
+        p.font.italic = true;
+        p.alignment = 'Centered';
+      }
+
+      await context.sync();
+      table.getRange('After').select();
+      await context.sync();
+      setShowSigModal(false);
+      alert(`Đã chèn bảng ký tên với ${numCols} cột!`);
+    }).catch((err: any) => alert('Lỗi khi chèn bảng ký tên: ' + err.message));
+  };
+
+  const toggleParty = (id: string) => {
+    setSelectedParties(prev =>
+      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
+    );
   };
 
   return (
@@ -417,7 +517,7 @@ export const TemplateModule: React.FC = () => {
         <section className="space-y-4 pt-6">
           <div className="border-l-4 border-teal-500 pl-4">
             <h2 className="text-sm font-black text-teal-600 uppercase tracking-widest">Bảng Thành phần tham gia (No Border)</h2>
-            <p className="text-xs text-muted-foreground mt-1 font-medium">Tự động chèn bảng ẩn viền với 2 cột (Ông: / Chức vụ:) cho CĐT, Thi công, Tư vấn.</p>
+            <p className="text-xs text-muted-foreground mt-1 font-medium">Tự động chèn bảng ẩn viền với 2 cột. Xưng hô Ông/Bà tự nhận diện từ tên đã cấu hình trong Tab <strong>Ký hồ sơ</strong>.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -428,7 +528,7 @@ export const TemplateModule: React.FC = () => {
               <div className="p-3 bg-muted rounded-xl mb-4 group-hover:bg-teal-500/10 group-hover:text-teal-600 transition-colors">
                 <Users size={24} />
               </div>
-              <span className="text-sm font-bold text-center">Bảng Chủ Đầu Tư (2 người)</span>
+              <span className="text-sm font-bold text-center">Bảng Chủ Đầu Tư</span>
             </button>
             <button
               onClick={() => insertParticipantTable('tc')}
@@ -437,7 +537,7 @@ export const TemplateModule: React.FC = () => {
               <div className="p-3 bg-muted rounded-xl mb-4 group-hover:bg-teal-500/10 group-hover:text-teal-600 transition-colors">
                 <Users size={24} />
               </div>
-              <span className="text-sm font-bold text-center">Bảng Thi Công (3 người)</span>
+              <span className="text-sm font-bold text-center">Bảng Thi Công</span>
             </button>
             <button
               onClick={() => insertParticipantTable('tv')}
@@ -446,10 +546,70 @@ export const TemplateModule: React.FC = () => {
               <div className="p-3 bg-muted rounded-xl mb-4 group-hover:bg-teal-500/10 group-hover:text-teal-600 transition-colors">
                 <Users size={24} />
               </div>
-              <span className="text-sm font-bold text-center">Bảng Tư Vấn (2 người)</span>
+              <span className="text-sm font-bold text-center">Bảng Tư Vấn</span>
             </button>
           </div>
         </section>
+
+        {/* Signature Table Section */}
+        <section className="space-y-4 pt-6">
+          <div className="border-l-4 border-violet-500 pl-4">
+            <h2 className="text-sm font-black text-violet-600 uppercase tracking-widest">Bảng Ký tên (Có viền – Chuẩn biên bản)</h2>
+            <p className="text-xs text-muted-foreground mt-1 font-medium">Chèn bảng ký tên đầy đủ viền, chọn các bên tham gia. Hỗ trợ Liên danh tự động tách cột.</p>
+          </div>
+          <button
+            onClick={() => setShowSigModal(true)}
+            className="flex items-center gap-3 px-6 py-4 bg-violet-600 text-white rounded-2xl hover:bg-violet-700 transition-all shadow-lg shadow-violet-600/20 font-bold text-sm"
+          >
+            <PenLine size={20} /> Chèn bảng Ký tên...
+          </button>
+        </section>
+
+        {/* Signature Modal */}
+        {showSigModal && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowSigModal(false)}>
+            <div className="bg-card rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-5" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-lg flex items-center gap-2"><PenLine size={18} className="text-violet-600" /> Chèn bảng Ký tên</h3>
+                <button onClick={() => setShowSigModal(false)} className="p-1.5 hover:bg-muted rounded-lg"><X size={18} /></button>
+              </div>
+              <p className="text-xs text-muted-foreground">Chọn các bên tham gia (thứ tự từ trái → phải trong bảng):</p>
+              <div className="space-y-2">
+                {SIGNATURE_PARTIES.map(party => {
+                  const checked = selectedParties.includes(party.id);
+                  return (
+                    <button
+                      key={party.id}
+                      onClick={() => toggleParty(party.id)}
+                      className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
+                        checked ? 'border-violet-500 bg-violet-50 text-violet-800' : 'border-border bg-muted/30 text-muted-foreground'
+                      }`}
+                    >
+                      {checked ? <CheckSquare size={18} className="text-violet-600 flex-shrink-0" /> : <Square size={18} className="flex-shrink-0" />}
+                      <div>
+                        <p className="text-sm font-semibold">{party.label}</p>
+                        <p className="text-[10px] opacity-70">{party.short}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedParties.length === 0 && (
+                <p className="text-xs text-destructive font-medium">Vui lòng chọn ít nhất 1 bên tham gia.</p>
+              )}
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => setShowSigModal(false)} className="flex-1 py-2.5 border rounded-xl text-sm font-semibold hover:bg-muted transition-colors">Hủy</button>
+                <button
+                  onClick={insertSignatureTable}
+                  disabled={selectedParties.length === 0}
+                  className="flex-1 py-2.5 bg-violet-600 text-white rounded-xl text-sm font-bold hover:bg-violet-700 transition-colors disabled:opacity-50"
+                >
+                  Chèn vào Word
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex items-start space-x-4">

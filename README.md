@@ -54,6 +54,12 @@ Dự án này đã được cấu hình tự động (CI/CD) thông qua GitHub A
 > **QUY ƯỚC ĐÁNH VERSION:**
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v11052026.1021`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
+### v11052026.1200 (11/05/2026)
+- **Tính năng mới – Nhận diện giới tính**: Thêm hàm `detectGender()` tự động nhận diện tên nữ tiếng Việt để chọn xưng hô **Ông/Bà** thay vì hardcode "Ông: ". Tab **Ký hồ sơ** cho phép override thủ công (Ông / Bà / Tự động) cho từng người ký.
+- **Tính năng mới – Sidebar thu gọn mặc định**: Khi mở Add-in lần đầu, sidebar sẽ hiển thị ở chế độ thu gọn (chỉ icon) để tiết kiệm không gian.
+- **Tính năng mới – Chèn bảng Ký tên**: Tab **Tạo mẫu** bổ sung nút **"Chèn bảng Ký tên..."** (màu tím). Nhấn vào sẽ mở modal cho phép chọn các bên tham gia (Chủ đầu tư, Tư vấn TK, Thi công, Giám sát) rồi tự động chèn bảng có viền chuẩn biên bản vào Word. Tự động tách cột khi đơn vị thi công là Liên danh.
+- **Tính năng mới – Chế độ Liên danh**: Tab **Dự án** bổ sung toggle **"Chế độ Liên danh"** cho trường Nhà thầu thi công. Khi bật, cho phép nhập danh sách các thành viên liên danh. Dữ liệu này được dùng tự động khi chèn bảng Ký tên.
+
 ### v11052026.1035 (11/05/2026)
 - **Hệ thống (DevOps)**: Sửa lỗi cập nhật phiên bản. Khởi tạo quy trình **GitHub Actions** (`.github/workflows/deploy.yml`) để tự động `build` và `deploy` thư mục `dist` sang nhánh `gh-pages` mỗi khi đẩy code lên `main`.
 - **Sửa lỗi Code**: Khắc phục các lỗi TypeScript build failure (Lỗi biến `null` trong `Dashboard.tsx` và lỗi kiểu dữ liệu viền bảng trong `TemplateModule.tsx`).

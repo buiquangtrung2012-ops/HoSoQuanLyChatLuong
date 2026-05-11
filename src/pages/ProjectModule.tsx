@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, RefreshCw, Calendar } from 'lucide-react';
+import { Save, RefreshCw, Calendar, Plus, X, ToggleLeft, ToggleRight } from 'lucide-react';
 import type { Project } from '../types';
 import { StorageService } from '../services/storageService';
 
@@ -9,6 +9,8 @@ export const ProjectModule: React.FC = () => {
     name: 'Dự án Chiếu sáng Công cộng Quận 1',
     investor: 'UBND Quận 1',
     contractor: 'Công ty Cổ phần Cơ điện ABC',
+    isJointVenture: false,
+    contractorMembers: [],
     supervisor: 'Công ty Tư vấn Giám sát XYZ',
     designer: 'Công ty Thiết kế DEF',
     contractNumber: '123/HĐ-MB',
@@ -18,17 +20,47 @@ export const ProjectModule: React.FC = () => {
   });
 
   const [isSaving, setIsSaving] = useState(false);
+  const [newMember, setNewMember] = useState('');
 
   useEffect(() => {
     const saved = StorageService.getProject();
     if (saved) {
-      setProject(saved);
+      setProject({ ...project, ...saved });
     }
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setProject(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleToggleJointVenture = () => {
+    setProject(prev => ({
+      ...prev,
+      isJointVenture: !prev.isJointVenture,
+      contractorMembers: prev.contractorMembers?.length ? prev.contractorMembers : [''],
+    }));
+  };
+
+  const handleAddMember = () => {
+    const trimmed = newMember.trim();
+    if (!trimmed) return;
+    setProject(prev => ({
+      ...prev,
+      contractorMembers: [...(prev.contractorMembers || []), trimmed],
+    }));
+    setNewMember('');
+  };
+
+  const handleRemoveMember = (idx: number) => {
+    setProject(prev => ({
+      ...prev,
+      contractorMembers: (prev.contractorMembers || []).filter((_, i) => i !== idx),
+    }));
+  };
+
+  const handleMemberKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') handleAddMember();
   };
 
   const handleSave = () => {
@@ -42,7 +74,7 @@ export const ProjectModule: React.FC = () => {
 
   const handleRefresh = () => {
     const saved = StorageService.getProject();
-    if (saved) setProject(saved);
+    if (saved) setProject({ ...project, ...saved });
   };
 
   return (
@@ -88,14 +120,87 @@ export const ProjectModule: React.FC = () => {
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Nhà thầu thi công</label>
-          <input 
-            name="contractor"
-            value={project.contractor}
-            onChange={handleChange}
-            className="w-full p-2.5 border rounded-lg bg-background focus:ring-2 focus:ring-primary/50 outline-none"
-          />
+        {/* Nhà thầu thi công + Liên danh */}
+        <div className="space-y-3 md:col-span-2">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Nhà thầu thi công</label>
+            <input 
+              name="contractor"
+              value={project.contractor}
+              onChange={handleChange}
+              className="w-full p-2.5 border rounded-lg bg-background focus:ring-2 focus:ring-primary/50 outline-none"
+              placeholder="VD: Công ty Cổ phần Tập đoàn Xây dựng Minh Hòa"
+            />
+          </div>
+
+          {/* Toggle Liên danh */}
+          <div className={`rounded-xl border-2 p-4 transition-all ${project.isJointVenture ? 'border-blue-300 bg-blue-50' : 'border-border bg-muted/30'}`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-foreground">Chế độ Liên danh</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Sử dụng bảng ký tên 3 cột cho nhiều thành viên</p>
+              </div>
+              <button
+                onClick={handleToggleJointVenture}
+                className="flex-shrink-0 ml-4"
+                title={project.isJointVenture ? 'Tắt Liên danh' : 'Bật Liên danh'}
+              >
+                {project.isJointVenture 
+                  ? <ToggleRight size={40} className="text-blue-600" />
+                  : <ToggleLeft size={40} className="text-muted-foreground" />
+                }
+              </button>
+            </div>
+
+            {project.isJointVenture && (
+              <div className="mt-4 space-y-3">
+                <p className="text-[11px] font-bold text-blue-700 uppercase tracking-widest">
+                  Danh sách thành viên ký tên
+                </p>
+
+                <div className="space-y-2">
+                  {(project.contractorMembers || []).map((member, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <input
+                        value={member}
+                        onChange={e => {
+                          const updated = [...(project.contractorMembers || [])];
+                          updated[idx] = e.target.value;
+                          setProject(prev => ({ ...prev, contractorMembers: updated }));
+                        }}
+                        placeholder={`Tên thành viên ${idx + 1}`}
+                        className="flex-1 p-2.5 border rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-400/50 outline-none"
+                      />
+                      <button
+                        onClick={() => handleRemoveMember(idx)}
+                        className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                        title="Xóa thành viên"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Input thêm thành viên */}
+                <div className="flex items-center gap-2">
+                  <input
+                    value={newMember}
+                    onChange={e => setNewMember(e.target.value)}
+                    onKeyDown={handleMemberKeyDown}
+                    placeholder="Nhập tên thành viên mới..."
+                    className="flex-1 p-2.5 border border-dashed rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-400/50 outline-none"
+                  />
+                  <button
+                    onClick={handleAddMember}
+                    className="flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold"
+                  >
+                    <Plus size={16} /> Thêm thành viên
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="space-y-2">

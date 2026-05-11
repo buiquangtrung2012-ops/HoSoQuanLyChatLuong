@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Save, CheckCircle, Plus, Trash2, UserPlus } from 'lucide-react';
+import { Users, Save, CheckCircle, Plus, Trash2, UserPlus, User } from 'lucide-react';
 import { StorageService } from '../services/storageService';
 
 interface SignerEntry {
   id: string;
   name: string;
   position: string;
+  gender?: 'auto' | 'male' | 'female';
 }
 
 interface ParticipantGroup {
@@ -25,8 +26,8 @@ const defaultGroups = (): ParticipantGroup[] => [
     borderClass: 'border-slate-200',
     labelColorClass: 'text-slate-700',
     signers: [
-      { id: 'cdt_1', name: '', position: '' },
-      { id: 'cdt_2', name: '', position: '' },
+      { id: 'cdt_1', name: '', position: '', gender: 'auto' },
+      { id: 'cdt_2', name: '', position: '', gender: 'auto' },
     ],
   },
   {
@@ -36,9 +37,9 @@ const defaultGroups = (): ParticipantGroup[] => [
     borderClass: 'border-blue-200',
     labelColorClass: 'text-blue-800',
     signers: [
-      { id: 'tc_1', name: '', position: '' },
-      { id: 'tc_2', name: '', position: '' },
-      { id: 'tc_3', name: '', position: '' },
+      { id: 'tc_1', name: '', position: '', gender: 'auto' },
+      { id: 'tc_2', name: '', position: '', gender: 'auto' },
+      { id: 'tc_3', name: '', position: '', gender: 'auto' },
     ],
   },
   {
@@ -48,8 +49,8 @@ const defaultGroups = (): ParticipantGroup[] => [
     borderClass: 'border-emerald-200',
     labelColorClass: 'text-emerald-800',
     signers: [
-      { id: 'tv_1', name: '', position: '' },
-      { id: 'tv_2', name: '', position: '' },
+      { id: 'tv_1', name: '', position: '', gender: 'auto' },
+      { id: 'tv_2', name: '', position: '', gender: 'auto' },
     ],
   },
 ];
@@ -63,11 +64,16 @@ export const RecordsModule: React.FC = () => {
     setPersonnel(StorageService.get('hoso_personnel') || []);
     const saved = StorageService.get('hoso_participants_v2');
     if (saved) {
-      setGroups(saved);
+      // Merge: ensure gender field exists for old data
+      const migrated = saved.map((g: ParticipantGroup) => ({
+        ...g,
+        signers: g.signers.map((s: SignerEntry) => ({ gender: 'auto', ...s })),
+      }));
+      setGroups(migrated);
     }
   }, []);
 
-  const handleSignerChange = (groupIdx: number, signerIdx: number, field: 'name' | 'position', value: string) => {
+  const handleSignerChange = (groupIdx: number, signerIdx: number, field: 'name' | 'position' | 'gender', value: string) => {
     setGroups(prev => {
       const next = [...prev];
       next[groupIdx] = {
@@ -88,7 +94,7 @@ export const RecordsModule: React.FC = () => {
         ...next[groupIdx],
         signers: next[groupIdx].signers.map((s, i) =>
           i === signerIdx
-            ? { ...s, name: person?.name || '', position: person?.position || '' }
+            ? { ...s, name: person?.name || '', position: person?.position || '', gender: person?.gender || 'auto' }
             : s
         ),
       };
@@ -102,7 +108,7 @@ export const RecordsModule: React.FC = () => {
       const newId = `${next[groupIdx].prefix}_${Date.now()}`;
       next[groupIdx] = {
         ...next[groupIdx],
-        signers: [...next[groupIdx].signers, { id: newId, name: '', position: '' }],
+        signers: [...next[groupIdx].signers, { id: newId, name: '', position: '', gender: 'auto' }],
       };
       return next;
     });
@@ -111,7 +117,7 @@ export const RecordsModule: React.FC = () => {
   const handleRemoveSigner = (groupIdx: number, signerIdx: number) => {
     setGroups(prev => {
       const next = [...prev];
-      if (next[groupIdx].signers.length <= 1) return prev; // Giữ ít nhất 1 người
+      if (next[groupIdx].signers.length <= 1) return prev;
       next[groupIdx] = {
         ...next[groupIdx],
         signers: next[groupIdx].signers.filter((_, i) => i !== signerIdx),
@@ -128,11 +134,18 @@ export const RecordsModule: React.FC = () => {
       g.signers.forEach((s, i) => {
         flat[`${g.prefix}${i + 1}_name`] = s.name;
         flat[`${g.prefix}${i + 1}_pos`] = s.position;
+        flat[`${g.prefix}${i + 1}_gender`] = s.gender || 'auto';
       });
     });
     StorageService.save('hoso_participants', flat);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
+  };
+
+  const genderLabel = (gender: string | undefined) => {
+    if (gender === 'male') return 'Ông';
+    if (gender === 'female') return 'Bà';
+    return 'Tự động';
   };
 
   return (
@@ -153,7 +166,8 @@ export const RecordsModule: React.FC = () => {
           <Users size={20} className="mr-2" /> Thành phần tham gia nghiệm thu
         </h2>
         <p className="text-xs text-muted-foreground">
-          Cấu hình danh sách người ký. Nhấn <strong>"+ Thêm người"</strong> để thêm, nhấn biểu tượng thùng rác để xóa. Dữ liệu sẽ dùng chung khi Xuất file Word.
+          Cấu hình danh sách người ký. Nhấn <strong>"+ Thêm người"</strong> để thêm. 
+          Giới tính <strong>Tự động</strong> sẽ được nhận diện từ tên tiếng Việt khi chèn vào Word.
         </p>
       </div>
 
@@ -208,6 +222,31 @@ export const RecordsModule: React.FC = () => {
                       placeholder="Chức vụ"
                       className="flex-1 p-2 border rounded-md text-xs focus:ring-1 focus:ring-primary outline-none bg-background"
                     />
+                  </div>
+                  {/* Gender selector */}
+                  <div className="flex items-center gap-2">
+                    <User size={12} className="text-muted-foreground flex-shrink-0" />
+                    <span className="text-[10px] text-muted-foreground font-medium">Xưng hô:</span>
+                    <div className="flex gap-1">
+                      {(['auto', 'male', 'female'] as const).map(g => (
+                        <button
+                          key={g}
+                          onClick={() => handleSignerChange(groupIdx, signerIdx, 'gender', g)}
+                          className={`px-2 py-0.5 rounded text-[10px] font-semibold border transition-colors ${
+                            signer.gender === g || (!signer.gender && g === 'auto')
+                              ? 'bg-primary text-white border-primary'
+                              : 'bg-white text-muted-foreground border-border hover:border-primary/50'
+                          }`}
+                        >
+                          {genderLabel(g)}
+                        </button>
+                      ))}
+                    </div>
+                    {(signer.gender === 'auto' || !signer.gender) && signer.name && (
+                      <span className="text-[10px] text-muted-foreground italic">
+                        → sẽ tự nhận diện từ tên
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}

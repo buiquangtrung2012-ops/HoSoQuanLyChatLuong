@@ -15,7 +15,7 @@ import { ExportModule } from './pages/ExportModule';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [isOfficeReady, setIsOfficeReady] = useState(false);
 
   useEffect(() => {

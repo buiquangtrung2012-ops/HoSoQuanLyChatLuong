@@ -3,6 +3,8 @@ export interface Project {
   name: string;
   investor: string;
   contractor: string;
+  isJointVenture?: boolean;
+  contractorMembers?: string[];
   supervisor: string;
   designer: string;
   contractNumber: string;
@@ -19,6 +21,7 @@ export interface Personnel {
   position: string;
   unit: string;
   signature?: string;
+  gender?: 'male' | 'female' | 'auto';
   role: PersonnelRole;
 }
 
