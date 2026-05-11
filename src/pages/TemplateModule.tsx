@@ -397,7 +397,7 @@ export const TemplateModule: React.FC = () => {
       await context.sync();
       for (let r = 2; r < totalTableRows; r += numRowsPerItem) {
         try {
-          table.rows.getItemAt(r).height = 80; // ~2.8cm
+          table.rows.getItemAt(r).height = 105; // ~3.7cm (105 points)
         } catch (e) {
           console.error('Error setting row height:', e);
         }
