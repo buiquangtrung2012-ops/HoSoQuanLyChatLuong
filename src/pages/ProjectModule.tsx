@@ -297,10 +297,6 @@ export const ProjectModule: React.FC = () => {
                 placeholder="dd/mm/yyyy"
               />
               <Calendar size={18} className="absolute right-3 top-3 text-muted-foreground pointer-events-none" />
-            </div>
-          </div>         placeholder="dd/mm/yyyy"
-            />
-            <Calendar size={18} className="absolute right-3 top-3 text-muted-foreground pointer-events-none" />
           </div>
         </div>
       </div>
