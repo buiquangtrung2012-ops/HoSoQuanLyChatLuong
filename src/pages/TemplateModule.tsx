@@ -318,167 +318,167 @@ export const TemplateModule: React.FC = () => {
   };
 
   const insertSignatureTable = () => {
-    if (!isWordApiAvailable()) {
-      alert('Chức năng này chỉ hoạt động khi mở trong Microsoft Word.');
-      return;
-    }
+  if (!isWordApiAvailable()) {
+    alert('Chức năng này chỉ hoạt động khi mở trong Microsoft Word.');
+    return;
+  }
 
-    const project = StorageService.getProject() || {};
-    const isJV = project.isJointVenture;
-    const jvMembers: string[] = project.contractorMembers || [];
+  const project = StorageService.getProject() || {};
+  const isJV = project.isJointVenture;
+  const jvMembers: string[] = project.contractorMembers || [];
 
-    const columns: { header: string; sub: string }[] = [];
+  const columns: { header: string; sub: string }[] = [];
 
-    selectedParties.forEach(pid => {
-      const party = SIGNATURE_PARTIES.find(p => p.id === pid);
+  selectedParties.forEach(pid => {
+    const party = SIGNATURE_PARTIES.find(p => p.id === pid);
 
-      if (pid === 'tc' && isJV && jvMembers.length > 0) {
-        jvMembers.forEach(m => {
-          columns.push({
-            header: party?.short || '',
-            sub: m.toUpperCase()
-          });
-        });
-      } else {
-        let actualName = '';
-
-        if (pid === 'cdt') actualName = project.investor || '';
-        if (pid === 'tc') actualName = project.contractor || '';
-        if (pid === 'tv') actualName = project.supervisor || '';
-
+    if (pid === 'tc' && isJV && jvMembers.length > 0) {
+      jvMembers.forEach(member => {
         columns.push({
           header: party?.short || '',
-          sub: actualName.toUpperCase()
+          sub: member.toUpperCase()
         });
-      }
-    });
+      });
+    } else {
+      let actualName = '';
 
-    const numCols = 2;
-    const numRowsPerItem = 3;
-    const totalTableRows = Math.ceil(columns.length / numCols) * numRowsPerItem;
+      if (pid === 'cdt') actualName = project.investor || '';
+      if (pid === 'tc') actualName = project.contractor || '';
+      if (pid === 'tv') actualName = project.supervisor || '';
+      if (pid === 'tvtk') actualName = '';
 
-    // @ts-ignore
-    Word.run(async (context: any) => {
-      const range = context.document.getSelection();
-      const table = range.insertTable(totalTableRows, numCols, 'After');
+      columns.push({
+        header: party?.short || '',
+        sub: actualName.toUpperCase()
+      });
+    }
+  });
 
-      table.style = 'Table Normal';
-      table.alignment = 'Centered';
+  const numCols = 2;
+  const numRowsPerItem = 3;
+  const totalRows = Math.ceil(columns.length / numCols) * numRowsPerItem;
 
-      await context.sync();
+  // @ts-ignore
+  Word.run(async (context: any) => {
+    const range = context.document.getSelection();
+    const table = range.insertTable(totalRows, numCols, 'After');
 
-      // Insert content
-      for (let i = 0; i < columns.length; i++) {
-        const colIdx = i % numCols;
-        const startRow = Math.floor(i / numCols) * numRowsPerItem;
-        const item = columns[i];
+    // Không dùng style để tránh override format
+    try {
+      table.clear();
+    } catch {}
 
-        // Header
-        const headerCell = table.getCell(startRow, colIdx);
-        headerCell.body.clear();
-        headerCell.body.insertText(
-          item.header + (item.sub ? '\n' + item.sub : ''),
-          'Replace'
-        );
+    table.alignment = 'Centered';
 
-        // Instruction
-        const noteCell = table.getCell(startRow + 1, colIdx);
-        noteCell.body.clear();
-        noteCell.body.insertText(
-          '(Ký, ghi rõ họ tên và đóng dấu)',
-          'Replace'
-        );
-      }
+    await context.sync();
 
-      await context.sync();
+    // ===== Insert content =====
+    for (let i = 0; i < columns.length; i++) {
+      const col = i % numCols;
+      const startRow = Math.floor(i / numCols) * numRowsPerItem;
+      const item = columns[i];
 
-      // Format all cells
-      for (let r = 0; r < totalTableRows; r++) {
-        const row = table.rows.getItemAt(r);
+      const headerCell = table.getCell(startRow, col);
+      headerCell.body.insertText(
+        item.header + (item.sub ? '\n' + item.sub : ''),
+        'Replace'
+      );
 
-        // chiều cao từng row
-        if (r % numRowsPerItem === 0 || r % numRowsPerItem === 1) {
-          row.heightRule = 'Exactly';
-          row.height = 22;
-        }
+      const noteCell = table.getCell(startRow + 1, col);
+      noteCell.body.insertText(
+        '(Ký, ghi rõ họ tên và đóng dấu)',
+        'Replace'
+      );
+    }
 
-        if (r % numRowsPerItem === 2) {
-          row.heightRule = 'Exactly';
-          row.height = 130;
-        }
+    await context.sync();
 
-        for (let c = 0; c < numCols; c++) {
-          const cell = table.getCell(r, c);
+    // ===== Format table =====
+    for (let r = 0; r < totalRows; r++) {
+      const row = table.rows.getItemAt(r);
 
-          // căn giữa dọc
-          try {
-            cell.verticalAlignment = 'Center';
-          } catch {}
-
-          // bỏ padding mặc định của Word
-          try {
-            cell.topPadding = 0;
-            cell.bottomPadding = 0;
-            cell.leftPadding = 0;
-            cell.rightPadding = 0;
-          } catch {}
-
-          const paras = cell.body.paragraphs;
-          paras.load('items');
-          await context.sync();
-
-          for (const p of paras.items) {
-            // giống ảnh 3
-            p.alignment = 'Centered';
-
-            try {
-              p.leftIndent = 0;
-              p.rightIndent = 0;
-              p.firstLineIndent = 0;
-
-              p.spaceBefore = 0;
-              p.spaceAfter = 0;
-
-              p.lineSpacing = 12;
-            } catch {}
-
-            // Header
-            if (r % numRowsPerItem === 0) {
-              p.font.bold = true;
-              p.font.size = 11;
-            }
-
-            // dòng ký
-            if (r % numRowsPerItem === 1) {
-              p.font.italic = true;
-              p.font.size = 9;
-            }
-          }
-        }
+      // chiều cao từng loại row
+      if (r % numRowsPerItem === 0 || r % numRowsPerItem === 1) {
+        row.heightRule = 'Exactly';
+        row.height = 22;
       }
 
-      // Borders giống mẫu
-      try {
-        table.borders.insideHorizontal.style = 'Single';
-        table.borders.insideVertical.style = 'Single';
-        table.borders.outsideTop.style = 'Single';
-        table.borders.outsideBottom.style = 'Single';
-        table.borders.outsideLeft.style = 'Single';
-        table.borders.outsideRight.style = 'Single';
-      } catch {}
+      if (r % numRowsPerItem === 2) {
+        row.heightRule = 'Exactly';
+        row.height = 130;
+      }
 
-      await context.sync();
+      for (let c = 0; c < numCols; c++) {
+        const cell = table.getCell(r, c);
 
-      table.getRange('After').select();
-      await context.sync();
+        // căn giữa dọc
+        try {
+          cell.verticalAlignment = 'Center';
+        } catch {}
 
-      setShowSigModal(false);
-      alert('Đã chèn bảng ký tên chuẩn!');
-    }).catch((err: any) => {
-      console.error(err);
-      alert('Lỗi chèn bảng: ' + err.message);
-    });
-  };
+        // bỏ padding
+        try {
+          cell.topPadding = 0;
+          cell.bottomPadding = 0;
+          cell.leftPadding = 0;
+          cell.rightPadding = 0;
+        } catch {}
+
+        const cellRange = cell.body.getRange();
+
+        // paragraph format giống ảnh 3
+        try {
+          cellRange.paragraphFormat.alignment = 'Centered';
+          cellRange.paragraphFormat.leftIndent = 0;
+          cellRange.paragraphFormat.rightIndent = 0;
+          cellRange.paragraphFormat.firstLineIndent = 0;
+          cellRange.paragraphFormat.spaceBefore = 0;
+          cellRange.paragraphFormat.spaceAfter = 0;
+          cellRange.paragraphFormat.lineSpacing = 12;
+        } catch {}
+
+        // font mặc định
+        cellRange.font.name = 'Times New Roman';
+        cellRange.font.size = 11;
+        cellRange.font.bold = false;
+        cellRange.font.italic = false;
+
+        // dòng header
+        if (r % numRowsPerItem === 0) {
+          cellRange.font.bold = true;
+          cellRange.font.size = 11;
+        }
+
+        // dòng note
+        if (r % numRowsPerItem === 1) {
+          cellRange.font.italic = true;
+          cellRange.font.size = 9;
+        }
+      }
+    }
+
+    // ===== Borders =====
+    try {
+      table.borders.insideHorizontal.style = 'Single';
+      table.borders.insideVertical.style = 'Single';
+      table.borders.outsideTop.style = 'Single';
+      table.borders.outsideBottom.style = 'Single';
+      table.borders.outsideLeft.style = 'Single';
+      table.borders.outsideRight.style = 'Single';
+    } catch {}
+
+    await context.sync();
+
+    table.getRange('After').select();
+    await context.sync();
+
+    setShowSigModal(false);
+    alert('Đã chèn bảng ký tên chuẩn!');
+  }).catch((err: any) => {
+    console.error(err);
+    alert('Lỗi chèn bảng: ' + err.message);
+  });
+};
 
 
   const toggleParty = (id: string) => {
