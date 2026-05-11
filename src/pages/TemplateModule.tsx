@@ -362,10 +362,12 @@ export const TemplateModule: React.FC = () => {
       table.alignment = 'Centered';
       
       // Clear borders for 'No border' look
-      table.borders.insideHorizontal.visible = false;
-      table.borders.insideVertical.visible = false;
-      table.borders.outsideHorizontal.visible = false;
-      table.borders.outsideVertical.visible = false;
+      table.borders.insideHorizontal.style = 'None';
+      table.borders.insideVertical.style = 'None';
+      table.borders.outsideLeft.style = 'None';
+      table.borders.outsideRight.style = 'None';
+      table.borders.outsideTop.style = 'None';
+      table.borders.outsideBottom.style = 'None';
       
       // Set cell padding to 0 to eliminate extra space
       table.topPadding = 0;
@@ -439,7 +441,7 @@ export const TemplateModule: React.FC = () => {
       table.getRange('After').select();
       await context.sync();
       setShowSigModal(false);
-      alert(`Đã chèn bảng ký tên (v1420)!`);
+      alert(`Đã chèn bảng ký tên (v1440)!`);
     }).catch((err: any) => {
       console.error(err);
       alert('Lỗi: ' + err.message);
