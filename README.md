@@ -60,9 +60,8 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 > 💡 **Tại sao phải 2 bước?** Bước 1 chỉ lưu source code lên `main`. Bước 2 mới thực sự **build** ra file tĩnh và **deploy** lên `gh-pages` — là nhánh mà GitHub Pages phục vụ. Thiếu Bước 2 thì Add-in vẫn cũ.
 
-### Phiên bản v11052026.1415 (Mới nhất)
-- **Cưỡng chế Paragraph & Cell Padding:** Sử dụng lệnh `p.set()` và triệt tiêu `cell padding` để loại bỏ mọi khoảng trống thừa.
-- **Ép chiều cao 3.7cm:** Đảm bảo ô ký tên luôn giữ kích thước cố định bất kể định dạng Paragraph.
+### Phiên bản v11052026.1420 (Mới nhất)
+- **Sử dụng LineSpacingRule:** Ép dòng đơn bằng lệnh `lineSpacingRule = Single` và chuyển sang `Table Grid` để kiểm soát định dạng tốt hơn.
 - **Tắt kiểm tra chính tả:** Bổ sung `spellCheck={false}` trên toàn bộ các input/textarea.
 - **Tính năng Chỉnh sửa:** Triển khai nút "Sửa" và logic cập nhật dữ liệu cho tất cả các module.
 - **Gộp Chức vụ/Vai trò:** Trong quản lý nhân sự, gộp 2 trường này thành một để tối ưu giao diện.

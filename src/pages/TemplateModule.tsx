@@ -358,8 +358,14 @@ export const TemplateModule: React.FC = () => {
     Word.run(async (context: any) => {
       const range = context.document.getSelection();
       const table = range.insertTable(totalTableRows, numCols, 'After');
-      table.style = 'Table Normal';
+      table.style = 'Table Grid';
       table.alignment = 'Centered';
+      
+      // Clear borders for 'No border' look
+      table.borders.insideHorizontal.visible = false;
+      table.borders.insideVertical.visible = false;
+      table.borders.outsideHorizontal.visible = false;
+      table.borders.outsideVertical.visible = false;
       
       // Set cell padding to 0 to eliminate extra space
       table.topPadding = 0;
@@ -408,17 +414,13 @@ export const TemplateModule: React.FC = () => {
       table.rows.items.forEach((row: any, rIdx: number) => {
         row.cells.items.forEach((cell: any) => {
           cell.body.paragraphs.items.forEach((p: any) => {
-            // Use set() to ensure properties are applied
-            p.set({
-              alignment: 'Centered',
-              spacingBefore: 0,
-              spacingAfter: 0,
-              lineSpacing: 12
-            });
-            // Also set individual properties for backward compatibility
+            // Reset style and force properties
             p.alignment = 'Centered';
             p.spacingBefore = 0;
             p.spacingAfter = 0;
+            // @ts-ignore
+            p.lineSpacingRule = 'Single'; 
+            p.font.name = 'Times New Roman';
             
             // Special formatting for Header rows
             if (rIdx % numRowsPerItem === 0) {
@@ -437,7 +439,7 @@ export const TemplateModule: React.FC = () => {
       table.getRange('After').select();
       await context.sync();
       setShowSigModal(false);
-      alert(`Đã chèn bảng ký tên (v1415)!`);
+      alert(`Đã chèn bảng ký tên (v1420)!`);
     }).catch((err: any) => {
       console.error(err);
       alert('Lỗi: ' + err.message);
