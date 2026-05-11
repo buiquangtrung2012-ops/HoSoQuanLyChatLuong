@@ -358,10 +358,10 @@ export const TemplateModule: React.FC = () => {
     Word.run(async (context: any) => {
       const range = context.document.getSelection();
       const table = range.insertTable(totalTableRows, numCols, 'After');
-      table.style = 'Table Grid';
-      table.alignment = 'Centered';
+      table.style = 'Table Normal';
+      try { table.alignment = 'Centered'; } catch (e) {}
       
-      // Clear borders for 'No border' look
+      // Clear borders
       table.borders.insideHorizontal.style = 'None';
       table.borders.insideVertical.style = 'None';
       table.borders.outsideLeft.style = 'None';
@@ -369,28 +369,14 @@ export const TemplateModule: React.FC = () => {
       table.borders.outsideTop.style = 'None';
       table.borders.outsideBottom.style = 'None';
       
-      // Set cell padding to 0 to eliminate extra space
       table.topPadding = 0;
       table.bottomPadding = 0;
       table.leftPadding = 0;
       table.rightPadding = 0;
       
-      // Load rows to format them
-      table.load('rows/items');
       await context.sync();
 
-      // 1. Set row heights and force them
-      for (let r = 0; r < totalTableRows; r++) {
-        const row = table.rows.items[r];
-        if (r % numRowsPerItem === 2) {
-          row.heightRule = 'Exactly';
-          row.height = 105; // ~3.7cm
-        } else {
-          row.heightRule = 'Auto';
-        }
-      }
-
-      // 2. Fill content
+      // 1. Fill content
       for (let i = 0; i < numItems; i++) {
         const colIdx = i % numCols;
         const startRowIdx = Math.floor(i / numCols) * numRowsPerItem;
@@ -408,40 +394,50 @@ export const TemplateModule: React.FC = () => {
         cell1.body.insertParagraph('(Ký, ghi rõ họ tên và đóng dấu)', 'Start');
       }
 
-      // 3. Final aggressive pass: Format ALL paragraphs
-      await context.sync();
-      table.load('rows/items/cells/items/body/paragraphs/items');
       await context.sync();
 
-      table.rows.items.forEach((row: any, rIdx: number) => {
-        row.cells.items.forEach((cell: any) => {
+      // 2. Load and format row by row to be safe
+      table.rows.load('items');
+      await context.sync();
+
+      for (let r = 0; r < table.rows.items.length; r++) {
+        const row = table.rows.items[r];
+        // Set height for blank rows
+        if (r % numRowsPerItem === 2) {
+          row.heightRule = 'Exactly';
+          row.height = 105; 
+        } else {
+          row.heightRule = 'Auto';
+        }
+
+        row.cells.load('items');
+        await context.sync();
+        
+        for (let c = 0; c < row.cells.items.length; c++) {
+          const cell = row.cells.items[c];
+          cell.body.paragraphs.load('items');
+          await context.sync();
+          
           cell.body.paragraphs.items.forEach((p: any) => {
-            // Reset style and force properties
             p.alignment = 'Centered';
             p.spacingBefore = 0;
             p.spacingAfter = 0;
-            // @ts-ignore
-            p.lineSpacingRule = 'Single'; 
-            p.font.name = 'Times New Roman';
+            try { p.lineSpacingRule = 'Single'; } catch (e) {}
             
-            // Special formatting for Header rows
-            if (rIdx % numRowsPerItem === 0) {
-              p.font.bold = true;
-            }
-            // Special formatting for Instruction rows
-            if (rIdx % numRowsPerItem === 1) {
+            if (r % numRowsPerItem === 0) p.font.bold = true;
+            if (r % numRowsPerItem === 1) {
               p.font.italic = true;
               p.font.size = 9;
             }
           });
-        });
-      });
+        }
+      }
 
       await context.sync();
       table.getRange('After').select();
       await context.sync();
       setShowSigModal(false);
-      alert(`Đã chèn bảng ký tên (v1440)!`);
+      alert(`Đã chèn bảng ký tên (v1445)!`);
     }).catch((err: any) => {
       console.error(err);
       alert('Lỗi: ' + err.message);
