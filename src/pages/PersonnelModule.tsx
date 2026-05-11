@@ -15,6 +15,7 @@ export const PersonnelModule: React.FC = () => {
   const [personnelList, setPersonnelList] = useState<Personnel[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newPerson, setNewPerson] = useState<Partial<Personnel>>({
     name: '',
     position: '',
@@ -32,15 +33,36 @@ export const PersonnelModule: React.FC = () => {
     }
   }, []);
 
-  const handleAdd = () => {
-    const person: Personnel = {
-      ...newPerson as Personnel,
-      id: Math.random().toString(36).substr(2, 9),
-    };
-    const updated = [person, ...personnelList];
-    setPersonnelList(updated);
-    StorageService.save('hoso_personnel', updated);
+  const handleOpenAdd = () => {
+    setEditingId(null);
+    setNewPerson({ name: '', position: '', unit: '', role: 'Tư vấn giám sát' });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (person: Personnel) => {
+    setEditingId(person.id);
+    setNewPerson({ ...person });
+    setIsModalOpen(true);
+  };
+
+  const handleSave = () => {
+    if (editingId) {
+      const updated = personnelList.map(p => 
+        p.id === editingId ? { ...p, ...newPerson } as Personnel : p
+      );
+      setPersonnelList(updated);
+      StorageService.save('hoso_personnel', updated);
+    } else {
+      const person: Personnel = {
+        ...newPerson as Personnel,
+        id: Math.random().toString(36).substr(2, 9),
+      };
+      const updated = [person, ...personnelList];
+      setPersonnelList(updated);
+      StorageService.save('hoso_personnel', updated);
+    }
     setIsModalOpen(false);
+    setEditingId(null);
     setNewPerson({ name: '', position: '', unit: '', role: 'Tư vấn giám sát' });
   };
 
@@ -62,8 +84,8 @@ export const PersonnelModule: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Quản lý nhân sự</h1>
         <button 
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
+          onClick={handleOpenAdd}
+          className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm font-medium"
         >
           <UserPlus size={18} className="mr-2" /> Thêm nhân sự
         </button>
@@ -78,6 +100,8 @@ export const PersonnelModule: React.FC = () => {
             <input 
               type="text" 
               placeholder="Tìm nhân sự..." 
+              spellCheck={false}
+              autoComplete="off"
               className="w-full pl-9 pr-4 py-1.5 bg-background border rounded-md text-sm focus:outline-none"
             />
           </div>
@@ -88,9 +112,8 @@ export const PersonnelModule: React.FC = () => {
             <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
               <tr>
                 <th className="px-6 py-3">Họ và tên</th>
-                <th className="px-6 py-3">Chức vụ</th>
+                <th className="px-6 py-3">Chức vụ / Vai trò</th>
                 <th className="px-6 py-3">Đơn vị</th>
-                <th className="px-6 py-3">Vai trò</th>
                 <th className="px-6 py-3 text-right">Thao tác</th>
               </tr>
             </thead>
@@ -98,24 +121,26 @@ export const PersonnelModule: React.FC = () => {
               {personnelList.map((person) => (
                 <tr key={person.id} className="hover:bg-accent/50 transition-colors">
                   <td className="px-6 py-4 font-medium">{person.name}</td>
-                  <td className="px-6 py-4">{person.position}</td>
-                  <td className="px-6 py-4 text-muted-foreground">{person.unit}</td>
                   <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                      {person.role}
-                    </span>
+                    <p className="font-medium text-primary">{person.position}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{person.role}</p>
                   </td>
+                  <td className="px-6 py-4 text-muted-foreground">{person.unit}</td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end space-x-2">
+                    <div className="flex items-center justify-end space-x-1">
+                      <button 
+                        onClick={() => handleOpenEdit(person)}
+                        className="p-1.5 text-primary hover:bg-primary/10 rounded-md transition-colors"
+                        title="Sửa nhân sự"
+                      >
+                        <Plus size={16} className="rotate-45" /> {/* Just an icon for edit or use Lucide Edit */}
+                      </button>
                       <button 
                         onClick={() => handleDelete(person.id)}
                         className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
                         title="Xóa nhân sự"
                       >
                         <Trash2 size={16} />
-                      </button>
-                      <button className="p-1.5 hover:bg-muted rounded-md text-muted-foreground">
-                        <MoreHorizontal size={16} />
                       </button>
                     </div>
                   </td>
@@ -129,7 +154,7 @@ export const PersonnelModule: React.FC = () => {
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        title="Thêm nhân sự mới"
+        title={editingId ? "Chỉnh sửa nhân sự" : "Thêm nhân sự mới"}
         footer={
           <>
             <button 
@@ -139,55 +164,55 @@ export const PersonnelModule: React.FC = () => {
               Hủy
             </button>
             <button 
-              onClick={handleAdd}
+              onClick={handleSave}
               className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm font-medium"
             >
-              <Save size={16} className="mr-2" /> Lưu nhân sự
+              <Save size={16} className="mr-2" /> {editingId ? "Cập nhật" : "Lưu nhân sự"}
             </button>
           </>
         }
       >
         <div className="space-y-4">
           <div className="space-y-1">
-            <label className="text-xs font-bold text-muted-foreground uppercase">Họ và tên</label>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Họ và tên</label>
             <input 
               value={newPerson.name}
               onChange={e => setNewPerson({...newPerson, name: e.target.value})}
-              className="w-full p-2 border rounded-md text-sm bg-background" 
+              spellCheck={false}
+              autoComplete="off"
+              className="w-full p-2.5 border rounded-xl text-sm bg-background focus:ring-2 focus:ring-primary/50 outline-none" 
               placeholder="Nguyễn Văn A"
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-bold text-muted-foreground uppercase">Chức vụ</label>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Chức vụ / Vai trò ký hồ sơ</label>
             <input 
               value={newPerson.position}
-              onChange={e => setNewPerson({...newPerson, position: e.target.value})}
-              className="w-full p-2 border rounded-md text-sm bg-background" 
-              placeholder="Kỹ sư hiện trường"
+              onChange={e => {
+                const val = e.target.value;
+                setNewPerson({
+                  ...newPerson, 
+                  position: val,
+                  // Tự động gán role bằng position theo yêu cầu người dùng
+                  role: val as any 
+                });
+              }}
+              spellCheck={false}
+              autoComplete="off"
+              className="w-full p-2.5 border rounded-xl text-sm bg-background focus:ring-2 focus:ring-primary/50 outline-none" 
+              placeholder="Chỉ huy trưởng / Giám sát viên..."
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-bold text-muted-foreground uppercase">Đơn vị công tác</label>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Đơn vị công tác</label>
             <input 
               value={newPerson.unit}
               onChange={e => setNewPerson({...newPerson, unit: e.target.value})}
-              className="w-full p-2 border rounded-md text-sm bg-background" 
+              spellCheck={false}
+              autoComplete="off"
+              className="w-full p-2.5 border rounded-xl text-sm bg-background focus:ring-2 focus:ring-primary/50 outline-none" 
               placeholder="Công ty CP Xây dựng..."
             />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-muted-foreground uppercase">Vai trò ký hồ sơ</label>
-            <select 
-              value={newPerson.role}
-              onChange={e => setNewPerson({...newPerson, role: e.target.value as PersonnelRole})}
-              className="w-full p-2 border rounded-md text-sm bg-background outline-none"
-            >
-              <option value="Chỉ huy trưởng">Chỉ huy trưởng</option>
-              <option value="Giám sát trưởng">Giám sát trưởng</option>
-              <option value="Tư vấn giám sát">Tư vấn giám sát</option>
-              <option value="Chủ đầu tư">Chủ đầu tư</option>
-              <option value="Tư vấn thiết kế">Tư vấn thiết kế</option>
-            </select>
           </div>
         </div>
       </Modal>
@@ -223,3 +248,4 @@ export const PersonnelModule: React.FC = () => {
     </div>
   );
 };
+

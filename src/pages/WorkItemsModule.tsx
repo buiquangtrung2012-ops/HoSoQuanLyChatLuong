@@ -15,6 +15,7 @@ export const WorkItemsModule: React.FC = () => {
   const [workItems, setWorkItems] = useState<WorkItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newItem, setNewItem] = useState<Partial<WorkItem>>({
     line: 'Tuyến Lộ 1',
     category: 'Phần móng',
@@ -34,16 +35,8 @@ export const WorkItemsModule: React.FC = () => {
     }
   }, []);
 
-  const handleAdd = () => {
-    const item: WorkItem = {
-      ...newItem as WorkItem,
-      id: Math.random().toString(36).substr(2, 9),
-    };
-    const updated = [item, ...workItems];
-    setWorkItems(updated);
-    StorageService.saveWorkItems(updated);
-    setIsModalOpen(false);
-    // Reset form
+  const handleOpenAdd = () => {
+    setEditingId(null);
     setNewItem({
       line: 'Tuyến Lộ 1',
       category: 'Phần móng',
@@ -52,6 +45,33 @@ export const WorkItemsModule: React.FC = () => {
       startDate: new Date().toISOString().split('T')[0],
       inspectionDate: new Date().toISOString().split('T')[0],
     });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (item: WorkItem) => {
+    setEditingId(item.id);
+    setNewItem({ ...item });
+    setIsModalOpen(true);
+  };
+
+  const handleSave = () => {
+    if (editingId) {
+      const updated = workItems.map(item => 
+        item.id === editingId ? { ...item, ...newItem } as WorkItem : item
+      );
+      setWorkItems(updated);
+      StorageService.saveWorkItems(updated);
+    } else {
+      const item: WorkItem = {
+        ...newItem as WorkItem,
+        id: Math.random().toString(36).substr(2, 9),
+      };
+      const updated = [item, ...workItems];
+      setWorkItems(updated);
+      StorageService.saveWorkItems(updated);
+    }
+    setIsModalOpen(false);
+    setEditingId(null);
   };
 
   const handleDelete = (id: string) => {
@@ -72,8 +92,8 @@ export const WorkItemsModule: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Quản lý công việc</h1>
         <button 
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
+          onClick={handleOpenAdd}
+          className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm font-medium"
         >
           <Plus size={18} className="mr-2" /> Thêm công việc
         </button>
@@ -89,12 +109,11 @@ export const WorkItemsModule: React.FC = () => {
               <input 
                 type="text" 
                 placeholder="Tìm công việc..." 
+                spellCheck={false}
+                autoComplete="off"
                 className="w-full pl-9 pr-4 py-1.5 bg-background border rounded-md text-sm focus:outline-none"
               />
             </div>
-            <button className="flex items-center px-3 py-1.5 border bg-background rounded-md text-sm hover:bg-accent">
-              <Filter size={16} className="mr-2" /> Lọc
-            </button>
           </div>
         </div>
 
@@ -118,9 +137,16 @@ export const WorkItemsModule: React.FC = () => {
                     <p className="text-xs text-muted-foreground">{item.line} - {item.category}</p>
                   </td>
                   <td className="px-6 py-4">{item.quantity} {item.unit}</td>
-                  <td className="px-6 py-4">{item.inspectionDate}</td>
+                  <td className="px-6 py-4 font-medium text-primary">{item.inspectionDate}</td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end space-x-2">
+                    <div className="flex items-center justify-end space-x-1">
+                      <button 
+                        onClick={() => handleOpenEdit(item)}
+                        className="p-1.5 text-primary hover:bg-primary/10 rounded-md transition-colors"
+                        title="Sửa công việc"
+                      >
+                        <Plus size={16} className="rotate-45" />
+                      </button>
                       <button 
                         onClick={() => handleDelete(item.id)}
                         className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
@@ -140,7 +166,7 @@ export const WorkItemsModule: React.FC = () => {
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        title="Thêm công việc mới"
+        title={editingId ? "Chỉnh sửa công việc" : "Thêm công việc mới"}
         footer={
           <>
             <button 
@@ -150,10 +176,10 @@ export const WorkItemsModule: React.FC = () => {
               Hủy
             </button>
             <button 
-              onClick={handleAdd}
+              onClick={handleSave}
               className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm font-medium"
             >
-              <Save size={16} className="mr-2" /> Lưu công việc
+              <Save size={16} className="mr-2" /> {editingId ? "Cập nhật" : "Lưu công việc"}
             </button>
           </>
         }
@@ -165,6 +191,8 @@ export const WorkItemsModule: React.FC = () => {
               <input 
                 value={newItem.line}
                 onChange={e => setNewItem({...newItem, line: e.target.value})}
+                spellCheck={false}
+                autoComplete="off"
                 className="w-full p-2 border rounded-md text-sm bg-background" 
               />
             </div>
@@ -173,6 +201,8 @@ export const WorkItemsModule: React.FC = () => {
               <input 
                 value={newItem.category}
                 onChange={e => setNewItem({...newItem, category: e.target.value})}
+                spellCheck={false}
+                autoComplete="off"
                 className="w-full p-2 border rounded-md text-sm bg-background" 
               />
             </div>
@@ -183,6 +213,8 @@ export const WorkItemsModule: React.FC = () => {
               value={newItem.name}
               onChange={e => setNewItem({...newItem, name: e.target.value})}
               placeholder="Ví dụ: Lắp dựng cột đèn..."
+              spellCheck={false}
+              autoComplete="off"
               className="w-full p-2 border rounded-md text-sm bg-background" 
             />
           </div>
@@ -192,6 +224,8 @@ export const WorkItemsModule: React.FC = () => {
               <input 
                 value={newItem.code}
                 onChange={e => setNewItem({...newItem, code: e.target.value})}
+                spellCheck={false}
+                autoComplete="off"
                 className="w-full p-2 border rounded-md text-sm bg-background font-mono" 
               />
             </div>
@@ -200,6 +234,8 @@ export const WorkItemsModule: React.FC = () => {
               <input 
                 value={newItem.unit}
                 onChange={e => setNewItem({...newItem, unit: e.target.value})}
+                spellCheck={false}
+                autoComplete="off"
                 className="w-full p-2 border rounded-md text-sm bg-background" 
               />
             </div>
@@ -209,6 +245,8 @@ export const WorkItemsModule: React.FC = () => {
                 type="number"
                 value={newItem.quantity}
                 onChange={e => setNewItem({...newItem, quantity: Number(e.target.value)})}
+                spellCheck={false}
+                autoComplete="off"
                 className="w-full p-2 border rounded-md text-sm bg-background" 
               />
             </div>
@@ -267,3 +305,4 @@ export const WorkItemsModule: React.FC = () => {
     </div>
   );
 };
+

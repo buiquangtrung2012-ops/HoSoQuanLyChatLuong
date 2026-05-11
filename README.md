@@ -58,7 +58,16 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 - Đợi ~30 giây để GitHub Pages refresh.
 - Nhấn nút **"Cập nhật"** trên giao diện Add-in để tải phiên bản mới.
 
-> 💡 **Tại sao phải 2 bước?** Bước 1 chỉ lưu source code lên `main`. Bước 2 mới thực sự **build** ra file tĩnh và **deploy** lên `gh-pages` — là nhánh mà GitHub Pages phục vụ. Thiếu Bước 2 thì Add-in vẫn chạy phiên bản cũ.
+> 💡 **Tại sao phải 2 bước?** Bước 1 chỉ lưu source code lên `main`. Bước 2 mới thực sự **build** ra file tĩnh và **deploy** lên `gh-pages` — là nhánh mà GitHub Pages phục vụ. Thiếu Bước 2 thì Add-in vẫn cũ.
+
+### Phiên bản v11052026.1316 (Mới nhất)
+- **Tắt kiểm tra chính tả:** Bổ sung `spellCheck={false}` trên toàn bộ các input/textarea.
+- **Tính năng Chỉnh sửa:** Triển khai nút "Sửa" và logic cập nhật dữ liệu cho tất cả các module (Nhân sự, Công việc, Vật liệu, Máy móc, PTN).
+- **Gộp Chức vụ/Vai trò:** Trong quản lý nhân sự, gộp 2 trường này thành một để tối ưu giao diện.
+- **Bảng ký tên chuyên nghiệp:** 
+    - Chuyển sang bố cục 2 cột mỗi hàng (2x2, 2x3...).
+    - Ẩn viền bảng (Style Table Normal).
+    - Tự động lấy tên đơn vị từ tab Dự án (Chủ đầu tư, Nhà thầu, Tư vấn).
 
 ## Các tính năng chính
 - Quản lý thông tin dự án, nhân sự và vai trò ký tên.

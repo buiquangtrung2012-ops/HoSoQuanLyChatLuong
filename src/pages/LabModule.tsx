@@ -12,6 +12,7 @@ export const LabModule: React.FC = () => {
   const [labs, setLabs] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [newLab, setNewLab] = useState({
     name: '',
     code: '',
@@ -29,12 +30,30 @@ export const LabModule: React.FC = () => {
     }
   }, []);
 
-  const handleAdd = () => {
-    const updated = [newLab, ...labs];
+  const handleOpenAdd = () => {
+    setEditingIndex(null);
+    setNewLab({ name: '', code: '', expiry: '', equipment: '' });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (index: number) => {
+    setEditingIndex(index);
+    setNewLab({ ...labs[index] });
+    setIsModalOpen(true);
+  };
+
+  const handleSave = () => {
+    let updated;
+    if (editingIndex !== null) {
+      updated = [...labs];
+      updated[editingIndex] = newLab;
+    } else {
+      updated = [newLab, ...labs];
+    }
     setLabs(updated);
     StorageService.save('hoso_labs', updated);
     setIsModalOpen(false);
-    setNewLab({ name: '', code: '', expiry: '', equipment: '' });
+    setEditingIndex(null);
   };
 
   const handleDelete = (index: number) => {
@@ -56,8 +75,8 @@ export const LabModule: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Phòng thí nghiệm (LAS-XD)</h1>
         <button 
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
+          onClick={handleOpenAdd}
+          className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm font-medium"
         >
           <Plus size={18} className="mr-2" /> Thêm PTN
         </button>
@@ -65,14 +84,23 @@ export const LabModule: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {labs.map((lab, i) => (
-          <div key={i} className="bg-card rounded-xl border p-6 space-y-4 hover:shadow-md transition-shadow relative group">
-            <button 
-              onClick={() => handleDelete(i)}
-              className="absolute top-4 right-4 p-2 text-destructive opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 rounded-md"
-              title="Xóa PTN"
-            >
-              <Trash2 size={18} />
-            </button>
+          <div key={i} className="bg-card rounded-xl border p-6 space-y-4 hover:shadow-md transition-shadow relative group border-2 hover:border-primary/20">
+            <div className="absolute top-4 right-4 flex space-x-1">
+              <button 
+                onClick={() => handleOpenEdit(i)}
+                className="p-2 text-primary opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/10 rounded-md"
+                title="Sửa PTN"
+              >
+                <Plus size={18} className="rotate-45" />
+              </button>
+              <button 
+                onClick={() => handleDelete(i)}
+                className="p-2 text-destructive opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 rounded-md"
+                title="Xóa PTN"
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
             
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-3">
@@ -81,7 +109,7 @@ export const LabModule: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-bold">{lab.name}</h3>
-                  <p className="text-sm text-primary font-mono">{lab.code}</p>
+                  <p className="text-sm text-primary font-mono font-bold">{lab.code}</p>
                 </div>
               </div>
             </div>
@@ -93,8 +121,8 @@ export const LabModule: React.FC = () => {
             </div>
 
             <div className="pt-4 border-t flex space-x-2">
-              <button className="flex-1 py-2 text-xs font-medium border rounded-lg hover:bg-accent">Chi tiết thiết bị</button>
-              <button className="flex-1 py-2 text-xs font-medium border rounded-lg hover:bg-accent">Hồ sơ năng lực</button>
+              <button className="flex-1 py-2 text-xs font-semibold border rounded-lg hover:bg-accent transition-colors">Chi tiết thiết bị</button>
+              <button className="flex-1 py-2 text-xs font-semibold border rounded-lg hover:bg-accent transition-colors">Hồ sơ năng lực</button>
             </div>
           </div>
         ))}
@@ -103,7 +131,7 @@ export const LabModule: React.FC = () => {
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        title="Thêm phòng thí nghiệm"
+        title={editingIndex !== null ? "Chỉnh sửa phòng thí nghiệm" : "Thêm phòng thí nghiệm"}
         footer={
           <>
             <button 
@@ -113,50 +141,56 @@ export const LabModule: React.FC = () => {
               Hủy
             </button>
             <button 
-              onClick={handleAdd}
+              onClick={handleSave}
               className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm font-medium"
             >
-              <Save size={16} className="mr-2" /> Lưu PTN
+              <Save size={16} className="mr-2" /> {editingIndex !== null ? "Cập nhật" : "Lưu PTN"}
             </button>
           </>
         }
       >
         <div className="space-y-4">
           <div className="space-y-1">
-            <label className="text-xs font-bold text-muted-foreground uppercase">Tên phòng thí nghiệm</label>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Tên phòng thí nghiệm</label>
             <input 
               value={newLab.name}
               onChange={e => setNewLab({...newLab, name: e.target.value})}
-              className="w-full p-2 border rounded-md text-sm bg-background" 
+              spellCheck={false}
+              autoComplete="off"
+              className="w-full p-2.5 border rounded-xl text-sm bg-background focus:ring-2 focus:ring-primary/50 outline-none" 
               placeholder="Trung tâm kiểm định..."
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-bold text-muted-foreground uppercase">Mã số (LAS-XD)</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Mã số (LAS-XD)</label>
               <input 
                 value={newLab.code}
                 onChange={e => setNewLab({...newLab, code: e.target.value})}
-                className="w-full p-2 border rounded-md text-sm bg-background font-mono" 
+                spellCheck={false}
+                autoComplete="off"
+                className="w-full p-2.5 border rounded-xl text-sm bg-background font-mono focus:ring-2 focus:ring-primary/50 outline-none" 
                 placeholder="LAS-XD 123"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-bold text-muted-foreground uppercase">Hạn chứng chỉ</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Hạn chứng chỉ</label>
               <input 
                 type="date"
                 value={newLab.expiry}
                 onChange={e => setNewLab({...newLab, expiry: e.target.value})}
-                className="w-full p-2 border rounded-md text-sm bg-background" 
+                className="w-full p-2.5 border rounded-xl text-sm bg-background focus:ring-2 focus:ring-primary/50 outline-none" 
               />
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-bold text-muted-foreground uppercase">Thiết bị chính</label>
+            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Thiết bị chính</label>
             <textarea 
               value={newLab.equipment}
               onChange={e => setNewLab({...newLab, equipment: e.target.value})}
-              className="w-full p-2 border rounded-md text-sm bg-background min-h-[80px]" 
+              spellCheck={false}
+              autoComplete="off"
+              className="w-full p-2.5 border rounded-xl text-sm bg-background min-h-[80px] focus:ring-2 focus:ring-primary/50 outline-none" 
               placeholder="Máy nén, máy kéo, thiết bị thí nghiệm..."
             />
           </div>
@@ -194,3 +228,4 @@ export const LabModule: React.FC = () => {
     </div>
   );
 };
+

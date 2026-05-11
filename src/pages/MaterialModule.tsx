@@ -14,6 +14,7 @@ export const MaterialModule: React.FC = () => {
   const [materials, setMaterials] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [newMaterial, setNewMaterial] = useState({
     name: '',
     source: '',
@@ -31,12 +32,30 @@ export const MaterialModule: React.FC = () => {
     }
   }, []);
 
-  const handleAdd = () => {
-    const updated = [newMaterial, ...materials];
+  const handleOpenAdd = () => {
+    setEditingIndex(null);
+    setNewMaterial({ name: '', source: '', lot: '', qty: '' });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (index: number) => {
+    setEditingIndex(index);
+    setNewMaterial({ ...materials[index] });
+    setIsModalOpen(true);
+  };
+
+  const handleSave = () => {
+    let updated;
+    if (editingIndex !== null) {
+      updated = [...materials];
+      updated[editingIndex] = newMaterial;
+    } else {
+      updated = [newMaterial, ...materials];
+    }
     setMaterials(updated);
     StorageService.save('hoso_materials', updated);
     setIsModalOpen(false);
-    setNewMaterial({ name: '', source: '', lot: '', qty: '' });
+    setEditingIndex(null);
   };
 
   const handleDelete = (index: number) => {
@@ -58,8 +77,8 @@ export const MaterialModule: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Quản lý vật liệu</h1>
         <button 
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
+          onClick={handleOpenAdd}
+          className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm font-medium"
         >
           <Plus size={18} className="mr-2" /> Nhập vật liệu
         </button>
@@ -74,12 +93,11 @@ export const MaterialModule: React.FC = () => {
             <input 
               type="text" 
               placeholder="Tìm vật liệu..." 
+              spellCheck={false}
+              autoComplete="off"
               className="w-full pl-9 pr-4 py-1.5 bg-background border rounded-md text-sm focus:outline-none"
             />
           </div>
-          <button className="flex items-center px-3 py-1.5 border bg-background rounded-md text-sm hover:bg-accent">
-            <Filter size={16} className="mr-2" /> Lọc
-          </button>
         </div>
 
         <div className="overflow-x-auto">
@@ -101,15 +119,24 @@ export const MaterialModule: React.FC = () => {
                     <p>{item.source}</p>
                   </td>
                   <td className="px-6 py-4 text-xs font-mono">{item.lot}</td>
-                  <td className="px-6 py-4">{item.qty}</td>
+                  <td className="px-6 py-4 font-medium text-primary">{item.qty}</td>
                   <td className="px-6 py-4 text-right">
-                    <button 
-                      onClick={() => handleDelete(i)}
-                      className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-                      title="Xóa vật liệu"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    <div className="flex items-center justify-end space-x-1">
+                      <button 
+                        onClick={() => handleOpenEdit(i)}
+                        className="p-1.5 text-primary hover:bg-primary/10 rounded-md transition-colors"
+                        title="Sửa vật liệu"
+                      >
+                        <Plus size={16} className="rotate-45" />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(i)}
+                        className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                        title="Xóa vật liệu"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -121,7 +148,7 @@ export const MaterialModule: React.FC = () => {
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        title="Nhập vật liệu mới"
+        title={editingIndex !== null ? "Chỉnh sửa vật liệu" : "Nhập vật liệu mới"}
         footer={
           <>
             <button 
@@ -131,10 +158,10 @@ export const MaterialModule: React.FC = () => {
               Hủy
             </button>
             <button 
-              onClick={handleAdd}
+              onClick={handleSave}
               className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm font-medium"
             >
-              <Save size={16} className="mr-2" /> Lưu vật liệu
+              <Save size={16} className="mr-2" /> {editingIndex !== null ? "Cập nhật" : "Lưu vật liệu"}
             </button>
           </>
         }
@@ -145,6 +172,8 @@ export const MaterialModule: React.FC = () => {
             <input 
               value={newMaterial.name}
               onChange={e => setNewMaterial({...newMaterial, name: e.target.value})}
+              spellCheck={false}
+              autoComplete="off"
               className="w-full p-2 border rounded-md text-sm bg-background" 
               placeholder="Cáp điện Cu/XLPE/PVC..."
             />
@@ -154,6 +183,8 @@ export const MaterialModule: React.FC = () => {
             <input 
               value={newMaterial.source}
               onChange={e => setNewMaterial({...newMaterial, source: e.target.value})}
+              spellCheck={false}
+              autoComplete="off"
               className="w-full p-2 border rounded-md text-sm bg-background" 
               placeholder="Công ty Cadivi"
             />
@@ -164,6 +195,8 @@ export const MaterialModule: React.FC = () => {
               <input 
                 value={newMaterial.lot}
                 onChange={e => setNewMaterial({...newMaterial, lot: e.target.value})}
+                spellCheck={false}
+                autoComplete="off"
                 className="w-full p-2 border rounded-md text-sm bg-background font-mono" 
                 placeholder="LOT-2026-001"
               />
@@ -173,6 +206,8 @@ export const MaterialModule: React.FC = () => {
               <input 
                 value={newMaterial.qty}
                 onChange={e => setNewMaterial({...newMaterial, qty: e.target.value})}
+                spellCheck={false}
+                autoComplete="off"
                 className="w-full p-2 border rounded-md text-sm bg-background" 
                 placeholder="1000 m"
               />
@@ -212,3 +247,4 @@ export const MaterialModule: React.FC = () => {
     </div>
   );
 };
+

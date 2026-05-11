@@ -326,71 +326,79 @@ export const TemplateModule: React.FC = () => {
     const isJV = project.isJointVenture;
     const jvMembers: string[] = project.contractorMembers || [];
 
-    // Build columns based on selectedParties
-    const colDefs = selectedParties.map(pid => {
+    // Build flat list of all "units" to show in columns
+    const columns: { header: string; sub: string }[] = [];
+    selectedParties.forEach(pid => {
       const party = SIGNATURE_PARTIES.find(p => p.id === pid);
       if (pid === 'tc' && isJV && jvMembers.length > 0) {
-        // Each JV member gets its own column
-        return jvMembers.map(m => ({ header: party?.short || '', sub: m.toUpperCase() }));
+        jvMembers.forEach(m => {
+          columns.push({ header: party?.short || '', sub: m.toUpperCase() });
+        });
+      } else {
+        // Lấy tên đơn vị thực tế từ tab Dự án
+        let actualName = '';
+        if (pid === 'cdt') actualName = project.investor || '';
+        if (pid === 'tc' && !isJV) actualName = project.contractor || '';
+        if (pid === 'tv') actualName = project.supervisor || '';
+        // Nếu không có tên đơn vị thì dùng header mặc định
+        columns.push({ 
+          header: party?.short || '', 
+          sub: actualName.toUpperCase() 
+        });
       }
-      return [{ header: party?.short || '', sub: '' }];
-    }).flat();
+    });
 
-    const numCols = colDefs.length;
-    // Rows: 0=header, 1=sub/company (if JV), 2=instruction italic, 3-5=blank signing space
-    const hasSubRow = isJV && jvMembers.length > 0 && selectedParties.includes('tc');
-    const totalRows = hasSubRow ? 6 : 5;
+    // Layout: 2 columns per row
+    const numCols = 2;
+    const numItems = columns.length;
+    const numRowsPerItem = 3; // Header, (Ký tên...), Blank space
+    const totalTableRows = Math.ceil(numItems / numCols) * numRowsPerItem;
 
     // @ts-ignore
     Word.run(async (context: any) => {
       const range = context.document.getSelection();
-      const table = range.insertTable(totalRows, numCols, 'After');
-      table.style = 'Table Grid';
+      const table = range.insertTable(totalTableRows, numCols, 'After');
+      table.style = 'Table Normal'; // No border
       table.load('id');
       await context.sync();
 
-      let row = 0;
-      // Row 0: Headers (bold, centered)
-      for (let c = 0; c < numCols; c++) {
-        const cell = table.getCell(row, c);
-        cell.body.clear();
-        const p = cell.body.paragraphs.getFirst();
-        p.insertText(colDefs[c].header, 'Replace');
-        p.font.bold = true;
-        p.alignment = 'Centered';
-      }
-      row++;
+      for (let i = 0; i < numItems; i++) {
+        const colIdx = i % numCols;
+        const startRowIdx = Math.floor(i / numCols) * numRowsPerItem;
+        const colData = columns[i];
 
-      // Sub row (JV company names)
-      if (hasSubRow) {
-        for (let c = 0; c < numCols; c++) {
-          const cell = table.getCell(row, c);
-          cell.body.clear();
-          const p = cell.body.paragraphs.getFirst();
-          p.insertText(colDefs[c].sub || '', 'Replace');
-          p.font.bold = true;
-          p.alignment = 'Centered';
+        // Row 0: Unit Header
+        const headerCell = table.getCell(startRowIdx, colIdx);
+        headerCell.body.clear();
+        const p1 = headerCell.body.paragraphs.getFirst();
+        p1.insertText(colData.header, 'Replace');
+        p1.font.bold = true;
+        p1.alignment = 'Centered';
+        
+        if (colData.sub) {
+          p1.insertText('\n' + colData.sub, 'End');
         }
-        row++;
-      }
 
-      // Instruction row (italic, centered)
-      for (let c = 0; c < numCols; c++) {
-        const cell = table.getCell(row, c);
-        cell.body.clear();
-        const p = cell.body.paragraphs.getFirst();
-        p.insertText('(Ký, ghi rõ họ tên và đóng dấu)', 'Replace');
-        p.font.italic = true;
-        p.alignment = 'Centered';
+        // Row 1: Instruction
+        const instCell = table.getCell(startRowIdx + 1, colIdx);
+        instCell.body.clear();
+        const p2 = instCell.body.paragraphs.getFirst();
+        p2.insertText('(Ký, ghi rõ họ tên và đóng dấu)', 'Replace');
+        p2.font.italic = true;
+        p2.alignment = 'Centered';
+        p2.font.size = 9;
+
+        // Row 2: Blank space for signing (already blank)
       }
 
       await context.sync();
       table.getRange('After').select();
       await context.sync();
       setShowSigModal(false);
-      alert(`Đã chèn bảng ký tên với ${numCols} cột!`);
+      alert(`Đã chèn bảng ký tên 2 cột với ${numItems} bên tham gia!`);
     }).catch((err: any) => alert('Lỗi khi chèn bảng ký tên: ' + err.message));
   };
+
 
   const toggleParty = (id: string) => {
     setSelectedParties(prev =>
@@ -427,6 +435,8 @@ export const TemplateModule: React.FC = () => {
             placeholder="Nhập tên biên bản (VD: Biên bản nghiệm thu lắp đặt thiết bị...)"
             value={recordName}
             onChange={(e) => setRecordName(e.target.value)}
+            spellCheck={false}
+            autoComplete="off"
             className="flex-1 p-3 border rounded-xl bg-background text-sm focus:ring-2 focus:ring-primary/50 outline-none"
           />
           <button 

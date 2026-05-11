@@ -13,6 +13,7 @@ export const EquipmentModule: React.FC = () => {
   const [equipment, setEquipment] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [newEquip, setNewEquip] = useState({
     name: '',
     serial: '',
@@ -30,12 +31,30 @@ export const EquipmentModule: React.FC = () => {
     }
   }, []);
 
-  const handleAdd = () => {
-    const updated = [newEquip, ...equipment];
+  const handleOpenAdd = () => {
+    setEditingIndex(null);
+    setNewEquip({ name: '', serial: '', lastCheck: '', expiry: '' });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (index: number) => {
+    setEditingIndex(index);
+    setNewEquip({ ...equipment[index] });
+    setIsModalOpen(true);
+  };
+
+  const handleSave = () => {
+    let updated;
+    if (editingIndex !== null) {
+      updated = [...equipment];
+      updated[editingIndex] = newEquip;
+    } else {
+      updated = [newEquip, ...equipment];
+    }
     setEquipment(updated);
     StorageService.save('hoso_equipment', updated);
     setIsModalOpen(false);
-    setNewEquip({ name: '', serial: '', lastCheck: '', expiry: '' });
+    setEditingIndex(null);
   };
 
   const handleDelete = (index: number) => {
@@ -57,8 +76,8 @@ export const EquipmentModule: React.FC = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Quản lý máy móc thiết bị</h1>
         <button 
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm"
+          onClick={handleOpenAdd}
+          className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm font-medium"
         >
           <Plus size={18} className="mr-2" /> Thêm máy móc
         </button>
@@ -73,6 +92,8 @@ export const EquipmentModule: React.FC = () => {
             <input 
               type="text" 
               placeholder="Tìm thiết bị..." 
+              spellCheck={false}
+              autoComplete="off"
               className="w-full pl-9 pr-4 py-1.5 bg-background border rounded-md text-sm focus:outline-none"
             />
           </div>
@@ -97,13 +118,22 @@ export const EquipmentModule: React.FC = () => {
                   <td className="px-6 py-4 text-muted-foreground">{item.lastCheck}</td>
                   <td className="px-6 py-4 font-medium text-primary">{item.expiry}</td>
                   <td className="px-6 py-4 text-right">
-                    <button 
-                      onClick={() => handleDelete(i)}
-                      className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-                      title="Xóa thiết bị"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    <div className="flex items-center justify-end space-x-1">
+                      <button 
+                        onClick={() => handleOpenEdit(i)}
+                        className="p-1.5 text-primary hover:bg-primary/10 rounded-md transition-colors"
+                        title="Sửa thiết bị"
+                      >
+                        <Plus size={16} className="rotate-45" />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(i)}
+                        className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                        title="Xóa thiết bị"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -115,7 +145,7 @@ export const EquipmentModule: React.FC = () => {
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        title="Thêm thiết bị mới"
+        title={editingIndex !== null ? "Chỉnh sửa máy móc" : "Thêm thiết bị mới"}
         footer={
           <>
             <button 
@@ -125,10 +155,10 @@ export const EquipmentModule: React.FC = () => {
               Hủy
             </button>
             <button 
-              onClick={handleAdd}
+              onClick={handleSave}
               className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm font-medium"
             >
-              <Save size={16} className="mr-2" /> Lưu thiết bị
+              <Save size={16} className="mr-2" /> {editingIndex !== null ? "Cập nhật" : "Lưu thiết bị"}
             </button>
           </>
         }
@@ -139,6 +169,8 @@ export const EquipmentModule: React.FC = () => {
             <input 
               value={newEquip.name}
               onChange={e => setNewEquip({...newEquip, name: e.target.value})}
+              spellCheck={false}
+              autoComplete="off"
               className="w-full p-2 border rounded-md text-sm bg-background" 
               placeholder="Xe cẩu tự hành 5 tấn"
             />
@@ -148,6 +180,8 @@ export const EquipmentModule: React.FC = () => {
             <input 
               value={newEquip.serial}
               onChange={e => setNewEquip({...newEquip, serial: e.target.value})}
+              spellCheck={false}
+              autoComplete="off"
               className="w-full p-2 border rounded-md text-sm bg-background font-mono" 
               placeholder="29C-123.45"
             />
@@ -206,3 +240,4 @@ export const EquipmentModule: React.FC = () => {
     </div>
   );
 };
+
