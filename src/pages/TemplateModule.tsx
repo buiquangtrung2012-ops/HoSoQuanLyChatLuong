@@ -359,69 +359,77 @@ export const TemplateModule: React.FC = () => {
       const range = context.document.getSelection();
       const table = range.insertTable(totalTableRows, numCols, 'After');
       table.style = 'Table Normal';
-      table.alignment = 'Centered'; // Center the table itself
+      table.alignment = 'Centered';
       
-      // Load everything needed
-      table.load('rows');
+      // Load rows to format them
+      table.load('rows/items');
       await context.sync();
 
+      // 1. Set row heights first
+      for (let r = 0; r < totalTableRows; r++) {
+        const row = table.rows.items[r];
+        if (r % numRowsPerItem === 2) {
+          row.heightRule = 'Exactly';
+          row.height = 105; // 3.7cm
+        } else {
+          row.heightRule = 'Auto';
+        }
+      }
+
+      // 2. Fill content and format paragraphs
       for (let i = 0; i < numItems; i++) {
         const colIdx = i % numCols;
         const startRowIdx = Math.floor(i / numCols) * numRowsPerItem;
         const colData = columns[i];
 
         // Row 0: Unit Header & Sub
-        const headerCell = table.getCell(startRowIdx, colIdx);
-        headerCell.body.clear();
-        // Insert header
-        const pHeader = headerCell.body.insertParagraph(colData.header, 'Start');
-        pHeader.font.bold = true;
-        pHeader.alignment = 'Centered';
-        pHeader.spacingBefore = 0;
-        pHeader.spacingAfter = 0;
-        pHeader.lineSpacing = 12;
-
+        const cell0 = table.getCell(startRowIdx, colIdx);
+        cell0.body.clear();
+        const p0 = cell0.body.insertParagraph(colData.header, 'Start');
         if (colData.sub) {
-          const pSub = headerCell.body.insertParagraph(colData.sub, 'End');
-          pSub.font.bold = true;
-          pSub.alignment = 'Centered';
-          pSub.spacingBefore = 0;
-          pSub.spacingAfter = 0;
-          pSub.lineSpacing = 12;
+          cell0.body.insertParagraph(colData.sub, 'End');
         }
-
+        
         // Row 1: Instruction
-        const instCell = table.getCell(startRowIdx + 1, colIdx);
-        instCell.body.clear();
-        const pInst = instCell.body.insertParagraph('(Ký, ghi rõ họ tên và đóng dấu)', 'Start');
-        pInst.font.italic = true;
-        pInst.font.size = 9;
-        pInst.alignment = 'Centered';
-        pInst.spacingBefore = 0;
-        pInst.spacingAfter = 0;
-        pInst.lineSpacing = 12;
+        const cell1 = table.getCell(startRowIdx + 1, colIdx);
+        cell1.body.clear();
+        cell1.body.insertParagraph('(Ký, ghi rõ họ tên và đóng dấu)', 'Start');
       }
 
-      // Tăng chiều cao cho các ô ký tên (hàng thứ 3 của mỗi block)
+      // 3. Final pass: Format ALL paragraphs in the table to be absolutely sure
       await context.sync();
-      for (let r = 2; r < totalTableRows; r += numRowsPerItem) {
-        try {
-          const row = table.rows.getItemAt(r);
-          row.heightRule = 'Exactly';
-          row.height = 105; // ~3.7cm
-        } catch (e) {
-          console.error('Error setting row height:', e);
-        }
-      }
+      table.load('rows/items/cells/items/body/paragraphs/items');
+      await context.sync();
+
+      table.rows.items.forEach((row: any, rIdx: number) => {
+        row.cells.items.forEach((cell: any) => {
+          cell.body.paragraphs.items.forEach((p: any, pIdx: number) => {
+            p.alignment = 'Centered';
+            p.spacingBefore = 0;
+            p.spacingAfter = 0;
+            p.lineSpacing = 12; // Single
+            
+            // Special formatting for Header rows
+            if (rIdx % numRowsPerItem === 0) {
+              p.font.bold = true;
+            }
+            // Special formatting for Instruction rows
+            if (rIdx % numRowsPerItem === 1) {
+              p.font.italic = true;
+              p.font.size = 9;
+            }
+          });
+        });
+      });
 
       await context.sync();
       table.getRange('After').select();
       await context.sync();
       setShowSigModal(false);
-      alert(`Đã chèn bảng ký tên thành công (v1405)!`);
+      alert(`Đã chèn bảng ký tên (v1410)!`);
     }).catch((err: any) => {
       console.error(err);
-      alert('Lỗi khi chèn bảng ký tên: ' + err.message);
+      alert('Lỗi: ' + err.message);
     });
   };
 
