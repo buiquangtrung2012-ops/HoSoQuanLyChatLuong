@@ -361,53 +361,64 @@ export const TemplateModule: React.FC = () => {
       table.style = 'Table Normal';
       table.alignment = 'Centered';
       
+      // Set cell padding to 0 to eliminate extra space
+      table.topPadding = 0;
+      table.bottomPadding = 0;
+      table.leftPadding = 0;
+      table.rightPadding = 0;
+      
       // Load rows to format them
       table.load('rows/items');
       await context.sync();
 
-      // 1. Set row heights first
+      // 1. Set row heights and force them
       for (let r = 0; r < totalTableRows; r++) {
         const row = table.rows.items[r];
         if (r % numRowsPerItem === 2) {
           row.heightRule = 'Exactly';
-          row.height = 105; // 3.7cm
+          row.height = 105; // ~3.7cm
         } else {
           row.heightRule = 'Auto';
         }
       }
 
-      // 2. Fill content and format paragraphs
+      // 2. Fill content
       for (let i = 0; i < numItems; i++) {
         const colIdx = i % numCols;
         const startRowIdx = Math.floor(i / numCols) * numRowsPerItem;
         const colData = columns[i];
 
-        // Row 0: Unit Header & Sub
         const cell0 = table.getCell(startRowIdx, colIdx);
         cell0.body.clear();
-        const p0 = cell0.body.insertParagraph(colData.header, 'Start');
+        cell0.body.insertParagraph(colData.header, 'Start');
         if (colData.sub) {
           cell0.body.insertParagraph(colData.sub, 'End');
         }
         
-        // Row 1: Instruction
         const cell1 = table.getCell(startRowIdx + 1, colIdx);
         cell1.body.clear();
         cell1.body.insertParagraph('(Ký, ghi rõ họ tên và đóng dấu)', 'Start');
       }
 
-      // 3. Final pass: Format ALL paragraphs in the table to be absolutely sure
+      // 3. Final aggressive pass: Format ALL paragraphs
       await context.sync();
       table.load('rows/items/cells/items/body/paragraphs/items');
       await context.sync();
 
       table.rows.items.forEach((row: any, rIdx: number) => {
         row.cells.items.forEach((cell: any) => {
-          cell.body.paragraphs.items.forEach((p: any, pIdx: number) => {
+          cell.body.paragraphs.items.forEach((p: any) => {
+            // Use set() to ensure properties are applied
+            p.set({
+              alignment: 'Centered',
+              spacingBefore: 0,
+              spacingAfter: 0,
+              lineSpacing: 12
+            });
+            // Also set individual properties for backward compatibility
             p.alignment = 'Centered';
             p.spacingBefore = 0;
             p.spacingAfter = 0;
-            p.lineSpacing = 12; // Single
             
             // Special formatting for Header rows
             if (rIdx % numRowsPerItem === 0) {
@@ -426,7 +437,7 @@ export const TemplateModule: React.FC = () => {
       table.getRange('After').select();
       await context.sync();
       setShowSigModal(false);
-      alert(`Đã chèn bảng ký tên (v1410)!`);
+      alert(`Đã chèn bảng ký tên (v1415)!`);
     }).catch((err: any) => {
       console.error(err);
       alert('Lỗi: ' + err.message);
