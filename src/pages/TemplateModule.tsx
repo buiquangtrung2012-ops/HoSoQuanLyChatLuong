@@ -157,13 +157,48 @@ export const TemplateModule: React.FC = () => {
 
   const fillDataToDocument = () => {
     const participants = StorageService.get('hoso_participants') || {};
-    const project = StorageService.getProject();
+    const project = StorageService.getProject() || {};
+    const materials = StorageService.get('hoso_materials') || [];
+    const equipment = StorageService.get('hoso_equipment') || [];
+    const labs = StorageService.get('hoso_labs') || [];
+    const workItems = StorageService.getWorkItems() || [];
+
+    // First material, equipment, lab for single-value fields
+    const mat = materials[0] || {};
+    const equip = equipment[0] || {};
+    const lab = labs[0] || {};
+    const work = workItems[0] || {};
+
     const allData: Record<string, string> = {
+      // Project
+      projectName: project.name || '',
+      contractNumber: project.contractNumber || '',
+      packageName: project.packageName || '',
+      contractor: project.contractor || '',
+      investorRep: project.investor || '',
+      // Work
+      workName: work.name || '',
+      workCode: work.code || '',
+      workLine: work.line || '',
+      workCategory: work.category || '',
+      workQty: work.quantity?.toString() || '',
+      workUnit: work.unit || '',
+      workInspectDate: work.inspectionDate?.split('-').reverse().join('/') || '',
+      // Material
+      matName: mat.name || '',
+      matSource: mat.source || '',
+      matLot: mat.lot || '',
+      matQty: mat.qty?.toString() || '',
+      // Equipment
+      equipName: equip.name || '',
+      equipSerial: equip.serial || '',
+      equipExpiry: equip.expiry || '',
+      // Lab
+      labName: lab.name || '',
+      labCode: lab.code || '',
+      labExpiry: lab.expiry || '',
+      // Participants (from Ky ho so)
       ...participants,
-      projectName: project?.name || '',
-      contractNumber: project?.contractNumber || '',
-      packageName: project?.packageName || '',
-      contractor: project?.contractor || '',
     };
 
     if (!isWordApiAvailable()) {
@@ -175,13 +210,20 @@ export const TemplateModule: React.FC = () => {
       const ccs = context.document.contentControls;
       ccs.load('items');
       await context.sync();
+      let filled = 0;
       for (const item of ccs.items) {
-        if (allData[item.tag]) {
-          item.insertText(allData[item.tag], 'Replace');
+        item.load('tag');
+      }
+      await context.sync();
+      for (const item of ccs.items) {
+        const val = allData[item.tag];
+        if (val !== undefined && val !== '') {
+          item.insertText(val, 'Replace');
+          filled++;
         }
       }
       await context.sync();
-      alert('Đã cập nhật dữ liệu vào tất cả các trường trong tài liệu!');
+      alert(`Đã cập nhật ${filled}/${ccs.items.length} trường trong tài liệu!`);
     }).catch((err: any) => {
       console.error(err);
       alert('Lỗi khi cập nhật dữ liệu: ' + err.message);

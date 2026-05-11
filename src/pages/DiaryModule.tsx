@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Cloud, Users, Truck, Plus, Sparkles, MapPin, Wind, Save, CheckCircle, RefreshCcw } from 'lucide-react';
 import { AiService } from '../services/AiService';
-import { mockWorkItems } from '../data/mockData';
 import { StorageService } from '../services/storageService';
 
 export const DiaryModule: React.FC = () => {
@@ -14,10 +13,13 @@ export const DiaryModule: React.FC = () => {
   const [manpower, setManpower] = useState("12 công nhân, 1 kỹ thuật");
   const [equipment, setEquipment] = useState("1 Xe cẩu tự hành, 1 máy thủy bình");
   const [allEntries, setAllEntries] = useState<any[]>([]);
+  const [workItems, setWorkItems] = useState<any[]>([]);
 
   useEffect(() => {
     const savedEntries = StorageService.getDiary() || [];
     setAllEntries(savedEntries);
+    const savedItems = StorageService.getWorkItems() || [];
+    setWorkItems(savedItems);
     
     const existing = savedEntries.find((e: any) => e.date === date);
     if (existing) {
@@ -41,11 +43,10 @@ export const DiaryModule: React.FC = () => {
   };
 
   const handleFetchFromWorkItems = () => {
-    // Get all unique dates from work items
-    const allDates = [...new Set(mockWorkItems.map(w => w.inspectionDate))];
+    const allDates = [...new Set(workItems.map((w: any) => w.inspectionDate))];
     
     if (allDates.length === 0) {
-      alert('Không có dữ liệu công việc nào để gộp.');
+      alert('Không có dữ liệu công việc nào để gộp. Hãy thêm công việc ở Tab Công việc trước.');
       return;
     }
 
@@ -53,8 +54,8 @@ export const DiaryModule: React.FC = () => {
       let createdCount = 0;
       const updatedEntries = [...allEntries];
 
-      allDates.forEach(dStr => {
-        const relatedWorks = mockWorkItems.filter(work => work.inspectionDate === dStr);
+      allDates.forEach((dStr: any) => {
+        const relatedWorks = workItems.filter((work: any) => work.inspectionDate === dStr);
         if (relatedWorks.length > 0) {
           const content = relatedWorks.map(work => `- ${work.name} (${work.line} - ${work.category}): ${work.quantity} ${work.unit}`).join('\n');
           
@@ -282,8 +283,8 @@ export const DiaryModule: React.FC = () => {
             <h3 className="font-semibold mb-4 text-sm">Gợi ý từ công việc</h3>
             <p className="text-[10px] text-muted-foreground mb-4 font-medium uppercase tracking-wider">Ngày nghiệm thu: {date}</p>
             <div className="space-y-3">
-              {mockWorkItems.filter(w => w.inspectionDate === date).length > 0 ? (
-                mockWorkItems.filter(w => w.inspectionDate === date).map((work, i) => (
+              {workItems.filter((w: any) => w.inspectionDate === date).length > 0 ? (
+                workItems.filter((w: any) => w.inspectionDate === date).map((work: any, i: number) => (
                   <div key={i} className="flex flex-col text-xs p-2 border-l-2 border-primary bg-primary/5 rounded-r-lg">
                     <span className="font-bold">{work.name}</span>
                     <span className="text-muted-foreground">{work.line} - {work.category}</span>
@@ -302,7 +303,7 @@ export const DiaryModule: React.FC = () => {
               <Sparkles size={16} className="mr-2" /> AI Insights
             </h4>
             <p className="text-sm text-purple-600 leading-relaxed italic">
-              "Dựa trên danh sách công việc, hôm nay có {mockWorkItems.filter(w => w.inspectionDate === date).length} hạng mục cần hoàn thành hồ sơ. Hãy chú ý kiểm tra lại đầy đủ các biên bản kèm theo để đảm bảo tiến độ thanh toán."
+              "Dựa trên danh sách công việc, hôm nay có {workItems.filter((w: any) => w.inspectionDate === date).length} hạng mục cần hoàn thành hồ sơ. Hãy chú ý kiểm tra lại đầy đủ các biên bản kèm theo để đảm bảo tiến độ thanh toán."
             </p>
           </div>
         </div>
