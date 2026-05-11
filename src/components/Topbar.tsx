@@ -22,7 +22,7 @@ export const Topbar: React.FC = () => {
 
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-3">
-          <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold tracking-tighter">v11052026.1400</span>
+          <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold tracking-tighter">v11052026.1405</span>
           <button 
             onClick={() => {
               const url = new URL(window.location.href);

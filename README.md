@@ -60,9 +60,8 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 > 💡 **Tại sao phải 2 bước?** Bước 1 chỉ lưu source code lên `main`. Bước 2 mới thực sự **build** ra file tĩnh và **deploy** lên `gh-pages` — là nhánh mà GitHub Pages phục vụ. Thiếu Bước 2 thì Add-in vẫn cũ.
 
-### Phiên bản v11052026.1400 (Mới nhất)
-- **Chuẩn hóa bảng ký tên:** Thiết lập Spacing After = 0 pt, Line Spacing = Single, và chiều cao ô ký tên chuẩn 3.7cm theo yêu cầu.
-- **Sửa lỗi bảng trống:** Tối ưu hóa quy trình chèn văn bản và đồng bộ Word API.
+### Phiên bản v11052026.1405 (Mới nhất)
+- **Ép định dạng bảng ký tên:** Căn giữa toàn bộ các đoạn văn bản trong ô, xóa bỏ triệt để khoảng cách dòng, và ép chiều cao ô ký tên chính xác 3.7cm (heightRule = Exactly).
 - **Tắt kiểm tra chính tả:** Bổ sung `spellCheck={false}` trên toàn bộ các input/textarea.
 - **Tính năng Chỉnh sửa:** Triển khai nút "Sửa" và logic cập nhật dữ liệu cho tất cả các module.
 - **Gộp Chức vụ/Vai trò:** Trong quản lý nhân sự, gộp 2 trường này thành một để tối ưu giao diện.

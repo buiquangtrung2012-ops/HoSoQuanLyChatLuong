@@ -359,9 +359,9 @@ export const TemplateModule: React.FC = () => {
       const range = context.document.getSelection();
       const table = range.insertTable(totalTableRows, numCols, 'After');
       table.style = 'Table Normal';
-      table.alignment = 'Centered';
+      table.alignment = 'Centered'; // Center the table itself
       
-      // Load rows to set height later
+      // Load everything needed
       table.load('rows');
       await context.sync();
 
@@ -370,34 +370,45 @@ export const TemplateModule: React.FC = () => {
         const startRowIdx = Math.floor(i / numCols) * numRowsPerItem;
         const colData = columns[i];
 
-        // Row 0: Unit Header
+        // Row 0: Unit Header & Sub
         const headerCell = table.getCell(startRowIdx, colIdx);
-        const headerText = colData.sub ? `${colData.header}\n${colData.sub}` : colData.header;
-        headerCell.body.insertText(headerText, 'Replace');
-        
-        const p1 = headerCell.body.paragraphs.getFirst();
-        p1.font.bold = true;
-        p1.alignment = 'Centered';
-        p1.spacingBefore = 0;
-        p1.spacingAfter = 0;
+        headerCell.body.clear();
+        // Insert header
+        const pHeader = headerCell.body.insertParagraph(colData.header, 'Start');
+        pHeader.font.bold = true;
+        pHeader.alignment = 'Centered';
+        pHeader.spacingBefore = 0;
+        pHeader.spacingAfter = 0;
+        pHeader.lineSpacing = 12;
+
+        if (colData.sub) {
+          const pSub = headerCell.body.insertParagraph(colData.sub, 'End');
+          pSub.font.bold = true;
+          pSub.alignment = 'Centered';
+          pSub.spacingBefore = 0;
+          pSub.spacingAfter = 0;
+          pSub.lineSpacing = 12;
+        }
 
         // Row 1: Instruction
         const instCell = table.getCell(startRowIdx + 1, colIdx);
-        instCell.body.insertText('(Ký, ghi rõ họ tên và đóng dấu)', 'Replace');
-        
-        const p2 = instCell.body.paragraphs.getFirst();
-        p2.font.italic = true;
-        p2.alignment = 'Centered';
-        p2.font.size = 9;
-        p2.spacingBefore = 0;
-        p2.spacingAfter = 0;
+        instCell.body.clear();
+        const pInst = instCell.body.insertParagraph('(Ký, ghi rõ họ tên và đóng dấu)', 'Start');
+        pInst.font.italic = true;
+        pInst.font.size = 9;
+        pInst.alignment = 'Centered';
+        pInst.spacingBefore = 0;
+        pInst.spacingAfter = 0;
+        pInst.lineSpacing = 12;
       }
 
       // Tăng chiều cao cho các ô ký tên (hàng thứ 3 của mỗi block)
       await context.sync();
       for (let r = 2; r < totalTableRows; r += numRowsPerItem) {
         try {
-          table.rows.getItemAt(r).height = 105; // ~3.7cm (105 points)
+          const row = table.rows.getItemAt(r);
+          row.heightRule = 'Exactly';
+          row.height = 105; // ~3.7cm
         } catch (e) {
           console.error('Error setting row height:', e);
         }
@@ -407,7 +418,7 @@ export const TemplateModule: React.FC = () => {
       table.getRange('After').select();
       await context.sync();
       setShowSigModal(false);
-      alert(`Đã chèn bảng ký tên thành công!`);
+      alert(`Đã chèn bảng ký tên thành công (v1405)!`);
     }).catch((err: any) => {
       console.error(err);
       alert('Lỗi khi chèn bảng ký tên: ' + err.message);
