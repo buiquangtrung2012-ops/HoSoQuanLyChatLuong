@@ -322,109 +322,158 @@ export const TemplateModule: React.FC = () => {
       alert('Chức năng này chỉ hoạt động khi mở trong Microsoft Word.');
       return;
     }
+
     const project = StorageService.getProject() || {};
     const isJV = project.isJointVenture;
     const jvMembers: string[] = project.contractorMembers || [];
 
-    // Build flat list of all "units" to show in columns
     const columns: { header: string; sub: string }[] = [];
+
     selectedParties.forEach(pid => {
       const party = SIGNATURE_PARTIES.find(p => p.id === pid);
+
       if (pid === 'tc' && isJV && jvMembers.length > 0) {
         jvMembers.forEach(m => {
-          columns.push({ header: party?.short || '', sub: m.toUpperCase() });
+          columns.push({
+            header: party?.short || '',
+            sub: m.toUpperCase()
+          });
         });
       } else {
-        // Lấy tên đơn vị thực tế từ tab Dự án
         let actualName = '';
+
         if (pid === 'cdt') actualName = project.investor || '';
-        if (pid === 'tc' && !isJV) actualName = project.contractor || '';
+        if (pid === 'tc') actualName = project.contractor || '';
         if (pid === 'tv') actualName = project.supervisor || '';
-        // Nếu không có tên đơn vị thì dùng header mặc định
-        columns.push({ 
-          header: party?.short || '', 
-          sub: actualName.toUpperCase() 
+
+        columns.push({
+          header: party?.short || '',
+          sub: actualName.toUpperCase()
         });
       }
     });
 
-    // Layout: 2 columns per row
     const numCols = 2;
-    const numItems = columns.length;
-    const numRowsPerItem = 3; // Header, (Ký tên...), Blank space
-    const totalTableRows = Math.ceil(numItems / numCols) * numRowsPerItem;
+    const numRowsPerItem = 3;
+    const totalTableRows = Math.ceil(columns.length / numCols) * numRowsPerItem;
 
     // @ts-ignore
     Word.run(async (context: any) => {
       const range = context.document.getSelection();
       const table = range.insertTable(totalTableRows, numCols, 'After');
+
       table.style = 'Table Normal';
       table.alignment = 'Centered';
-      
+
       await context.sync();
 
-      for (let i = 0; i < numItems; i++) {
+      // Insert content
+      for (let i = 0; i < columns.length; i++) {
         const colIdx = i % numCols;
-        const startRowIdx = Math.floor(i / numCols) * numRowsPerItem;
-        const colData = columns[i];
+        const startRow = Math.floor(i / numCols) * numRowsPerItem;
+        const item = columns[i];
 
-        // Row 0: Unit Header & Sub
-        const cell0 = table.getCell(startRowIdx, colIdx);
-        cell0.body.clear();
-        cell0.body.insertText(colData.header + (colData.sub ? "\n" + colData.sub : ""), "Replace");
-        
-        // Row 1: Instruction
-        const cell1 = table.getCell(startRowIdx + 1, colIdx);
-        cell1.body.clear();
-        cell1.body.insertText('(Ký, ghi rõ họ tên và đóng dấu)', 'Replace');
+        // Header
+        const headerCell = table.getCell(startRow, colIdx);
+        headerCell.body.clear();
+        headerCell.body.insertText(
+          item.header + (item.sub ? '\n' + item.sub : ''),
+          'Replace'
+        );
+
+        // Instruction
+        const noteCell = table.getCell(startRow + 1, colIdx);
+        noteCell.body.clear();
+        noteCell.body.insertText(
+          '(Ký, ghi rõ họ tên và đóng dấu)',
+          'Replace'
+        );
       }
 
       await context.sync();
 
-      // Format Paragraphs and Row Height
+      // Format all cells
       for (let r = 0; r < totalTableRows; r++) {
         const row = table.rows.getItemAt(r);
+
+        // chiều cao từng row
+        if (r % numRowsPerItem === 0 || r % numRowsPerItem === 1) {
+          row.heightRule = 'Exactly';
+          row.height = 22;
+        }
+
         if (r % numRowsPerItem === 2) {
           row.heightRule = 'Exactly';
-          row.height = 105;
-        } else {
-          row.heightRule = 'Auto';
+          row.height = 130;
         }
 
         for (let c = 0; c < numCols; c++) {
           const cell = table.getCell(r, c);
+
+          // căn giữa dọc
+          try {
+            cell.verticalAlignment = 'Center';
+          } catch {}
+
+          // bỏ padding mặc định của Word
+          try {
+            cell.topPadding = 0;
+            cell.bottomPadding = 0;
+            cell.leftPadding = 0;
+            cell.rightPadding = 0;
+          } catch {}
+
           const paras = cell.body.paragraphs;
           paras.load('items');
           await context.sync();
-          
-          paras.items.forEach((p: any) => {
+
+          for (const p of paras.items) {
+            // giống ảnh 3
             p.alignment = 'Centered';
-            p.spacingBefore = 0;
-            p.spacingAfter = 0;
-            try { p.lineSpacingRule = 'Single'; } catch (e) {}
-            
-            if (r % numRowsPerItem === 0) p.font.bold = true;
+
+            try {
+              p.leftIndent = 0;
+              p.rightIndent = 0;
+              p.firstLineIndent = 0;
+
+              p.spaceBefore = 0;
+              p.spaceAfter = 0;
+
+              p.lineSpacing = 12;
+            } catch {}
+
+            // Header
+            if (r % numRowsPerItem === 0) {
+              p.font.bold = true;
+              p.font.size = 11;
+            }
+
+            // dòng ký
             if (r % numRowsPerItem === 1) {
               p.font.italic = true;
               p.font.size = 9;
             }
-          });
+          }
         }
       }
 
-      // Hide borders
-      table.borders.insideHorizontal.style = 'None';
-      table.borders.insideVertical.style = 'None';
-      table.borders.outsideLeft.style = 'None';
-      table.borders.outsideRight.style = 'None';
-      table.borders.outsideTop.style = 'None';
-      table.borders.outsideBottom.style = 'None';
+      // Borders giống mẫu
+      try {
+        table.borders.insideHorizontal.style = 'Single';
+        table.borders.insideVertical.style = 'Single';
+        table.borders.outsideTop.style = 'Single';
+        table.borders.outsideBottom.style = 'Single';
+        table.borders.outsideLeft.style = 'Single';
+        table.borders.outsideRight.style = 'Single';
+      } catch {}
 
       await context.sync();
+
       table.getRange('After').select();
       await context.sync();
+
       setShowSigModal(false);
-      alert(`Đã chèn bảng ký tên (v1450)!`);
+      alert('Đã chèn bảng ký tên chuẩn!');
     }).catch((err: any) => {
       console.error(err);
       alert('Lỗi chèn bảng: ' + err.message);
