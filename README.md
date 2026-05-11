@@ -60,9 +60,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 > 💡 **Tại sao phải 2 bước?** Bước 1 chỉ lưu source code lên `main`. Bước 2 mới thực sự **build** ra file tĩnh và **deploy** lên `gh-pages` — là nhánh mà GitHub Pages phục vụ. Thiếu Bước 2 thì Add-in vẫn cũ.
 
-### Phiên bản v11052026.1500 (Mới nhất)
-- **Áp dụng bảng ký tên chuẩn:** Tích hợp logic xử lý Liên danh (Joint Venture), thiết lập chiều cao hàng cố định (22pt cho chữ, 130pt cho ô ký) và viền đơn (Single border).
-- **Đồng bộ hóa dữ liệu:** Tự động lấy tên đơn vị và thành viên liên danh từ Module Dự án.
+### Phiên bản v11052026.1520 (Mới nhất)
+- **Tinh chỉnh Font & Paragraph:** Ép font 'Times New Roman' cho toàn bộ bảng, thiết lập cỡ chữ chuẩn (Header 11pt, Note 9pt) và căn chỉnh Paragraph chi tiết hơn.
+- **Hoàn thiện bảng ký tên chuẩn:** Tích hợp logic xử lý Liên danh (Joint Venture), thiết lập chiều cao hàng cố định (22pt cho chữ, 130pt cho ô ký) và viền đơn (Single border).
 - **Tắt kiểm tra chính tả:** Bổ sung `spellCheck={false}` trên toàn bộ các input/textarea.
 - **Tính năng Chỉnh sửa:** Triển khai nút "Sửa" và logic cập nhật dữ liệu cho tất cả các module.
 - **Gộp Chức vụ/Vai trò:** Trong quản lý nhân sự, gộp 2 trường này thành một để tối ưu giao diện.
