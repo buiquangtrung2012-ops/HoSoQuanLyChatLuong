@@ -129,9 +129,12 @@ export const TemplateModule: React.FC = () => {
         cc.placeholderText = `[${label}]`;
         cc.appearance = 'BoundingBox';
         await context.sync();
+        // Di chuyển con trỏ ra sau Content Control
+        cc.getRange('After').select();
+        await context.sync();
       }).catch((err: any) => {
         console.error(err);
-        alert('Lỗi khi chèn Content Control vào Word.');
+        alert('Lỗi khi chèn Content Control vào Word: ' + err.message);
       });
     } else {
       alert(`Chức năng này chỉ hoạt động khi mở trong Microsoft Word.\n\nTag sẽ chèn: ${id}`);
@@ -231,62 +234,68 @@ export const TemplateModule: React.FC = () => {
   };
 
   const insertParticipantTable = (role: 'cdt' | 'tc' | 'tv') => {
-    if (isWordApiAvailable()) {
-      // @ts-ignore
-      Word.run(async (context: any) => {
-        const range = context.document.getSelection();
-        
-        let rowCount = 2;
-        let prefix = 'cdt';
-        if (role === 'tc') { rowCount = 3; prefix = 'tc'; }
-        if (role === 'tv') { rowCount = 2; prefix = 'tv'; }
-
-        const table = range.insertTable(rowCount, 2, "After");
-        
-        // @ts-ignore
-        table.borders.outsideBorderColor = "White";
-        // @ts-ignore
-        table.borders.insideBorderColor = "White";
-        // @ts-ignore
-        table.borders.insideHorizontalBorderType = "None";
-        // @ts-ignore
-        table.borders.insideVerticalBorderType = "None";
-        // @ts-ignore
-        table.borders.outsideTopBorderType = "None";
-        // @ts-ignore
-        table.borders.outsideBottomBorderType = "None";
-        // @ts-ignore
-        table.borders.outsideLeftBorderType = "None";
-        // @ts-ignore
-        table.borders.outsideRightBorderType = "None";
-
-        for (let i = 0; i < rowCount; i++) {
-          const nameCellRange = table.getCell(i, 0).body.getRange();
-          nameCellRange.insertText("Ông: ", "Start");
-          const nameCCRange = table.getCell(i, 0).body.getRange("End");
-          const nameCC = nameCCRange.insertContentControl();
-          nameCC.title = `${role.toUpperCase()} ${i+1} - Tên`;
-          nameCC.tag = `${prefix}${i+1}_name`;
-          nameCC.placeholderText = "[Họ tên]";
-          
-          const posCellRange = table.getCell(i, 1).body.getRange();
-          posCellRange.insertText("Chức vụ: ", "Start");
-          const posCCRange = table.getCell(i, 1).body.getRange("End");
-          const posCC = posCCRange.insertContentControl();
-          posCC.title = `${role.toUpperCase()} ${i+1} - Chức vụ`;
-          posCC.tag = `${prefix}${i+1}_pos`;
-          posCC.placeholderText = "[Chức vụ]";
-        }
-
-        await context.sync();
-        alert(`Đã chèn bảng Thành phần tham gia (${role.toUpperCase()})`);
-      }).catch((err: any) => {
-        console.error(err);
-        alert('Lỗi khi chèn bảng: ' + err.message);
-      });
-    } else {
-      alert(`Chức năng này chỉ hoạt động khi mở trong Microsoft Word.`);
+    if (!isWordApiAvailable()) {
+      alert('Chức năng này chỉ hoạt động khi mở trong Microsoft Word.');
+      return;
     }
+
+    // Đọc số người từ RecordsModule (hoso_participants_v2)
+    const savedGroups = StorageService.get('hoso_participants_v2') || [];
+    const prefixMap: Record<string, string> = { cdt: 'cdt', tc: 'tc', tv: 'tv' };
+    const group = savedGroups.find((g: any) => g.prefix === role);
+    const prefix = prefixMap[role];
+    const rowCount = group ? group.signers.length : (role === 'tc' ? 3 : 2);
+
+    // @ts-ignore
+    Word.run(async (context: any) => {
+      const range = context.document.getSelection();
+
+      // Chèn bảng sau vị trí hiện tại
+      const table = range.insertTable(rowCount, 2, 'After');
+
+      // Xóa viền bằng cách dùng style không có viền
+      // 'Table Normal' là style mặc định không có viền trong Word
+      table.style = 'Table Normal';
+      table.load('id');
+      await context.sync();
+
+      // Chèn nội dung và Content Control vào từng ô
+      for (let i = 0; i < rowCount; i++) {
+        // Ô cột 0: Tên
+        const nameCell = table.getCell(i, 0);
+        nameCell.body.clear();
+        const nameRange = nameCell.body.getRange('Start');
+        nameRange.insertText('Ông: ', 'Replace');
+        await context.sync();
+        const nameCCRange = nameCell.body.getRange('End');
+        const nameCC = nameCCRange.insertContentControl();
+        nameCC.title = `${role.toUpperCase()} ${i + 1} - Tên`;
+        nameCC.tag = `${prefix}${i + 1}_name`;
+        nameCC.placeholderText = '[Họ tên]';
+        nameCC.appearance = 'BoundingBox';
+
+        // Ô cột 1: Chức vụ
+        const posCell = table.getCell(i, 1);
+        posCell.body.clear();
+        const posRange = posCell.body.getRange('Start');
+        posRange.insertText('Chức vụ: ', 'Replace');
+        await context.sync();
+        const posCCRange = posCell.body.getRange('End');
+        const posCC = posCCRange.insertContentControl();
+        posCC.title = `${role.toUpperCase()} ${i + 1} - Chức vụ`;
+        posCC.tag = `${prefix}${i + 1}_pos`;
+        posCC.placeholderText = '[Chức vụ]';
+        posCC.appearance = 'BoundingBox';
+      }
+
+      // Đưa con trỏ ra sau bảng
+      table.getRange('After').select();
+      await context.sync();
+      alert(`Đã chèn bảng Thành phần tham gia (${role.toUpperCase()}) với ${rowCount} người!`);
+    }).catch((err: any) => {
+      console.error(err);
+      alert('Lỗi khi chèn bảng: ' + err.message);
+    });
   };
 
   return (
