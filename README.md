@@ -30,14 +30,35 @@ Hệ thống quản lý hồ sơ chất lượng công trình chuyên nghiệp d
    - Lưu ý: Đảm bảo server đang chạy tại `https://localhost:3000`.
 
 ## Triển khai (Deployment) lên GitHub Pages
-Dự án này đã được cấu hình tự động (CI/CD) thông qua GitHub Actions:
-- Mỗi khi bạn `git push` code lên nhánh `main`, hệ thống sẽ tự động chạy lệnh build.
-- Sản phẩm được đưa vào thư mục `dist` và tự động đẩy lên nhánh `gh-pages`.
-- GitHub Pages sẽ lấy nội dung từ nhánh `gh-pages` để phát trực tiếp lên mạng.
 
-**Lưu ý khi Cập nhật:**
-- Bạn chỉ cần commit và push code lên nhánh `main`. Không cần build thủ công.
-- Đợi 1-2 phút để GitHub chạy Action và Deploy xong, sau đó bấm nút **"Cập nhật"** trên giao diện Add-in là sẽ có phiên bản mới nhất.
+> ⚠️ **Lưu ý quan trọng**: Dự án **KHÔNG** dùng GitHub Actions tự động. Mỗi lần cập nhật phải chạy script deploy thủ công theo quy trình dưới đây.
+
+### Quy trình cập nhật đúng (Bắt buộc thực hiện đủ 2 bước):
+
+**Bước 1 – Lưu code lên GitHub (nhánh `main`):**
+```powershell
+git add -A
+git commit -m "vDDMMYYYY.HHMM"
+git push origin main
+```
+
+**Bước 2 – Build và deploy lên GitHub Pages (nhánh `gh-pages`):**
+```powershell
+# Chạy lệnh này từ thư mục gốc dự án (không dùng PowerShell bị restrict)
+cmd /c "npm run build && cd dist && git init && git config user.email "buiquangtrung2012@gmail.com" && git config user.name "buiquangtrung2012-ops" && git add . && git commit -m "Deploy vDDMMYYYY.HHMM" && git push --force https://github.com/buiquangtrung2012-ops/HoSoQuanLyChatLuong.git HEAD:gh-pages && cd .."
+```
+
+Hoặc dùng script có sẵn (cần bật PowerShell execution policy):
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\deploy_gh_pages.ps1
+```
+
+**Bước 3 – Cập nhật Add-in trong Word:**
+- Đợi ~30 giây để GitHub Pages refresh.
+- Nhấn nút **"Cập nhật"** trên giao diện Add-in để tải phiên bản mới.
+
+> 💡 **Tại sao phải 2 bước?** Bước 1 chỉ lưu source code lên `main`. Bước 2 mới thực sự **build** ra file tĩnh và **deploy** lên `gh-pages` — là nhánh mà GitHub Pages phục vụ. Thiếu Bước 2 thì Add-in vẫn chạy phiên bản cũ.
 
 ## Các tính năng chính
 - Quản lý thông tin dự án, nhân sự và vai trò ký tên.
