@@ -24,7 +24,7 @@ export const PersonnelModule: React.FC = () => {
 
   useEffect(() => {
     const saved = StorageService.get('hoso_personnel');
-    if (saved && saved.length > 0) {
+    if (saved) {
       setPersonnelList(saved);
     } else {
       setPersonnelList(initialPersonnel);

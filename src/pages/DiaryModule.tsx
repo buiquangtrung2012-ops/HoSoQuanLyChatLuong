@@ -16,7 +16,7 @@ export const DiaryModule: React.FC = () => {
   const [allEntries, setAllEntries] = useState<any[]>([]);
 
   useEffect(() => {
-    const savedEntries = StorageService.getDiary();
+    const savedEntries = StorageService.getDiary() || [];
     setAllEntries(savedEntries);
     
     const existing = savedEntries.find((e: any) => e.date === date);

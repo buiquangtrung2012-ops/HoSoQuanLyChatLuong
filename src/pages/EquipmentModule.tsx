@@ -22,7 +22,7 @@ export const EquipmentModule: React.FC = () => {
 
   useEffect(() => {
     const saved = StorageService.get('hoso_equipment');
-    if (saved && saved.length > 0) {
+    if (saved) {
       setEquipment(saved);
     } else {
       setEquipment(initialEquipment);

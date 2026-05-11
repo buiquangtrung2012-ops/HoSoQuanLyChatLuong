@@ -33,7 +33,7 @@ const navItems = [
   { id: 'equipment', label: 'Máy móc', icon: Truck },
   { id: 'lab', label: 'PTN', icon: FlaskConical },
   { id: 'diary', label: 'Nhật ký', icon: BookOpen },
-  { id: 'records', label: 'Hồ sơ', icon: FileText },
+  { id: 'records', label: 'Ký hồ sơ', icon: FileText },
   { id: 'template', label: 'Tạo mẫu', icon: Layout },
   { id: 'export', label: 'Xuất file', icon: Download },
 ];
@@ -79,15 +79,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ))}
       </nav>
 
-      <div className="p-4 border-t">
-        <button className={cn(
-          "w-full flex items-center text-muted-foreground hover:text-foreground",
-          isCollapsed ? "justify-center" : "px-0"
-        )}>
-          <Settings size={20} className={cn(isCollapsed ? "" : "mr-3")} />
-          {!isCollapsed && <span className="text-sm font-medium">Cài đặt</span>}
-        </button>
-      </div>
+
     </div>
   );
 };

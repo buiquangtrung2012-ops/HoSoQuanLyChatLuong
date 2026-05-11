@@ -17,15 +17,15 @@ export const StorageService = {
   },
 
   saveDiary: (entries: any[]) => localStorage.setItem(STORAGE_KEYS.DIARY, JSON.stringify(entries)),
-  getDiary: (): any[] => {
+  getDiary: (): any[] | null => {
     const data = localStorage.getItem(STORAGE_KEYS.DIARY);
-    return data ? JSON.parse(data) : [];
+    return data ? JSON.parse(data) : null;
   },
 
   saveWorkItems: (items: any[]) => localStorage.setItem(STORAGE_KEYS.WORK_ITEMS, JSON.stringify(items)),
-  getWorkItems: (): any[] => {
+  getWorkItems: (): any[] | null => {
     const data = localStorage.getItem(STORAGE_KEYS.WORK_ITEMS);
-    return data ? JSON.parse(data) : [];
+    return data ? JSON.parse(data) : null;
   },
 
   saveRecordTypes: (records: string[]) => localStorage.setItem(STORAGE_KEYS.CUSTOM_RECORDS, JSON.stringify(records)),

@@ -26,7 +26,7 @@ export const WorkItemsModule: React.FC = () => {
 
   useEffect(() => {
     const saved = StorageService.getWorkItems();
-    if (saved && saved.length > 0) {
+    if (saved) {
       setWorkItems(saved);
     } else {
       setWorkItems(initialWorkItems);

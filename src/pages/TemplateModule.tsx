@@ -148,6 +148,65 @@ export const TemplateModule: React.FC = () => {
     }
   };
 
+  const insertParticipantTable = (role: 'cdt' | 'tc' | 'tv') => {
+    // @ts-ignore
+    if (window.Office && window.Word) {
+      // @ts-ignore
+      Word.run(async (context) => {
+        const range = context.document.getSelection();
+        
+        let rowCount = 2;
+        let prefix = 'cdt';
+        if (role === 'tc') { rowCount = 3; prefix = 'tc'; }
+        if (role === 'tv') { rowCount = 2; prefix = 'tv'; }
+
+        // Insert a table with rowCount rows and 2 columns
+        const table = range.insertTable(rowCount, 2, "Replace");
+        
+        // Hide borders by setting style to something with no borders, or modifying border properties
+        // Actually table.borders.getBorder isn't the standard Word JS API way. It's:
+        table.borders.outsideBorderColor = "White";
+        table.borders.insideBorderColor = "White";
+        
+        // Ensure the cells have no visible borders by setting border width/type if necessary
+        // "None" is a valid BorderType in Word API
+        table.borders.insideHorizontalBorderType = "None";
+        table.borders.insideVerticalBorderType = "None";
+        table.borders.outsideTopBorderType = "None";
+        table.borders.outsideBottomBorderType = "None";
+        table.borders.outsideLeftBorderType = "None";
+        table.borders.outsideRightBorderType = "None";
+
+        for (let i = 0; i < rowCount; i++) {
+          const nameCellRange = table.getCell(i, 0).body.getRange();
+          nameCellRange.insertText("Ông: ", "Start");
+          // To insert Content Control AFTER "Ông: ", we get the range after the text
+          const nameCCRange = table.getCell(i, 0).body.getRange("End");
+          const nameCC = nameCCRange.insertContentControl();
+          nameCC.title = `${role.toUpperCase()} ${i+1} - Tên`;
+          nameCC.tag = `${prefix}${i+1}_name`;
+          nameCC.placeholderText = "[Họ tên]";
+          
+          const posCellRange = table.getCell(i, 1).body.getRange();
+          posCellRange.insertText("Chức vụ: ", "Start");
+          const posCCRange = table.getCell(i, 1).body.getRange("End");
+          const posCC = posCCRange.insertContentControl();
+          posCC.title = `${role.toUpperCase()} ${i+1} - Chức vụ`;
+          posCC.tag = `${prefix}${i+1}_pos`;
+          posCC.placeholderText = "[Chức vụ]";
+        }
+
+        await context.sync();
+        alert(`Đã chèn bảng Thành phần tham gia (${role.toUpperCase()})`);
+      }).catch(err => {
+        console.error(err);
+        alert('Lỗi khi chèn Bảng vào Word. Bạn có thể cần tạo bảng thủ công và chèn từng Content Control.');
+      });
+    } else {
+      alert(`Đang ở chế độ Web. Sẽ chèn Bảng cho: ${role}`);
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
@@ -243,17 +302,55 @@ export const TemplateModule: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {bookmarks.map((bm) => (
-              <button
-                key={bm.id}
-                onClick={() => insertBookmark(bm.id, bm.label)}
-                className="flex flex-col items-center justify-center p-6 bg-card border border-border rounded-2xl hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/5 transition-all group"
-              >
-                <div className="p-3 bg-muted rounded-xl mb-4 group-hover:bg-indigo-500/10 group-hover:text-indigo-600 transition-colors">
-                  <bm.icon size={24} />
-                </div>
-                <span className="text-sm font-bold text-center">{bm.label}</span>
-              </button>
-            ))}
+               <button
+                 key={bm.id}
+                 onClick={() => insertBookmark(bm.id, bm.label)}
+                 className="flex flex-col items-center justify-center p-6 bg-card border border-border rounded-2xl hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/5 transition-all group"
+               >
+                 <div className="p-3 bg-muted rounded-xl mb-4 group-hover:bg-indigo-500/10 group-hover:text-indigo-600 transition-colors">
+                   <bm.icon size={24} />
+                 </div>
+                 <span className="text-sm font-bold text-center">{bm.label}</span>
+               </button>
+             ))}
+          </div>
+        </section>
+
+        {/* Participant Tables Section */}
+        <section className="space-y-4 pt-6">
+          <div className="border-l-4 border-teal-500 pl-4">
+            <h2 className="text-sm font-black text-teal-600 uppercase tracking-widest">Bảng Thành phần tham gia (No Border)</h2>
+            <p className="text-xs text-muted-foreground mt-1 font-medium">Tự động chèn bảng ẩn viền với 2 cột (Ông: / Chức vụ:) cho CĐT, Thi công, Tư vấn.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button
+              onClick={() => insertParticipantTable('cdt')}
+              className="flex flex-col items-center justify-center p-6 bg-card border border-border rounded-2xl hover:border-teal-500 hover:shadow-lg hover:shadow-teal-500/5 transition-all group"
+            >
+              <div className="p-3 bg-muted rounded-xl mb-4 group-hover:bg-teal-500/10 group-hover:text-teal-600 transition-colors">
+                <Users size={24} />
+              </div>
+              <span className="text-sm font-bold text-center">Bảng Chủ Đầu Tư (2 người)</span>
+            </button>
+            <button
+              onClick={() => insertParticipantTable('tc')}
+              className="flex flex-col items-center justify-center p-6 bg-card border border-border rounded-2xl hover:border-teal-500 hover:shadow-lg hover:shadow-teal-500/5 transition-all group"
+            >
+              <div className="p-3 bg-muted rounded-xl mb-4 group-hover:bg-teal-500/10 group-hover:text-teal-600 transition-colors">
+                <Users size={24} />
+              </div>
+              <span className="text-sm font-bold text-center">Bảng Thi Công (3 người)</span>
+            </button>
+            <button
+              onClick={() => insertParticipantTable('tv')}
+              className="flex flex-col items-center justify-center p-6 bg-card border border-border rounded-2xl hover:border-teal-500 hover:shadow-lg hover:shadow-teal-500/5 transition-all group"
+            >
+              <div className="p-3 bg-muted rounded-xl mb-4 group-hover:bg-teal-500/10 group-hover:text-teal-600 transition-colors">
+                <Users size={24} />
+              </div>
+              <span className="text-sm font-bold text-center">Bảng Tư Vấn (2 người)</span>
+            </button>
           </div>
         </section>
       </div>

@@ -41,6 +41,14 @@ Hệ thống quản lý hồ sơ chất lượng công trình chuyên nghiệp d
 - Add-in đã được cấu hình để chạy đồng thời trên cả Word và Excel.
 
 ## Lịch sử cập nhật
+> **QUY ƯỚC ĐÁNH VERSION:**
+> Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v11052026.1021`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
+
+### v11052026.1021 (11/05/2026)
+- **Tái cấu trúc (Refactor)**: 
+  - Tách tính năng xuất file Word ra một module riêng (Tab **Xuất file**), giữ lại Tab **Ký hồ sơ** chuyên để cấu hình thành phần tham gia nghiệm thu.
+  - Xóa bỏ nút **Cài đặt** ở dưới cùng Sidebar để gọn gàng giao diện.
+- **Tính năng mới**: Tab **Tạo mẫu** được bổ sung chức năng chèn bảng Thành phần tham gia tự động. Bảng chèn vào file Word sẽ được ẩn viền (No Border) và chứa sẵn các Content Control định dạng `Ông: [Họ tên]` và `Chức vụ: [Chức vụ]` phù hợp với quy chuẩn biên bản.
 
 ### v08052026.1229 (08/05/2026)
 - **Tính năng mới**: Thêm nút **Cập nhật** trên Topbar để làm mới Add-in từ GitHub.

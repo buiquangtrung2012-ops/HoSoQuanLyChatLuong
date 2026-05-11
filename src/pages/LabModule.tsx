@@ -21,7 +21,7 @@ export const LabModule: React.FC = () => {
 
   useEffect(() => {
     const saved = StorageService.get('hoso_labs');
-    if (saved && saved.length > 0) {
+    if (saved) {
       setLabs(saved);
     } else {
       setLabs(initialLabs);

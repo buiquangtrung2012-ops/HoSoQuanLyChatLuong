@@ -23,7 +23,7 @@ export const MaterialModule: React.FC = () => {
 
   useEffect(() => {
     const saved = StorageService.get('hoso_materials');
-    if (saved && saved.length > 0) {
+    if (saved) {
       setMaterials(saved);
     } else {
       setMaterials(initialMaterials);
