@@ -262,7 +262,7 @@ export const TemplateModule: React.FC = () => {
 
       for (const tag of tableTags) {
         const role = tag.replace('table_', '') as 'cdt' | 'tc' | 'tv';
-        const foundTables = ccs.items.filter(cc => cc.tag === tag);
+        const foundTables = ccs.items.filter((cc: any) => cc.tag === tag);
         
         if (foundTables.length > 0) {
           const group = savedGroups.find((g: any) => g.prefix === role);
