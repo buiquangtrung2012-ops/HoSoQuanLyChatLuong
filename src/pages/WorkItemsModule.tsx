@@ -121,7 +121,6 @@ export const WorkItemsModule: React.FC = () => {
                   <td className="px-6 py-4">{item.inspectionDate}</td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end space-x-2">
-                      <button className="text-primary hover:underline font-medium text-xs">Chi tiết</button>
                       <button 
                         onClick={() => handleDelete(item.id)}
                         className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
