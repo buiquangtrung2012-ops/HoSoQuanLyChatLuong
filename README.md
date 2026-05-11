@@ -60,7 +60,8 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 > 💡 **Tại sao phải 2 bước?** Bước 1 chỉ lưu source code lên `main`. Bước 2 mới thực sự **build** ra file tĩnh và **deploy** lên `gh-pages` — là nhánh mà GitHub Pages phục vụ. Thiếu Bước 2 thì Add-in vẫn cũ.
 
-### Phiên bản v11052026.1345 (Mới nhất)
+### Phiên bản v11052026.1355 (Mới nhất)
+- **Sửa lỗi bảng trống:** Tối ưu hóa quy trình chèn văn bản và đồng bộ Word API để đảm bảo nội dung hiển thị đầy đủ.
 - **Thông số bảng ký tên:** Thiết lập Paragraph (Before/After 0, Single spacing) và tăng chiều cao ô ký tên để đủ không gian ký đóng dấu.
 - **Tắt kiểm tra chính tả:** Bổ sung `spellCheck={false}` trên toàn bộ các input/textarea.
 - **Tính năng Chỉnh sửa:** Triển khai nút "Sửa" và logic cập nhật dữ liệu cho tất cả các module.

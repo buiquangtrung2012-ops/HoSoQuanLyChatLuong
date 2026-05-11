@@ -358,9 +358,11 @@ export const TemplateModule: React.FC = () => {
     Word.run(async (context: any) => {
       const range = context.document.getSelection();
       const table = range.insertTable(totalTableRows, numCols, 'After');
-      table.style = 'Table Normal'; // No border
+      table.style = 'Table Normal';
       table.alignment = 'Centered';
-      table.load('id, rows');
+      
+      // Load rows to set height later
+      table.load('rows');
       await context.sync();
 
       for (let i = 0; i < numItems; i++) {
@@ -370,41 +372,46 @@ export const TemplateModule: React.FC = () => {
 
         // Row 0: Unit Header
         const headerCell = table.getCell(startRowIdx, colIdx);
-        headerCell.body.clear();
+        const headerText = colData.sub ? `${colData.header}\n${colData.sub}` : colData.header;
+        headerCell.body.insertText(headerText, 'Replace');
+        
         const p1 = headerCell.body.paragraphs.getFirst();
-        p1.insertText(colData.header, 'Replace');
         p1.font.bold = true;
         p1.alignment = 'Centered';
         p1.spacingBefore = 0;
         p1.spacingAfter = 0;
-        
-        if (colData.sub) {
-          p1.insertText('\n' + colData.sub, 'End');
-        }
 
         // Row 1: Instruction
         const instCell = table.getCell(startRowIdx + 1, colIdx);
-        instCell.body.clear();
+        instCell.body.insertText('(Ký, ghi rõ họ tên và đóng dấu)', 'Replace');
+        
         const p2 = instCell.body.paragraphs.getFirst();
-        p2.insertText('(Ký, ghi rõ họ tên và đóng dấu)', 'Replace');
         p2.font.italic = true;
         p2.alignment = 'Centered';
         p2.font.size = 9;
         p2.spacingBefore = 0;
         p2.spacingAfter = 0;
+      }
 
-        // Row 2: Blank space for signing (Red boxes area)
-        // Set fixed height for this row
-        const signingRow = table.rows.getItemAt(startRowIdx + 2);
-        signingRow.height = 70; // Tăng chiều cao lên ~2.5cm (72 points = 1 inch = 2.54cm)
+      // Tăng chiều cao cho các ô ký tên (hàng thứ 3 của mỗi block)
+      await context.sync();
+      for (let r = 2; r < totalTableRows; r += numRowsPerItem) {
+        try {
+          table.rows.getItemAt(r).height = 80; // ~2.8cm
+        } catch (e) {
+          console.error('Error setting row height:', e);
+        }
       }
 
       await context.sync();
       table.getRange('After').select();
       await context.sync();
       setShowSigModal(false);
-      alert(`Đã chèn bảng ký tên 2 cột với ${numItems} bên tham gia!`);
-    }).catch((err: any) => alert('Lỗi khi chèn bảng ký tên: ' + err.message));
+      alert(`Đã chèn bảng ký tên thành công!`);
+    }).catch((err: any) => {
+      console.error(err);
+      alert('Lỗi khi chèn bảng ký tên: ' + err.message);
+    });
   };
 
 
