@@ -60,8 +60,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 > 💡 **Tại sao phải 2 bước?** Bước 1 chỉ lưu source code lên `main`. Bước 2 mới thực sự **build** ra file tĩnh và **deploy** lên `gh-pages` — là nhánh mà GitHub Pages phục vụ. Thiếu Bước 2 thì Add-in vẫn cũ.
 
-### Phiên bản v11052026.1560 (Mới nhất)
-- **Tối ưu giao diện Tạo mẫu:** Loại bỏ chức năng chèn bảng ký tên phức tạp. Sắp xếp các nút Bookmarks và Bảng thành phần tham gia thành lưới **3 cột** đồng nhất để tiết kiệm không gian và dễ thao tác.
+### Phiên bản v11052026.1600 (Mới nhất)
+- **Thiết kế Siêu gọn (Compact UI):** Chuyển đổi toàn bộ hệ thống nút bấm trong Tab **Tạo mẫu** sang lưới **4 cột**. 
+- **Tối ưu hóa không gian:** Giảm kích thước icon và padding, đồng thời tinh chỉnh font chữ xuống `10px` để hiển thị hoàn hảo trong cửa sổ Taskpane hẹp của Word mà không cần cuộn nhiều.
 - **Tắt kiểm tra chính tả:** Bổ sung `spellCheck={false}` trên toàn bộ các input/textarea.
 - **Tính năng Chỉnh sửa:** Triển khai nút "Sửa" và logic cập nhật dữ liệu cho tất cả các module.
 - **Gộp Chức vụ/Vai trò:** Trong quản lý nhân sự, gộp 2 trường này thành một để tối ưu giao diện.

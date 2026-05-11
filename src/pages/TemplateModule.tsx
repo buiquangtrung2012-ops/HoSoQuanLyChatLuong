@@ -383,20 +383,20 @@ export const TemplateModule: React.FC = () => {
               <h2 className="text-sm font-black text-primary uppercase tracking-widest">{category}</h2>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-4 gap-3">
               {contentControls.filter(cc => cc.category === category).map((cc) => (
                 <button
                   key={cc.id}
                   onClick={() => insertContentControl(cc.id, cc.label)}
-                  className="flex flex-col items-center justify-center p-6 bg-card border border-border rounded-2xl hover:border-primary hover:shadow-lg hover:shadow-primary/5 transition-all group relative overflow-hidden"
+                  className="flex flex-col items-center justify-center p-3 bg-card border border-border rounded-xl hover:border-primary hover:shadow-lg hover:shadow-primary/5 transition-all group relative overflow-hidden"
                 >
                   <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Plus size={14} className="text-primary" />
                   </div>
-                  <div className="p-3 bg-muted rounded-xl mb-4 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                    <cc.icon size={24} />
+                  <div className="p-2 bg-muted rounded-lg mb-2 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                    <cc.icon size={20} />
                   </div>
-                  <span className="text-sm font-bold text-center">{cc.label}</span>
+                  <span className="text-[10px] font-bold text-center leading-tight">{cc.label}</span>
                 </button>
               ))}
             </div>
@@ -410,17 +410,17 @@ export const TemplateModule: React.FC = () => {
             <p className="text-xs text-muted-foreground mt-1 font-medium">Chèn các điểm đánh dấu cho bảng. Add-in sẽ chèn danh sách dữ liệu vào vị trí này.</p>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-3">
             {bookmarks.map((bm) => (
                <button
                  key={bm.id}
                  onClick={() => insertBookmark(bm.id, bm.label)}
-                 className="flex flex-col items-center justify-center p-6 bg-card border border-border rounded-2xl hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/5 transition-all group"
+                 className="flex flex-col items-center justify-center p-3 bg-card border border-border rounded-xl hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/5 transition-all group"
                >
-                 <div className="p-3 bg-muted rounded-xl mb-4 group-hover:bg-indigo-500/10 group-hover:text-indigo-600 transition-colors">
-                   <bm.icon size={24} />
-                 </div>
-                 <span className="text-sm font-bold text-center">{bm.label}</span>
+                  <div className="p-2 bg-muted rounded-lg mb-2 group-hover:bg-indigo-500/10 group-hover:text-indigo-600 transition-colors">
+                    <bm.icon size={20} />
+                  </div>
+                  <span className="text-[10px] font-bold text-center leading-tight">{bm.label}</span>
                </button>
              ))}
           </div>
@@ -433,33 +433,33 @@ export const TemplateModule: React.FC = () => {
             <p className="text-xs text-muted-foreground mt-1 font-medium">Tự động chèn bảng ẩn viền với 2 cột. Xưng hô Ông/Bà tự nhận diện từ tên đã cấu hình trong Tab <strong>Ký hồ sơ</strong>.</p>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-3">
             <button
               onClick={() => insertParticipantTable('cdt')}
-              className="flex flex-col items-center justify-center p-6 bg-card border border-border rounded-2xl hover:border-teal-500 hover:shadow-lg hover:shadow-teal-500/5 transition-all group"
+              className="flex flex-col items-center justify-center p-3 bg-card border border-border rounded-xl hover:border-teal-500 hover:shadow-lg hover:shadow-teal-500/5 transition-all group"
             >
-              <div className="p-3 bg-muted rounded-xl mb-4 group-hover:bg-teal-500/10 group-hover:text-teal-600 transition-colors">
-                <Users size={24} />
+              <div className="p-2 bg-muted rounded-lg mb-2 group-hover:bg-teal-500/10 group-hover:text-teal-600 transition-colors">
+                <Users size={20} />
               </div>
-              <span className="text-sm font-bold text-center">Bảng Chủ Đầu Tư</span>
+              <span className="text-[10px] font-bold text-center leading-tight">Bảng Chủ Đầu Tư</span>
             </button>
             <button
               onClick={() => insertParticipantTable('tc')}
-              className="flex flex-col items-center justify-center p-6 bg-card border border-border rounded-2xl hover:border-teal-500 hover:shadow-lg hover:shadow-teal-500/5 transition-all group"
+              className="flex flex-col items-center justify-center p-3 bg-card border border-border rounded-xl hover:border-teal-500 hover:shadow-lg hover:shadow-teal-500/5 transition-all group"
             >
-              <div className="p-3 bg-muted rounded-xl mb-4 group-hover:bg-teal-500/10 group-hover:text-teal-600 transition-colors">
-                <Users size={24} />
+              <div className="p-2 bg-muted rounded-lg mb-2 group-hover:bg-teal-500/10 group-hover:text-teal-600 transition-colors">
+                <Users size={20} />
               </div>
-              <span className="text-sm font-bold text-center">Bảng Thi Công</span>
+              <span className="text-[10px] font-bold text-center leading-tight">Bảng Thi Công</span>
             </button>
             <button
               onClick={() => insertParticipantTable('tv')}
-              className="flex flex-col items-center justify-center p-6 bg-card border border-border rounded-2xl hover:border-teal-500 hover:shadow-lg hover:shadow-teal-500/5 transition-all group"
+              className="flex flex-col items-center justify-center p-3 bg-card border border-border rounded-xl hover:border-teal-500 hover:shadow-lg hover:shadow-teal-500/5 transition-all group"
             >
-              <div className="p-3 bg-muted rounded-xl mb-4 group-hover:bg-teal-500/10 group-hover:text-teal-600 transition-colors">
-                <Users size={24} />
+              <div className="p-2 bg-muted rounded-lg mb-2 group-hover:bg-teal-500/10 group-hover:text-teal-600 transition-colors">
+                <Users size={20} />
               </div>
-              <span className="text-sm font-bold text-center">Bảng Tư Vấn</span>
+              <span className="text-[10px] font-bold text-center leading-tight">Bảng Tư Vấn</span>
             </button>
           </div>
         </section>
