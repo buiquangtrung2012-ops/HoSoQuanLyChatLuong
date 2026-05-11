@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   FileText, Hash, Briefcase, Building2, User, Users, Calendar, Plus, Save, 
   Layers, Layout, MapPin, Package, Truck, FlaskConical, RefreshCw, Trash2, Zap,
-  PenLine, X, CheckSquare, Square
+  PenLine, X
 } from 'lucide-react';
 import { StorageService } from '../services/storageService';
 
@@ -108,20 +108,11 @@ const bookmarks = [
   { id: 'workTable', label: 'Bảng Công việc', icon: Layers },
 ];
 
-// Parties available for signature table
-const SIGNATURE_PARTIES = [
-  { id: 'cdt',  label: 'Đại diện Chủ đầu tư',          short: 'ĐẠI DIỆN CHỦ ĐẦU TƯ' },
-  { id: 'tvtk', label: 'Đại diện Tư vấn Thiết kế',       short: 'ĐẠI DIỆN TƯ VẤN THIẾT KẾ' },
-  { id: 'tc',   label: 'Đại diện Đơn vị Thi công',       short: 'ĐẠI DIỆN ĐƠN VỊ THI CÔNG' },
-  { id: 'tv',   label: 'Đại diện Tư vấn Giám sát',       short: 'ĐẠI DIỆN TƯ VẤN GIÁM SÁT' },
-];
 
 export const TemplateModule: React.FC = () => {
   const [recordName, setRecordName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [customRecords, setCustomRecords] = useState<string[]>([]);
-  const [showSigModal, setShowSigModal] = useState(false);
-  const [selectedParties, setSelectedParties] = useState<string[]>(['cdt', 'tvtk', 'tc']);
 
   useEffect(() => {
     setCustomRecords(StorageService.getRecordTypes());
@@ -317,157 +308,6 @@ export const TemplateModule: React.FC = () => {
     }).catch((err: any) => alert('Lỗi khi chèn bảng: ' + err.message));
   };
 
-  const insertSignatureTable = () => {
-  if (!isWordApiAvailable()) {
-    alert('Chức năng này chỉ hoạt động khi mở trong Microsoft Word.');
-    return;
-  }
-
-  const project = StorageService.getProject() || {};
-  const isJV = project.isJointVenture;
-  const jvMembers: string[] = project.contractorMembers || [];
-
-  const columns: { header: string; sub: string }[] = [];
-
-  selectedParties.forEach(pid => {
-    const party = SIGNATURE_PARTIES.find(p => p.id === pid);
-
-    if (pid === 'tc' && isJV && jvMembers.length > 0) {
-      jvMembers.forEach(member => {
-        columns.push({
-          header: party?.short || '',
-          sub: member.toUpperCase()
-        });
-      });
-    } else {
-      let actualName = '';
-
-      if (pid === 'cdt') actualName = project.investor || '';
-      if (pid === 'tc') actualName = project.contractor || '';
-      if (pid === 'tv') actualName = project.supervisor || '';
-      if (pid === 'tvtk') actualName = '';
-
-      columns.push({
-        header: party?.short || '',
-        sub: actualName.toUpperCase()
-      });
-    }
-  });
-
-  const numCols = 2;
-  const numRowsPerItem = 3;
-  const totalRows = Math.ceil(columns.length / numCols) * numRowsPerItem;
-
-  // @ts-ignore
-  Word.run(async (context: any) => {
-    const range = context.document.getSelection();
-    const table = range.insertTable(totalRows, numCols, 'After');
-
-    // Không dùng style để tránh override format
-    try {
-      table.clear();
-    } catch {}
-
-    table.alignment = 'Centered';
-
-    await context.sync();
-
-    // ===== Insert content =====
-    for (let i = 0; i < columns.length; i++) {
-      const col = i % numCols;
-      const startRow = Math.floor(i / numCols) * numRowsPerItem;
-      const item = columns[i];
-
-      const headerCell = table.getCell(startRow, col);
-      headerCell.body.insertText(
-        item.header + (item.sub ? '\n' + item.sub : ''),
-        'Replace'
-      );
-
-      const noteCell = table.getCell(startRow + 1, col);
-      noteCell.body.insertText(
-        '(Ký, ghi rõ họ tên và đóng dấu)',
-        'Replace'
-      );
-    }
-
-    await context.sync();
-
-    // ===== Final Aggressive Formatting Pass =====
-    table.load('rows/items/cells/items/body/paragraphs/items');
-    await context.sync();
-
-    table.rows.items.forEach((row: any, rIdx: number) => {
-      // Set Heights
-      if (rIdx % numRowsPerItem === 2) {
-        row.heightRule = 'Exactly';
-        row.height = 150; // Increased
-      } else {
-        row.heightRule = 'Exactly';
-        row.height = 24;
-      }
-
-      row.cells.items.forEach((cell: any) => {
-        cell.verticalAlignment = 'Center';
-        cell.topPadding = 0;
-        cell.bottomPadding = 0;
-        cell.leftPadding = 0;
-        cell.rightPadding = 0;
-
-        cell.body.paragraphs.items.forEach((p: any) => {
-          // Reset style to Normal to clear any weird formatting
-          try { p.style = 'Normal'; } catch {}
-          
-          p.set({
-            alignment: 'Centered',
-            leftIndent: 0,
-            rightIndent: 0,
-            firstLineIndent: 0,
-            spacingBefore: 0,
-            spacingAfter: 0,
-            lineSpacing: 12
-          });
-
-          p.font.set({
-            name: 'Times New Roman',
-            size: (rIdx % numRowsPerItem === 1) ? 9 : 11,
-            bold: (rIdx % numRowsPerItem === 0),
-            italic: (rIdx % numRowsPerItem === 1)
-          });
-        });
-      });
-    });
-
-    await context.sync();
-
-    // ===== Borders =====
-    try {
-      table.borders.insideHorizontal.style = 'Single';
-      table.borders.insideVertical.style = 'Single';
-      table.borders.outsideTop.style = 'Single';
-      table.borders.outsideBottom.style = 'Single';
-      table.borders.outsideLeft.style = 'Single';
-      table.borders.outsideRight.style = 'Single';
-    } catch {}
-
-    await context.sync();
-    table.getRange('After').select();
-    await context.sync();
-
-    setShowSigModal(false);
-    alert('Đã chèn bảng ký tên chuẩn (v1550)!');
-  }).catch((err: any) => {
-    console.error(err);
-    alert('Lỗi chèn bảng: ' + err.message);
-  });
-};
-
-
-  const toggleParty = (id: string) => {
-    setSelectedParties(prev =>
-      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
-    );
-  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -570,7 +410,7 @@ export const TemplateModule: React.FC = () => {
             <p className="text-xs text-muted-foreground mt-1 font-medium">Chèn các điểm đánh dấu cho bảng. Add-in sẽ chèn danh sách dữ liệu vào vị trí này.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             {bookmarks.map((bm) => (
                <button
                  key={bm.id}
@@ -593,7 +433,7 @@ export const TemplateModule: React.FC = () => {
             <p className="text-xs text-muted-foreground mt-1 font-medium">Tự động chèn bảng ẩn viền với 2 cột. Xưng hô Ông/Bà tự nhận diện từ tên đã cấu hình trong Tab <strong>Ký hồ sơ</strong>.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <button
               onClick={() => insertParticipantTable('cdt')}
               className="flex flex-col items-center justify-center p-6 bg-card border border-border rounded-2xl hover:border-teal-500 hover:shadow-lg hover:shadow-teal-500/5 transition-all group"
@@ -623,66 +463,6 @@ export const TemplateModule: React.FC = () => {
             </button>
           </div>
         </section>
-
-        {/* Signature Table Section */}
-        <section className="space-y-4 pt-6">
-          <div className="border-l-4 border-violet-500 pl-4">
-            <h2 className="text-sm font-black text-violet-600 uppercase tracking-widest">Bảng Ký tên (Có viền – Chuẩn biên bản)</h2>
-            <p className="text-xs text-muted-foreground mt-1 font-medium">Chèn bảng ký tên đầy đủ viền, chọn các bên tham gia. Hỗ trợ Liên danh tự động tách cột.</p>
-          </div>
-          <button
-            onClick={() => setShowSigModal(true)}
-            className="flex items-center gap-3 px-6 py-4 bg-violet-600 text-white rounded-2xl hover:bg-violet-700 transition-all shadow-lg shadow-violet-600/20 font-bold text-sm"
-          >
-            <PenLine size={20} /> Chèn bảng Ký tên...
-          </button>
-        </section>
-
-        {/* Signature Modal */}
-        {showSigModal && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowSigModal(false)}>
-            <div className="bg-card rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-5" onClick={e => e.stopPropagation()}>
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-lg flex items-center gap-2"><PenLine size={18} className="text-violet-600" /> Chèn bảng Ký tên</h3>
-                <button onClick={() => setShowSigModal(false)} className="p-1.5 hover:bg-muted rounded-lg"><X size={18} /></button>
-              </div>
-              <p className="text-xs text-muted-foreground">Chọn các bên tham gia (thứ tự từ trái → phải trong bảng):</p>
-              <div className="space-y-2">
-                {SIGNATURE_PARTIES.map(party => {
-                  const checked = selectedParties.includes(party.id);
-                  return (
-                    <button
-                      key={party.id}
-                      onClick={() => toggleParty(party.id)}
-                      className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
-                        checked ? 'border-violet-500 bg-violet-50 text-violet-800' : 'border-border bg-muted/30 text-muted-foreground'
-                      }`}
-                    >
-                      {checked ? <CheckSquare size={18} className="text-violet-600 flex-shrink-0" /> : <Square size={18} className="flex-shrink-0" />}
-                      <div>
-                        <p className="text-sm font-semibold">{party.label}</p>
-                        <p className="text-[10px] opacity-70">{party.short}</p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-              {selectedParties.length === 0 && (
-                <p className="text-xs text-destructive font-medium">Vui lòng chọn ít nhất 1 bên tham gia.</p>
-              )}
-              <div className="flex gap-3 pt-2">
-                <button onClick={() => setShowSigModal(false)} className="flex-1 py-2.5 border rounded-xl text-sm font-semibold hover:bg-muted transition-colors">Hủy</button>
-                <button
-                  onClick={insertSignatureTable}
-                  disabled={selectedParties.length === 0}
-                  className="flex-1 py-2.5 bg-violet-600 text-white rounded-xl text-sm font-bold hover:bg-violet-700 transition-colors disabled:opacity-50"
-                >
-                  Chèn vào Word
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex items-start space-x-4">
