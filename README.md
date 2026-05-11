@@ -60,9 +60,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 > 💡 **Tại sao phải 2 bước?** Bước 1 chỉ lưu source code lên `main`. Bước 2 mới thực sự **build** ra file tĩnh và **deploy** lên `gh-pages` — là nhánh mà GitHub Pages phục vụ. Thiếu Bước 2 thì Add-in vẫn cũ.
 
-### Phiên bản v11052026.1520 (Mới nhất)
-- **Tinh chỉnh Font & Paragraph:** Ép font 'Times New Roman' cho toàn bộ bảng, thiết lập cỡ chữ chuẩn (Header 11pt, Note 9pt) và căn chỉnh Paragraph chi tiết hơn.
-- **Hoàn thiện bảng ký tên chuẩn:** Tích hợp logic xử lý Liên danh (Joint Venture), thiết lập chiều cao hàng cố định (22pt cho chữ, 130pt cho ô ký) và viền đơn (Single border).
+### Phiên bản v11052026.1540 (Mới nhất)
+- **Cưỡng chế định dạng căn giữa:** Sử dụng mô hình `p.set()` kết hợp `context.sync()` liên tục để đảm bảo Word không thể bỏ qua lệnh căn giữa và bôi đậm tiêu đề.
+- **Tăng độ cao ô ký:** Nâng chiều cao hàng ký tên lên **140pt (~5cm)** theo yêu cầu thực tế.
 - **Tắt kiểm tra chính tả:** Bổ sung `spellCheck={false}` trên toàn bộ các input/textarea.
 - **Tính năng Chỉnh sửa:** Triển khai nút "Sửa" và logic cập nhật dữ liệu cho tất cả các module.
 - **Gộp Chức vụ/Vai trò:** Trong quản lý nhân sự, gộp 2 trường này thành một để tối ưu giao diện.
