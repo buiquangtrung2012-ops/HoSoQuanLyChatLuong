@@ -277,7 +277,7 @@ export const TemplateModule: React.FC = () => {
             const colCount = members.length;
             const memberSigners = members.map((_: any, idx: number) => {
               const group = savedGroups.find((g: any) => g.prefix === `tc_ld${idx + 1}`);
-              return group ? group.signers : [];
+              return (group && Array.isArray(group.signers)) ? group.signers : [];
             });
             const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
             const rowCount = maxSigners * 2 + 1;
@@ -293,7 +293,8 @@ export const TemplateModule: React.FC = () => {
 
             for (let r = 0; r < maxSigners; r++) {
               for (let c = 0; c < colCount; c++) {
-                const s: any = memberSigners[c][r];
+                const signersOfMember = memberSigners[c];
+                const s: any = (signersOfMember && signersOfMember[r]) ? signersOfMember[r] : { name: '', position: '', gender: 'auto' };
                 const prefix = `tc_ld${c + 1}`;
                 
                 const nameCell = table.getCell(r * 2 + 1, c);
@@ -318,15 +319,15 @@ export const TemplateModule: React.FC = () => {
             }
           } else {
             const group = savedGroups.find((g: any) => g.prefix === role);
-            const signers = group ? group.signers : [];
-            const rowCount = Math.max(signers.length, (role === 'tc' ? 3 : 2));
-            const actualSigners = signers.length > 0 ? signers : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
+            const signersRaw = (group && Array.isArray(group.signers)) ? group.signers : [];
+            const rowCount = Math.max(signersRaw.length, (role === 'tc' ? 3 : 2));
+            const actualSigners = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
 
             const table = wrapper.insertTable(rowCount, 2, 'Start');
             hideTableBorders(table);
 
             for (let i = 0; i < rowCount; i++) {
-              const s = actualSigners[i] || {};
+              const s = actualSigners[i] || { name: '', position: '', gender: 'auto' };
               const honorific = resolveGender(s.name || '', s.gender) + ': ';
               const nameCell = table.getCell(i, 0);
               nameCell.body.insertText(honorific, 'Replace');
@@ -466,10 +467,12 @@ export const TemplateModule: React.FC = () => {
 
   const insertParticipantTable = (role: 'cdt' | 'tc' | 'tv') => {
     try {
+      console.log(`insertParticipantTable started for role: ${role}`);
       if (!isWordApiAvailable()) {
         alert('Chức năng này chỉ hoạt động khi mở trong Microsoft Word.');
         return;
       }
+      
       const project = StorageService.getProject() || {};
       const savedGroupsData = StorageService.get('hoso_participants_v2');
       const savedGroups = Array.isArray(savedGroupsData) ? savedGroupsData : [];
@@ -479,7 +482,13 @@ export const TemplateModule: React.FC = () => {
       // @ts-ignore
       Word.run(async (context: any) => {
         const range = context.document.getSelection();
-        // REMOVED font loading to avoid potential Word API hangs
+        // Cố gắng load font nhưng không fail nếu không được
+        try {
+          range.load('font');
+          await context.sync();
+        } catch (e) {
+          console.warn('Could not load selection font', e);
+        }
         
         const wrapper = range.insertContentControl();
         wrapper.tag = `table_${role}`;
@@ -491,12 +500,15 @@ export const TemplateModule: React.FC = () => {
           const colCount = members.length;
           const memberSigners = members.map((_: any, idx: number) => {
             const group = savedGroups.find((g: any) => g.prefix === `tc_ld${idx + 1}`);
-            return group ? group.signers : [];
+            return (group && Array.isArray(group.signers)) ? group.signers : [];
           });
           const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
           const rowCount = maxSigners * 2 + 1;
 
           const table = wrapper.insertTable(rowCount, colCount, 'Start');
+          try {
+             if (range.font && range.font.name) table.font.name = range.font.name;
+          } catch(e) {}
           hideTableBorders(table);
 
           for (let c = 0; c < colCount; c++) {
@@ -507,7 +519,8 @@ export const TemplateModule: React.FC = () => {
 
           for (let r = 0; r < maxSigners; r++) {
             for (let c = 0; c < colCount; c++) {
-              const s: any = memberSigners[c][r];
+              const signersOfMember = memberSigners[c];
+              const s: any = (signersOfMember && signersOfMember[r]) ? signersOfMember[r] : { name: '', position: '', gender: 'auto' };
               const prefix = `tc_ld${c + 1}`;
               
               const nameCell = table.getCell(r * 2 + 1, c);
@@ -532,15 +545,20 @@ export const TemplateModule: React.FC = () => {
           }
         } else {
           const group = savedGroups.find((g: any) => g.prefix === role);
-          const signersCount = group ? group.signers.length : (role === 'tc' ? 3 : 2);
+          const signersRaw = (group && Array.isArray(group.signers)) ? group.signers : [];
+          const signersCount = Math.max(signersRaw.length, (role === 'tc' ? 3 : 2));
           const rowCount = Math.max(signersCount, 1);
-          const signers: any[] = group ? group.signers : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
+          
+          const signers: any[] = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
 
           const table = wrapper.insertTable(rowCount, 2, 'Start');
+          try {
+            if (range.font && range.font.name) table.font.name = range.font.name;
+          } catch(e) {}
           hideTableBorders(table);
           
           for (let i = 0; i < rowCount; i++) {
-            const s = signers[i] || {};
+            const s = signers[i] || { name: '', position: '', gender: 'auto' };
             const honorific = resolveGender(s.name || '', s.gender) + ': ';
             const nameCell = table.getCell(i, 0);
             nameCell.body.insertText(honorific, 'Replace');
