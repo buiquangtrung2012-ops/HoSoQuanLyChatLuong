@@ -62,15 +62,50 @@ export const RecordsModule: React.FC = () => {
 
   useEffect(() => {
     setPersonnel(StorageService.get('hoso_personnel') || []);
-    const saved = StorageService.get('hoso_participants_v2');
-    if (saved) {
-      // Merge: ensure gender field exists for old data
-      const migrated = saved.map((g: ParticipantGroup) => ({
-        ...g,
-        signers: g.signers.map((s: SignerEntry) => ({ gender: 'auto', ...s })),
-      }));
-      setGroups(migrated);
+    
+    const project = StorageService.getProject();
+    const saved = StorageService.get('hoso_participants_v2') || [];
+    
+    // 1. Khởi tạo danh sách nhóm cơ bản (CDT, TVGS)
+    const baseGroups = defaultGroups();
+    const cdtGroup = saved.find((g: any) => g.prefix === 'cdt') || baseGroups[0];
+    const tvGroup = saved.find((g: any) => g.prefix === 'tv') || baseGroups[2];
+    
+    let tcGroups: ParticipantGroup[] = [];
+    
+    if (project?.isJointVenture && project.contractorMembers?.length) {
+      // 2a. Trường hợp Liên danh: Tạo nhóm cho từng thành viên
+      tcGroups = project.contractorMembers.map((member: string, idx: number) => {
+        const prefix = `tc_ld${idx + 1}`;
+        const existing = saved.find((g: any) => g.prefix === prefix);
+        
+        return {
+          label: `2.${idx + 1}. Đại diện ${member}`,
+          prefix: prefix,
+          colorClass: 'bg-blue-50',
+          borderClass: 'border-blue-200',
+          labelColorClass: 'text-blue-800',
+          signers: existing ? existing.signers : [
+            { id: `${prefix}_1`, name: '', position: '', gender: 'auto' },
+            { id: `${prefix}_2`, name: '', position: '', gender: 'auto' },
+          ],
+        };
+      });
+    } else {
+      // 2b. Trường hợp Đơn lẻ: Giữ nguyên 1 nhóm TC
+      const existingTC = saved.find((g: any) => g.prefix === 'tc') || baseGroups[1];
+      tcGroups = [existingTC];
     }
+    
+    const finalGroups = [cdtGroup, ...tcGroups, tvGroup];
+    
+    // Đảm bảo tất cả signers có trường gender cho dữ liệu cũ
+    const migrated = finalGroups.map((g: ParticipantGroup) => ({
+      ...g,
+      signers: g.signers.map((s: SignerEntry) => ({ gender: 'auto', ...s })),
+    }));
+    
+    setGroups(migrated);
   }, []);
 
   const handleSignerChange = (groupIdx: number, signerIdx: number, field: 'name' | 'position' | 'gender', value: string) => {

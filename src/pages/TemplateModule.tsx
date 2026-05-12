@@ -259,46 +259,86 @@ export const TemplateModule: React.FC = () => {
 
       // 2. Refresh dynamic participant tables
       const savedGroups = StorageService.get('hoso_participants_v2') || [];
-      const tableTags = ['table_cdt', 'table_tc', 'table_tv'];
+      const project = StorageService.getProject() || {};
+      
+      // Determine which roles are present in document
+      const roleTags = ['table_cdt', 'table_tc', 'table_tv'];
       let tablesRefreshed = 0;
 
-      for (const tag of tableTags) {
+      for (const tag of roleTags) {
         const role = tag.replace('table_', '') as 'cdt' | 'tc' | 'tv';
         const foundTables = ccs.items.filter((cc: any) => cc.tag === tag);
+        if (foundTables.length === 0) continue;
+
+        // Check if this is JV TC table
+        const isJV = role === 'tc' && project.isJointVenture && project.contractorMembers?.length;
         
-        if (foundTables.length > 0) {
-          const group = savedGroups.find((g: any) => g.prefix === role);
-          const signers = group ? group.signers : [];
-          const rowCount = signers.length || (role === 'tc' ? 3 : 2);
-          const actualSigners = signers.length > 0 ? signers : Array(rowCount).fill({ name: '', position: '', gender: 'auto' });
+        for (const wrapper of foundTables) {
+          wrapper.load('font');
+          await context.sync();
+          const existingFont = wrapper.font;
+          wrapper.clear();
 
-          for (const wrapper of foundTables) {
-            wrapper.load('font');
-            await context.sync();
-            const existingFont = wrapper.font;
+          if (isJV) {
+            const members = project.contractorMembers || [];
+            const colCount = members.length;
+            const memberSigners = members.map((_, idx) => {
+              const group = savedGroups.find((g: any) => g.prefix === `tc_ld${idx + 1}`);
+              return group ? group.signers : [];
+            });
+            const maxSigners = Math.max(...memberSigners.map(s => s.length), 1);
+            const rowCount = maxSigners * 2 + 1;
 
-            wrapper.clear();
-            const table = wrapper.insertTable(rowCount, 2, 'Start');
-            
-            // Re-apply existing formatting individually and safely
-            try {
-              if (existingFont.name) table.font.name = existingFont.name;
-              if (existingFont.size) table.font.size = existingFont.size;
-              if (existingFont.color) table.font.color = existingFont.color;
-              table.font.bold = existingFont.bold || false;
-              table.font.italic = existingFont.italic || false;
-            } catch (e) {
-              console.warn("Could not apply existing font to table", e);
+            const table = wrapper.insertTable(rowCount, colCount, 'Start');
+            applyFontToTable(table, existingFont);
+            hideTableBorders(table);
+
+            // Header row: Member names
+            for (let c = 0; c < colCount; c++) {
+              const cell = table.getCell(0, c);
+              cell.body.insertText(members[c], 'Replace');
+              cell.body.paragraphs.getFirst().font.bold = true;
             }
-            
-            // Hide borders (No border)
-            table.borders.insideHorizontal.style = 'None';
-            table.borders.insideVertical.style = 'None';
-            table.borders.outsideTop.style = 'None';
-            table.borders.outsideBottom.style = 'None';
-            table.borders.outsideLeft.style = 'None';
-            table.borders.outsideRight.style = 'None';
-            
+
+            // Signer rows
+            for (let r = 0; r < maxSigners; r++) {
+              for (let c = 0; c < colCount; c++) {
+                const s = memberSigners[c][r];
+                const prefix = `tc_ld${c + 1}`;
+                
+                // Name row
+                const nameCell = table.getCell(r * 2 + 1, c);
+                const honorific = resolveGender(s?.name || '', s?.gender) + ': ';
+                nameCell.body.insertText(honorific, 'Replace');
+                const nameCC = nameCell.body.getRange('End').insertContentControl();
+                nameCC.title = `${members[c]} - Người ${r + 1} - Tên`;
+                nameCC.tag = `${prefix}_s${r + 1}_name`;
+                nameCC.placeholderText = '[Họ tên]';
+                nameCC.appearance = 'BoundingBox';
+                if (s?.name) nameCC.insertText(s.name, 'Replace');
+
+                // Position row
+                const posCell = table.getCell(r * 2 + 2, c);
+                posCell.body.insertText('Chức vụ: ', 'Replace');
+                const posCC = posCell.body.getRange('End').insertContentControl();
+                posCC.title = `${members[c]} - Người ${r + 1} - Chức vụ`;
+                posCC.tag = `${prefix}_s${r + 1}_pos`;
+                posCC.placeholderText = '[Chức vụ]';
+                posCC.appearance = 'BoundingBox';
+                if (s?.position) posCC.insertText(s.position, 'Replace');
+              }
+            }
+          } else {
+            // Normal 2-column table (CDT, TV, or non-JV TC)
+            const group = savedGroups.find((g: any) => g.prefix === role);
+            const signers = group ? group.signers : [];
+            const rowCount = Math.max(signers.length, (role === 'tc' ? 3 : 2));
+            const actualSigners = signers.length > 0 ? signers : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
+
+            const table = wrapper.insertTable(rowCount, 2, 'Start');
+            applyFontToTable(table, existingFont);
+            hideTableBorders(table);
+
             for (let i = 0; i < rowCount; i++) {
               const s = actualSigners[i] || {};
               const honorific = resolveGender(s.name || '', s.gender) + ': ';
@@ -306,27 +346,23 @@ export const TemplateModule: React.FC = () => {
               const nameCell = table.getCell(i, 0);
               nameCell.body.insertText(honorific, 'Replace');
               const nameCC = nameCell.body.getRange('End').insertContentControl();
-              nameCC.set({
-                title: `${role.toUpperCase()} ${i + 1} - Tên`,
-                tag: `${role}${i + 1}_name`,
-                placeholderText: '[Họ tên]',
-                appearance: 'BoundingBox'
-              });
+              nameCC.title = `${role.toUpperCase()} ${i + 1} - Tên`;
+              nameCC.tag = `${role}${i + 1}_name`;
+              nameCC.placeholderText = '[Họ tên]';
+              nameCC.appearance = 'BoundingBox';
               if (s.name) nameCC.insertText(s.name, 'Replace');
 
               const posCell = table.getCell(i, 1);
               posCell.body.insertText('Chức vụ: ', 'Replace');
               const posCC = posCell.body.getRange('End').insertContentControl();
-              posCC.set({
-                title: `${role.toUpperCase()} ${i + 1} - Chức vụ`,
-                tag: `${role}${i + 1}_pos`,
-                placeholderText: '[Chức vụ]',
-                appearance: 'BoundingBox'
-              });
+              posCC.title = `${role.toUpperCase()} ${i + 1} - Chức vụ`;
+              posCC.tag = `${role}${i + 1}_pos`;
+              posCC.placeholderText = '[Chức vụ]';
+              posCC.appearance = 'BoundingBox';
               if (s.position) posCC.insertText(s.position, 'Replace');
             }
-            tablesRefreshed++;
           }
+          tablesRefreshed++;
         }
       }
 
@@ -428,11 +464,9 @@ export const TemplateModule: React.FC = () => {
     Word.run(async (context: any) => {
       const range = context.document.getSelection();
       const wrapper = range.insertContentControl();
-      wrapper.set({
-        tag: `summary_${type}`,
-        title: `Bảng Tổng hợp ${config.label}`,
-        appearance: 'BoundingBox'
-      });
+      wrapper.tag = `summary_${type}`;
+      wrapper.title = `Bảng Tổng hợp ${config.label}`;
+      wrapper.appearance = 'BoundingBox';
 
       const table = wrapper.insertTable(2, config.columns.length, 'Start');
       table.style = 'Table Normal';
@@ -453,84 +487,145 @@ export const TemplateModule: React.FC = () => {
   };
 
   const insertParticipantTable = (role: 'cdt' | 'tc' | 'tv') => {
-    if (!isWordApiAvailable()) {
-      alert('Chức năng này chỉ hoạt động khi mở trong Microsoft Word.');
-      return;
-    }
-    const savedGroups = StorageService.get('hoso_participants_v2') || [];
-    const group = savedGroups.find((g: any) => g.prefix === role);
-    const rowCount = group ? group.signers.length : (role === 'tc' ? 3 : 2);
-    const signers: any[] = group ? group.signers : Array(rowCount).fill({ name: '', position: '', gender: 'auto' });
-
-    // @ts-ignore
-    Word.run(async (context: any) => {
-      const range = context.document.getSelection();
-      range.load('font');
-      await context.sync();
-
-      const userFont = range.font;
+    try {
+      if (!isWordApiAvailable()) {
+        alert('Chức năng này chỉ hoạt động khi mở trong Microsoft Word.');
+        return;
+      }
+      const project = StorageService.getProject() || {};
+      const savedGroupsData = StorageService.get('hoso_participants_v2');
+      const savedGroups = Array.isArray(savedGroupsData) ? savedGroupsData : [];
       
-      // Wrap table in a wrapper Content Control for future dynamic updates
-      const wrapper = range.insertContentControl();
-      wrapper.set({
-        tag: `table_${role}`,
-        title: `Bảng ${role.toUpperCase()}`,
-        appearance: 'BoundingBox'
+      const isJV = role === 'tc' && project.isJointVenture && project.contractorMembers?.length;
+
+      // @ts-ignore
+      Word.run(async (context: any) => {
+        const range = context.document.getSelection();
+        range.load('font');
+        await context.sync();
+        const userFont = range.font;
+        
+        const wrapper = range.insertContentControl();
+        wrapper.tag = `table_${role}`;
+        wrapper.title = `Bảng ${role.toUpperCase()}`;
+        wrapper.appearance = 'BoundingBox';
+
+        if (isJV) {
+          const members = project.contractorMembers || [];
+          const colCount = members.length;
+          const memberSigners = members.map((_, idx) => {
+            const group = savedGroups.find((g: any) => g.prefix === `tc_ld${idx + 1}`);
+            return group ? group.signers : [];
+          });
+          const maxSigners = Math.max(...memberSigners.map(s => s.length), 1);
+          const rowCount = maxSigners * 2 + 1;
+
+          const table = wrapper.insertTable(rowCount, colCount, 'Start');
+          applyFontToTable(table, userFont);
+          hideTableBorders(table);
+
+          // Header row
+          for (let c = 0; c < colCount; c++) {
+            const cell = table.getCell(0, c);
+            cell.body.insertText(members[c], 'Replace');
+            cell.body.paragraphs.getFirst().font.bold = true;
+          }
+
+          // Signer rows
+          for (let r = 0; r < maxSigners; r++) {
+            for (let c = 0; c < colCount; c++) {
+              const s = memberSigners[c][r];
+              const prefix = `tc_ld${c + 1}`;
+              
+              const nameCell = table.getCell(r * 2 + 1, c);
+              const honorific = resolveGender(s?.name || '', s?.gender) + ': ';
+              nameCell.body.insertText(honorific, 'Replace');
+              const nameCC = nameCell.body.getRange('End').insertContentControl();
+              nameCC.title = `${members[c]} - Người ${r + 1} - Tên`;
+              nameCC.tag = `${prefix}_s${r + 1}_name`;
+              nameCC.placeholderText = '[Họ tên]';
+              nameCC.appearance = 'BoundingBox';
+              if (s?.name) nameCC.insertText(s.name, 'Replace');
+
+              const posCell = table.getCell(r * 2 + 2, c);
+              posCell.body.insertText('Chức vụ: ', 'Replace');
+              const posCC = posCell.body.getRange('End').insertContentControl();
+              posCC.title = `${members[c]} - Người ${r + 1} - Chức vụ`;
+              posCC.tag = `${prefix}_s${r + 1}_pos`;
+              posCC.placeholderText = '[Chức vụ]';
+              posCC.appearance = 'BoundingBox';
+              if (s?.position) posCC.insertText(s.position, 'Replace');
+            }
+          }
+        } else {
+          // Normal mode
+          const group = savedGroups.find((g: any) => g.prefix === role);
+          const signersCount = group ? group.signers.length : (role === 'tc' ? 3 : 2);
+          const rowCount = Math.max(signersCount, 1);
+          const signers: any[] = group ? group.signers : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
+
+          const table = wrapper.insertTable(rowCount, 2, 'Start');
+          applyFontToTable(table, userFont);
+          hideTableBorders(table);
+          
+          for (let i = 0; i < rowCount; i++) {
+            const s = signers[i] || {};
+            const honorific = resolveGender(s.name || '', s.gender) + ': ';
+
+            const nameCell = table.getCell(i, 0);
+            nameCell.body.insertText(honorific, 'Replace');
+            const nameCC = nameCell.body.getRange('End').insertContentControl();
+            nameCC.title = `${role.toUpperCase()} ${i + 1} - Tên`;
+            nameCC.tag = `${role}${i + 1}_name`;
+            nameCC.placeholderText = '[Họ tên]';
+            nameCC.appearance = 'BoundingBox';
+            if (s.name) nameCC.insertText(s.name, 'Replace');
+
+            const posCell = table.getCell(i, 1);
+            posCell.body.insertText('Chức vụ: ', 'Replace');
+            const posCC = posCell.body.getRange('End').insertContentControl();
+            posCC.title = `${role.toUpperCase()} ${i + 1} - Chức vụ`;
+            posCC.tag = `${role}${i + 1}_pos`;
+            posCC.placeholderText = '[Chức vụ]';
+            posCC.appearance = 'BoundingBox';
+            if (s.position) posCC.insertText(s.position, 'Replace');
+          }
+        }
+
+        await context.sync();
+        wrapper.getRange('After').select();
+        await context.sync();
+        alert(`Đã chèn Bảng ${role.toUpperCase()}. Nhấn nút "Cập nhật dữ liệu" để đổ dữ liệu vào bảng.`);
+      }).catch((err: any) => {
+        console.error(err);
+        alert('Lỗi Word API: ' + err.message);
       });
+    } catch (err: any) {
+      console.error(err);
+      alert('Lỗi ứng dụng: ' + err.message);
+    }
+  };
 
-      const table = wrapper.insertTable(rowCount, 2, 'Start');
+  // Helper functions for Word API to keep code clean
+  const applyFontToTable = (table: any, font: any) => {
+    try {
+      if (font.name) table.font.name = font.name;
+      if (font.size) table.font.size = font.size;
+      if (font.color) table.font.color = font.color;
+      table.font.bold = font.bold || false;
+      table.font.italic = font.italic || false;
+    } catch (e) {
+      console.warn("Could not apply font to table", e);
+    }
+  };
 
-      // Apply user font individually and safely
-      try {
-        if (userFont.name) table.font.name = userFont.name;
-        if (userFont.size) table.font.size = userFont.size;
-        if (userFont.color) table.font.color = userFont.color;
-        table.font.bold = userFont.bold || false;
-        table.font.italic = userFont.italic || false;
-      } catch (e) {
-        console.warn("Could not apply selection font to table", e);
-      }
-      
-      // Hide borders (No border)
-      table.borders.insideHorizontal.style = 'None';
-      table.borders.insideVertical.style = 'None';
-      table.borders.outsideTop.style = 'None';
-      table.borders.outsideBottom.style = 'None';
-      table.borders.outsideLeft.style = 'None';
-      table.borders.outsideRight.style = 'None';
-      
-      for (let i = 0; i < rowCount; i++) {
-        const s = signers[i] || {};
-        const honorific = resolveGender(s.name || '', s.gender) + ': ';
-
-        const nameCell = table.getCell(i, 0);
-        nameCell.body.insertText(honorific, 'Replace');
-        const nameCC = nameCell.body.getRange('End').insertContentControl();
-        nameCC.set({
-          title: `${role.toUpperCase()} ${i + 1} - Tên`,
-          tag: `${role}${i + 1}_name`,
-          placeholderText: '[Họ tên]',
-          appearance: 'BoundingBox'
-        });
-        if (s.name) nameCC.insertText(s.name, 'Replace');
-
-        const posCell = table.getCell(i, 1);
-        posCell.body.insertText('Chức vụ: ', 'Replace');
-        const posCC = posCell.body.getRange('End').insertContentControl();
-        posCC.set({
-          title: `${role.toUpperCase()} ${i + 1} - Chức vụ`,
-          tag: `${role}${i + 1}_pos`,
-          placeholderText: '[Chức vụ]',
-          appearance: 'BoundingBox'
-        });
-        if (s.position) posCC.insertText(s.position, 'Replace');
-      }
-
-      await context.sync();
-      wrapper.getRange('After').select();
-      await context.sync();
-      alert(`Đã chèn Bảng ${role.toUpperCase()}. Nhấn nút "Cập nhật dữ liệu" để đổ dữ liệu vào bảng.`);
-    }).catch((err: any) => alert('Lỗi khi chèn bảng: ' + err.message));
+  const hideTableBorders = (table: any) => {
+    table.borders.insideHorizontal.style = 'None';
+    table.borders.insideVertical.style = 'None';
+    table.borders.outsideTop.style = 'None';
+    table.borders.outsideBottom.style = 'None';
+    table.borders.outsideLeft.style = 'None';
+    table.borders.outsideRight.style = 'None';
   };
 
 

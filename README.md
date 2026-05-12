@@ -83,6 +83,13 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > **QUY ƯỚC ĐÁNH VERSION:**
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v11052026.1021`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
+### v12052026.1642 (12/05/2026)
+- **Sửa lỗi & Ổn định**: Khắc phục lỗi nút "Thành phần tham gia" không phản hồi. Tăng cường khả năng bắt lỗi và tương thích Word API.
+- **Tính năng mới – Liên danh (Joint Venture)**: 
+    - Tab **Ký hồ sơ** tự động tạo các nhóm quản lý nhân sự riêng biệt cho từng thành viên liên danh.
+    - **Bảng thi công** trong Word hỗ trợ bố cục đa cột, tự động điền thông tin người ký cho từng đơn vị thành viên liên danh.
+- **Cải tiến Word API**: Thay thế phương thức `.set()` bằng gán trực tiếp thuộc tính để hoạt động ổn định trên mọi phiên bản Word.
+
 ### v11052026.1744 (11/05/2026)
 - **Sửa lỗi cực kỳ quan trọng**: Khắc phục triệt để lỗi không chèn được bảng Thành phần tham gia bằng cách bọc khối xử lý Font trong `try-catch` và kiểm tra giá trị `null` kỹ lưỡng hơn. Đảm bảo tính ổn định trên mọi phiên bản Word.
 
