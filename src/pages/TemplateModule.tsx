@@ -415,9 +415,9 @@ export const TemplateModule: React.FC = () => {
       }
 
       await context.sync();
-      let msg = `Đã cập nhật ${filled} trường dữ liệu`;
-      if (tablesRefreshed > 0) msg += ` và làm mới ${tablesRefreshed} bảng dữ liệu`;
-      alert(msg + '!');
+      let resultMsg = `Đã cập nhật ${filledCount} trường dữ liệu`;
+      if (tablesRefreshed > 0) resultMsg += ` và làm mới ${tablesRefreshed} bảng dữ liệu`;
+      alert(resultMsg + '!');
     }).catch((err: any) => {
       console.error(err);
       alert('Lỗi khi cập nhật dữ liệu: ' + err.message);
