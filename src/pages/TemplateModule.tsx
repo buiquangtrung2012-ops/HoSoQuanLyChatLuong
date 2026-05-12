@@ -286,7 +286,7 @@ export const TemplateModule: React.FC = () => {
               const group = savedGroups.find((g: any) => g.prefix === `tc_ld${idx + 1}`);
               return group ? group.signers : [];
             });
-            const maxSigners = Math.max(...memberSigners.map(s => s.length), 1);
+            const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
             const rowCount = maxSigners * 2 + 1;
 
             const table = wrapper.insertTable(rowCount, colCount, 'Start');
@@ -516,7 +516,7 @@ export const TemplateModule: React.FC = () => {
             const group = savedGroups.find((g: any) => g.prefix === `tc_ld${idx + 1}`);
             return group ? group.signers : [];
           });
-          const maxSigners = Math.max(...memberSigners.map(s => s.length), 1);
+          const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
           const rowCount = maxSigners * 2 + 1;
 
           const table = wrapper.insertTable(rowCount, colCount, 'Start');
