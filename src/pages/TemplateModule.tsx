@@ -233,35 +233,32 @@ export const TemplateModule: React.FC = () => {
       ...participants,
     };
 
+    const projectData = StorageService.getProject() || {};
+    const savedGroupsData = StorageService.get('hoso_participants_v2');
+    const savedGroups = Array.isArray(savedGroupsData) ? savedGroupsData : [];
+
     if (!isWordApiAvailable()) {
       alert('Chức năng này chỉ hoạt động khi mở trong Microsoft Word.');
       return;
     }
+
     // @ts-ignore
     Word.run(async (context: any) => {
       const ccs = context.document.contentControls;
-      ccs.load('items');
+      ccs.load('items/tag');
       await context.sync();
-      let filled = 0;
-      for (const item of ccs.items) {
-        item.load('tag');
-      }
-      await context.sync();
-
+      
+      let filledCount = 0;
       // 1. Fill normal text controls
       for (const item of ccs.items) {
         const val = allData[item.tag];
-        if (val !== undefined && val !== '' && !item.tag.startsWith('table_')) {
-          item.insertText(val, 'Replace');
-          filled++;
+        if (val !== undefined && val !== '' && !item.tag.startsWith('table_') && !item.tag.startsWith('summary_')) {
+          item.insertText(String(val), 'Replace');
+          filledCount++;
         }
       }
 
       // 2. Refresh dynamic participant tables
-      const savedGroups = StorageService.get('hoso_participants_v2') || [];
-      const project = StorageService.getProject() || {};
-      
-      // Determine which roles are present in document
       const roleTags = ['table_cdt', 'table_tc', 'table_tv'];
       let tablesRefreshed = 0;
 
@@ -270,17 +267,13 @@ export const TemplateModule: React.FC = () => {
         const foundTables = ccs.items.filter((cc: any) => cc.tag === tag);
         if (foundTables.length === 0) continue;
 
-        // Check if this is JV TC table
-        const isJV = role === 'tc' && project.isJointVenture && project.contractorMembers?.length;
+        const isJV = role === 'tc' && projectData.isJointVenture && projectData.contractorMembers?.length;
         
         for (const wrapper of foundTables) {
-          wrapper.load('font');
-          await context.sync();
-          const existingFont = wrapper.font;
           wrapper.clear();
-
+          
           if (isJV) {
-            const members = project.contractorMembers || [];
+            const members = projectData.contractorMembers || [];
             const colCount = members.length;
             const memberSigners = members.map((_: any, idx: number) => {
               const group = savedGroups.find((g: any) => g.prefix === `tc_ld${idx + 1}`);
@@ -290,10 +283,8 @@ export const TemplateModule: React.FC = () => {
             const rowCount = maxSigners * 2 + 1;
 
             const table = wrapper.insertTable(rowCount, colCount, 'Start');
-            applyFontToTable(table, existingFont);
             hideTableBorders(table);
 
-            // Header row: Member names
             for (let c = 0; c < colCount; c++) {
               const cell = table.getCell(0, c);
               cell.body.insertText(members[c], 'Replace');
@@ -305,7 +296,6 @@ export const TemplateModule: React.FC = () => {
                 const s: any = memberSigners[c][r];
                 const prefix = `tc_ld${c + 1}`;
                 
-                // Name row
                 const nameCell = table.getCell(r * 2 + 1, c);
                 const honorific = resolveGender(s?.name || '', s?.gender) + ': ';
                 nameCell.body.insertText(honorific, 'Replace');
@@ -316,7 +306,6 @@ export const TemplateModule: React.FC = () => {
                 nameCC.appearance = 'BoundingBox';
                 if (s?.name) nameCC.insertText(s.name, 'Replace');
 
-                // Position row
                 const posCell = table.getCell(r * 2 + 2, c);
                 posCell.body.insertText('Chức vụ: ', 'Replace');
                 const posCC = posCell.body.getRange('End').insertContentControl();
@@ -328,20 +317,17 @@ export const TemplateModule: React.FC = () => {
               }
             }
           } else {
-            // Normal 2-column table (CDT, TV, or non-JV TC)
             const group = savedGroups.find((g: any) => g.prefix === role);
             const signers = group ? group.signers : [];
             const rowCount = Math.max(signers.length, (role === 'tc' ? 3 : 2));
             const actualSigners = signers.length > 0 ? signers : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
 
             const table = wrapper.insertTable(rowCount, 2, 'Start');
-            applyFontToTable(table, existingFont);
             hideTableBorders(table);
 
             for (let i = 0; i < rowCount; i++) {
               const s = actualSigners[i] || {};
               const honorific = resolveGender(s.name || '', s.gender) + ': ';
-              
               const nameCell = table.getCell(i, 0);
               nameCell.body.insertText(honorific, 'Replace');
               const nameCC = nameCell.body.getRange('End').insertContentControl();
@@ -365,73 +351,66 @@ export const TemplateModule: React.FC = () => {
         }
       }
 
-      // 3. Refresh summary tables (Personnel, Materials, Equipment, WorkItems)
+      // 3. Refresh summary tables
       const summaryTags = Object.keys(SUMMARY_CONFIG).map(k => `summary_${k}`);
       for (const tag of summaryTags) {
         const type = tag.replace('summary_', '');
         const foundSummaries = ccs.items.filter((cc: any) => cc.tag === tag);
+        if (foundSummaries.length === 0) continue;
+
+        const config = SUMMARY_CONFIG[type];
+        let dataList: any[] = [];
+        if (type === 'personnel') dataList = StorageService.get('hoso_personnel') || [];
+        if (type === 'materials') dataList = StorageService.get('hoso_materials') || [];
+        if (type === 'equipment') dataList = StorageService.get('hoso_equipment') || [];
+        if (type === 'lab') dataList = StorageService.get('hoso_labs') || [];
+        if (type === 'workitems') dataList = StorageService.getWorkItems() || [];
         
-        if (foundSummaries.length > 0) {
-          const config = SUMMARY_CONFIG[type];
-          let dataList: any[] = [];
-          if (type === 'personnel') dataList = StorageService.get('hoso_personnel') || [];
-          if (type === 'materials') dataList = StorageService.get('hoso_materials') || [];
-          if (type === 'equipment') dataList = StorageService.get('hoso_equipment') || [];
-          if (type === 'lab') dataList = StorageService.get('hoso_labs') || [];
-          if (type === 'workitems') dataList = StorageService.getWorkItems() || [];
-          
-          const rowCount = dataList.length + 1; // +1 for header
-          
-          for (const wrapper of foundSummaries) {
-            wrapper.clear();
-            const table = wrapper.insertTable(rowCount, config.columns.length, 'Start');
-            table.style = 'Table Normal';
-            
-            // Header
-            config.columns.forEach((col, i) => {
-              const cell = table.getCell(0, i);
-              cell.body.insertText(col, 'Replace');
-              cell.body.paragraphs.getFirst().font.bold = true;
-              cell.shadingColor = '#F3F4F6';
-            });
-            
-            // Data
-            dataList.forEach((item, rIdx) => {
-              const row = rIdx + 1;
-              table.getCell(row, 0).body.insertText((rIdx + 1).toString(), 'Replace');
-              
-              if (type === 'personnel') {
-                table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
-                table.getCell(row, 2).body.insertText(item.position || '', 'Replace');
-                table.getCell(row, 3).body.insertText(item.unit || '', 'Replace');
-              }
-              if (type === 'materials') {
-                table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
-                table.getCell(row, 2).body.insertText(item.origin || '', 'Replace');
-                table.getCell(row, 3).body.insertText(item.supplier || '', 'Replace');
-                table.getCell(row, 4).body.insertText(item.qty?.toString() || '', 'Replace');
-              }
-              if (type === 'equipment') {
-                table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
-                table.getCell(row, 2).body.insertText(item.serial || '', 'Replace');
-                table.getCell(row, 3).body.insertText(item.inspectionDate?.split('-').reverse().join('/') || '', 'Replace');
-                table.getCell(row, 4).body.insertText(item.expiryDate?.split('-').reverse().join('/') || '', 'Replace');
-              }
-              if (type === 'workitems') {
-                table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
-                table.getCell(row, 2).body.insertText(item.code || '', 'Replace');
-                table.getCell(row, 3).body.insertText(item.quantity?.toString() || '', 'Replace');
-                table.getCell(row, 4).body.insertText(item.unit || '', 'Replace');
-              }
-              if (type === 'lab') {
-                table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
-                table.getCell(row, 2).body.insertText(item.code || '', 'Replace');
-                table.getCell(row, 3).body.insertText(item.expiry || '', 'Replace');
-                table.getCell(row, 4).body.insertText(item.equipment || '', 'Replace');
-              }
-            });
-            tablesRefreshed++;
-          }
+        const rowCount = dataList.length + 1;
+        for (const wrapper of foundSummaries) {
+          wrapper.clear();
+          const table = wrapper.insertTable(rowCount, config.columns.length, 'Start');
+          table.style = 'Table Normal';
+          config.columns.forEach((col, i) => {
+            const cell = table.getCell(0, i);
+            cell.body.insertText(col, 'Replace');
+            cell.body.paragraphs.getFirst().font.bold = true;
+            cell.shadingColor = '#F3F4F6';
+          });
+          dataList.forEach((item, rIdx) => {
+            const row = rIdx + 1;
+            table.getCell(row, 0).body.insertText((rIdx + 1).toString(), 'Replace');
+            if (type === 'personnel') {
+              table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+              table.getCell(row, 2).body.insertText(item.position || '', 'Replace');
+              table.getCell(row, 3).body.insertText(item.unit || '', 'Replace');
+            }
+            if (type === 'materials') {
+              table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+              table.getCell(row, 2).body.insertText(item.origin || '', 'Replace');
+              table.getCell(row, 3).body.insertText(item.supplier || '', 'Replace');
+              table.getCell(row, 4).body.insertText(item.qty?.toString() || '', 'Replace');
+            }
+            if (type === 'equipment') {
+              table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+              table.getCell(row, 2).body.insertText(item.serial || '', 'Replace');
+              table.getCell(row, 3).body.insertText(item.inspectionDate?.split('-').reverse().join('/') || '', 'Replace');
+              table.getCell(row, 4).body.insertText(item.expiryDate?.split('-').reverse().join('/') || '', 'Replace');
+            }
+            if (type === 'workitems') {
+              table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+              table.getCell(row, 2).body.insertText(item.code || '', 'Replace');
+              table.getCell(row, 3).body.insertText(item.quantity?.toString() || '', 'Replace');
+              table.getCell(row, 4).body.insertText(item.unit || '', 'Replace');
+            }
+            if (type === 'lab') {
+              table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+              table.getCell(row, 2).body.insertText(item.code || '', 'Replace');
+              table.getCell(row, 3).body.insertText(item.expiry || '', 'Replace');
+              table.getCell(row, 4).body.insertText(item.equipment || '', 'Replace');
+            }
+          });
+          tablesRefreshed++;
         }
       }
 
@@ -500,9 +479,7 @@ export const TemplateModule: React.FC = () => {
       // @ts-ignore
       Word.run(async (context: any) => {
         const range = context.document.getSelection();
-        range.load('font');
-        await context.sync();
-        const userFont = range.font;
+        // REMOVED font loading to avoid potential Word API hangs
         
         const wrapper = range.insertContentControl();
         wrapper.tag = `table_${role}`;
@@ -520,10 +497,8 @@ export const TemplateModule: React.FC = () => {
           const rowCount = maxSigners * 2 + 1;
 
           const table = wrapper.insertTable(rowCount, colCount, 'Start');
-          applyFontToTable(table, userFont);
           hideTableBorders(table);
 
-          // Header row
           for (let c = 0; c < colCount; c++) {
             const cell = table.getCell(0, c);
             cell.body.insertText(members[c], 'Replace');
@@ -556,20 +531,17 @@ export const TemplateModule: React.FC = () => {
             }
           }
         } else {
-          // Normal mode
           const group = savedGroups.find((g: any) => g.prefix === role);
           const signersCount = group ? group.signers.length : (role === 'tc' ? 3 : 2);
           const rowCount = Math.max(signersCount, 1);
           const signers: any[] = group ? group.signers : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
 
           const table = wrapper.insertTable(rowCount, 2, 'Start');
-          applyFontToTable(table, userFont);
           hideTableBorders(table);
           
           for (let i = 0; i < rowCount; i++) {
             const s = signers[i] || {};
             const honorific = resolveGender(s.name || '', s.gender) + ': ';
-
             const nameCell = table.getCell(i, 0);
             nameCell.body.insertText(honorific, 'Replace');
             const nameCC = nameCell.body.getRange('End').insertContentControl();
@@ -593,7 +565,7 @@ export const TemplateModule: React.FC = () => {
         await context.sync();
         wrapper.getRange('After').select();
         await context.sync();
-        alert(`Đã chèn Bảng ${role.toUpperCase()}. Nhấn nút "Cập nhật dữ liệu" để đổ dữ liệu vào bảng.`);
+        alert(`Đã chèn Bảng ${role.toUpperCase()} thành công!`);
       }).catch((err: any) => {
         console.error(err);
         alert('Lỗi Word API: ' + err.message);
