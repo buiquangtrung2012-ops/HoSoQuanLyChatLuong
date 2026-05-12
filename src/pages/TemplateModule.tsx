@@ -282,7 +282,7 @@ export const TemplateModule: React.FC = () => {
           if (isJV) {
             const members = project.contractorMembers || [];
             const colCount = members.length;
-            const memberSigners = members.map((_, idx) => {
+            const memberSigners = members.map((_: any, idx: number) => {
               const group = savedGroups.find((g: any) => g.prefix === `tc_ld${idx + 1}`);
               return group ? group.signers : [];
             });
@@ -300,10 +300,9 @@ export const TemplateModule: React.FC = () => {
               cell.body.paragraphs.getFirst().font.bold = true;
             }
 
-            // Signer rows
             for (let r = 0; r < maxSigners; r++) {
               for (let c = 0; c < colCount; c++) {
-                const s = memberSigners[c][r];
+                const s: any = memberSigners[c][r];
                 const prefix = `tc_ld${c + 1}`;
                 
                 // Name row
@@ -513,7 +512,7 @@ export const TemplateModule: React.FC = () => {
         if (isJV) {
           const members = project.contractorMembers || [];
           const colCount = members.length;
-          const memberSigners = members.map((_, idx) => {
+          const memberSigners = members.map((_: any, idx: number) => {
             const group = savedGroups.find((g: any) => g.prefix === `tc_ld${idx + 1}`);
             return group ? group.signers : [];
           });
@@ -531,10 +530,9 @@ export const TemplateModule: React.FC = () => {
             cell.body.paragraphs.getFirst().font.bold = true;
           }
 
-          // Signer rows
           for (let r = 0; r < maxSigners; r++) {
             for (let c = 0; c < colCount; c++) {
-              const s = memberSigners[c][r];
+              const s: any = memberSigners[c][r];
               const prefix = `tc_ld${c + 1}`;
               
               const nameCell = table.getCell(r * 2 + 1, c);

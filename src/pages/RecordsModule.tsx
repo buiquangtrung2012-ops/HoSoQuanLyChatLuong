@@ -100,9 +100,9 @@ export const RecordsModule: React.FC = () => {
     const finalGroups = [cdtGroup, ...tcGroups, tvGroup];
     
     // Đảm bảo tất cả signers có trường gender cho dữ liệu cũ
-    const migrated = finalGroups.map((g: ParticipantGroup) => ({
+    const migrated = finalGroups.map((g: any) => ({
       ...g,
-      signers: g.signers.map((s: SignerEntry) => ({ gender: 'auto', ...s })),
+      signers: g.signers.map((s: any) => ({ gender: 'auto' as const, ...s })),
     }));
     
     setGroups(migrated);
