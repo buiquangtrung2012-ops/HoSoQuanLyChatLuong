@@ -494,6 +494,7 @@ export const WordApiService = {
     await Word.run(async (context: any) => {
       const range = context.document.getSelection();
       
+      // Get current font for inheritance
       let currentFont: any = null;
       try {
         range.load('font/name,font/size');
@@ -501,18 +502,24 @@ export const WordApiService = {
         currentFont = range.font;
       } catch (e) {}
 
+      // Create a wrapper Content Control
+      const wrapper = range.insertContentControl();
+      wrapper.tag = `table_${role}`;
+      wrapper.title = `Bảng Thành phần: ${role.toUpperCase()}`;
+      wrapper.appearance = 'BoundingBox';
+
       let insertedTable: any = null;
       if (isJV) {
         const members = project.contractorMembers || [];
         const colCount = members.length;
         const memberSigners = members.map((_: any, idx: number) => {
-          const group = savedGroups.find((g: any) => g.prefix === `tc_ld${idx + 1}`);
-          return (group && Array.isArray(group.signers)) ? group.signers : [];
+          const g = savedGroups.find((gr: any) => gr.prefix === `tc_ld${idx + 1}`);
+          return (g && Array.isArray(g.signers)) ? g.signers : [];
         });
         const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
         const rowCount = maxSigners * 2 + 1;
 
-        insertedTable = range.insertTable(rowCount, colCount, 'After');
+        insertedTable = wrapper.insertTable(rowCount, colCount, 'Start');
         applyFontToTable(insertedTable, currentFont);
         hideTableBorders(insertedTable);
 
@@ -520,6 +527,7 @@ export const WordApiService = {
           const cell = insertedTable.getCell(0, c);
           cell.body.insertText(members[c], 'Replace');
           cell.body.paragraphs.getFirst().font.bold = true;
+          cell.body.paragraphs.getFirst().alignment = 'Center';
         }
 
         for (let r = 0; r < maxSigners; r++) {
@@ -553,11 +561,11 @@ export const WordApiService = {
       } else {
         const group = savedGroups.find((g: any) => g.prefix === role);
         const signersRaw = (group && Array.isArray(group.signers)) ? group.signers : [];
-        const signersCount = Math.max(signersRaw.length, (role === 'tc' ? 3 : 2));
+        const signersCount = Math.max(signersRaw.length, (role === 'tc' || role === 'tv' ? 3 : 2));
         const rowCount = Math.max(signersCount, 1);
         const signers: any[] = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
 
-        insertedTable = range.insertTable(rowCount, 2, 'After');
+        insertedTable = wrapper.insertTable(rowCount, 2, 'Start');
         applyFontToTable(insertedTable, currentFont);
         hideTableBorders(insertedTable);
         
