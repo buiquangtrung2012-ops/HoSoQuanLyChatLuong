@@ -24,52 +24,35 @@ export const Topbar: React.FC = () => {
 
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-3">
-            <span 
-              onClick={() => alert("Version Badge Clicked! Version: " + CURRENT_VERSION)}
-              className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold tracking-tighter cursor-help"
+            <button 
+              onClick={() => alert("CLICKED VERSION: " + CURRENT_VERSION)}
+              className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold tracking-tighter"
             >
               {CURRENT_VERSION}
-            </span>
-
-            {/* Global Fill Data Button */}
-            <button
-              id="btn-fill-data-global"
-              onClick={async (e) => {
-                e.stopPropagation();
-                alert("Đã nhấn nút Đổ dữ liệu (Global)");
-                try {
-                  await WordApiService.fillDataToDocument();
-                } catch (err: any) {
-                  alert("Lỗi thực thi: " + err.message);
-                }
-              }}
-              className="relative z-50 flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-sm font-bold shadow-md shadow-green-600/20 gap-2 cursor-pointer"
-            >
-              <Zap size={16} className="pointer-events-none" /> 
-              <span className="hidden lg:inline pointer-events-none">Đổ dữ liệu</span>
-              <span className="lg:hidden pointer-events-none">Đổ</span>
             </button>
 
-            {/* Update / Version Manager button with pulsing badge when update available */}
+            {/* Global Fill Data Button - ULTRA SIMPLE TEST */}
             <button
-              id="btn-version-manager"
+              onClick={() => {
+                alert("BẮT ĐẦU ĐỔ DỮ LIỆU...");
+                WordApiService.fillDataToDocument();
+              }}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-bold"
+            >
+              ĐỔ DỮ LIỆU
+            </button>
+
+            {/* Update / Version Manager button */}
+            <button
               disabled={isChecking}
               onClick={async () => {
                 await checkUpdates();
                 setShowModal(true);
               }}
-              className="relative flex items-center px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-all text-sm font-medium disabled:opacity-70"
+              className="flex items-center px-4 py-2 bg-primary/10 text-primary rounded-lg text-sm font-medium"
             >
               <RefreshCw size={18} className={`mr-2 ${isChecking ? 'animate-spin' : ''}`} />
-              {isChecking ? 'Đang kiểm tra...' : 'Cập nhật'}
-              {hasUpdate && !isChecking && (
-                <span
-                  className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-red-500 flex items-center justify-center"
-                  style={{ animation: 'pulse-badge 1.5s infinite' }}
-                >
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" style={{ animation: 'ping 1.5s cubic-bezier(0,0,0.2,1) infinite' }} />
-                </span>
-              )}
+              Cập nhật
             </button>
           </div>
         </div>

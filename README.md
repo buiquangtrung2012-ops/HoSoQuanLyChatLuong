@@ -82,6 +82,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1439 (14/05/2026)
+- **Kiểm tra tương tác cơ bản (Simple Interaction Test)**: Tối giản hóa tối đa nút Đổ dữ liệu và nhãn phiên bản, sử dụng các hàm alert cơ bản nhất để kiểm tra phản hồi của Word Add-in.
+
 ### v14052026.1436 (14/05/2026)
 - **Chẩn đoán sự kiện click (Click Diagnostics)**: Thêm alert vào nhãn phiên bản và nút Đổ dữ liệu để kiểm tra xem trình duyệt có ghi nhận các sự kiện click tại thanh Topbar hay không.
 
