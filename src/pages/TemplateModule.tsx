@@ -740,7 +740,7 @@ export const TemplateModule: React.FC = () => {
               <h2 className="text-sm font-black text-primary uppercase tracking-widest">{category}</h2>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-4 gap-3">
               {dynamicContentControls.filter(cc => cc.category === category).map((cc) => (
                 <button
                   key={cc.id}

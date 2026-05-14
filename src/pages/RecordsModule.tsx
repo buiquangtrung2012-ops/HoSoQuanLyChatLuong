@@ -205,9 +205,7 @@ export const RecordsModule: React.FC = () => {
 
   const handleRemoveGroup = (prefix: string) => {
     if (!prefix.startsWith('custom_')) return;
-    if (confirm('Bạn có chắc chắn muốn xóa nhóm ký này không?')) {
-      setGroups(prev => prev.filter(g => g.prefix !== prefix));
-    }
+    setGroups(prev => prev.filter(g => g.prefix !== prefix));
   };
 
   const handleGroupLabelChange = (prefix: string, label: string) => {
