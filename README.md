@@ -84,6 +84,11 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > **QUY ƯỚC ĐÁNH VERSION:**
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
+### v14052026.1035 (14/05/2026)
+- **Tính năng Mới**: Hỗ trợ tạo **Đơn vị ký Tùy chỉnh**. Người dùng giờ đây có thể thêm các nhóm ký tự do (như Sở ban ngành, Quản lý dự án, v.v.), có thể đổi tên và xóa nhóm.
+- **Tối ưu Bảng Thành phần tham gia (Tạo mẫu)**: Tự động sinh nút chèn bảng cho các đơn vị tùy chỉnh. Các biến dữ liệu (Content Controls) của nhóm tùy chỉnh cũng được tự động thêm vào danh sách thả xuống.
+- **Tối ưu Form Ký Trống**: Khi thông tin người ký để trống, hệ thống sẽ tự động chèn dải dấu chấm cứng `..............................` để in form chờ điền tay. Xưng hô tự động chuyển thành `Ông (Bà): ` khi trống thông tin.
+
 ### v14052026.1009 (14/05/2026)
 - **Thiết kế lại UI (Redesign)**: Lột xác toàn bộ giao diện tab Ký hồ sơ (`RecordsModule.tsx`). Áp dụng thiết kế thẻ Card cho từng nhóm ký có tính năng đóng/mở (Collapse/Expand). Ép giao diện người ký thành 1 dòng siêu gọn nhẹ bằng CSS Grid, thêm tính năng Kéo & Thả (Drag & Drop) để đổi thứ tự, đưa thanh hành động thành Sticky Bottom Bar nổi trên nội dung.
 

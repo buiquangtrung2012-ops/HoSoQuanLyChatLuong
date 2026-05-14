@@ -183,6 +183,37 @@ export const RecordsModule: React.FC = () => {
     });
   };
 
+  const handleAddCustomGroup = () => {
+    setGroups(prev => {
+      const customGroups = prev.filter(g => g.prefix.startsWith('custom_'));
+      const nextIdx = customGroups.length > 0 
+        ? Math.max(...customGroups.map(g => parseInt(g.prefix.split('_')[1]))) + 1 
+        : 1;
+      const prefix = `custom_${nextIdx}`;
+      const newGroup: ParticipantGroup = {
+        label: `Nhóm Tùy Chỉnh ${nextIdx}`,
+        prefix,
+        colorClass: 'bg-white',
+        borderClass: 'border-orange-200',
+        headerBgClass: 'bg-orange-50/50',
+        labelColorClass: 'text-orange-800',
+        signers: [{ id: `${prefix}_1`, name: '', position: '', gender: 'auto' }]
+      };
+      return [...prev, newGroup];
+    });
+  };
+
+  const handleRemoveGroup = (prefix: string) => {
+    if (!prefix.startsWith('custom_')) return;
+    if (confirm('Bạn có chắc chắn muốn xóa nhóm ký này không?')) {
+      setGroups(prev => prev.filter(g => g.prefix !== prefix));
+    }
+  };
+
+  const handleGroupLabelChange = (prefix: string, label: string) => {
+    setGroups(prev => prev.map(g => g.prefix === prefix ? { ...g, label } : g));
+  };
+
   // Drag and drop handlers
   const handleDragStart = (e: React.DragEvent, groupIdx: number, signerIdx: number) => {
     setDraggedItem({ groupIdx, signerIdx });
@@ -263,13 +294,32 @@ export const RecordsModule: React.FC = () => {
                   className={`flex items-center justify-between p-4 cursor-pointer select-none ${group.headerBgClass} hover:opacity-90 transition-opacity`}
                   onClick={() => toggleCollapse(group.prefix)}
                 >
-                  <div className="flex items-center gap-3">
-                    <h3 className={`text-[15px] font-bold uppercase ${group.labelColorClass}`}>{group.label}</h3>
-                    <span className="px-2.5 py-0.5 rounded-full bg-white/60 border border-black/5 text-xs font-bold text-slate-600 shadow-sm">
+                  <div className="flex items-center gap-3 flex-1">
+                    {group.prefix.startsWith('custom_') ? (
+                      <input 
+                        value={group.label}
+                        onChange={(e) => handleGroupLabelChange(group.prefix, e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        className={`text-[15px] font-bold uppercase bg-white/50 border border-transparent hover:border-orange-300 focus:bg-white focus:border-orange-400 focus:ring-2 focus:ring-orange-200 outline-none rounded px-2 py-0.5 w-full max-w-xs transition-all ${group.labelColorClass}`}
+                        placeholder="Nhập tên nhóm ký..."
+                      />
+                    ) : (
+                      <h3 className={`text-[15px] font-bold uppercase ${group.labelColorClass}`}>{group.label}</h3>
+                    )}
+                    <span className="px-2.5 py-0.5 rounded-full bg-white/60 border border-black/5 text-xs font-bold text-slate-600 shadow-sm whitespace-nowrap">
                       {group.signers.length} người
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
+                    {group.prefix.startsWith('custom_') && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleRemoveGroup(group.prefix); }}
+                        className="flex items-center text-[11px] font-bold text-red-500 hover:bg-red-50 hover:text-red-600 px-2.5 py-1.5 rounded-md transition-all"
+                        title="Xóa nhóm này"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
                     <button 
                       onClick={(e) => { e.stopPropagation(); handleAddSigner(groupIdx); }}
                       className="flex items-center text-[11px] font-bold text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20 px-2.5 py-1.5 rounded-md transition-all"
@@ -392,6 +442,15 @@ export const RecordsModule: React.FC = () => {
               </div>
             );
           })}
+        </div>
+
+        <div className="flex justify-center pt-4">
+          <button
+            onClick={handleAddCustomGroup}
+            className="flex items-center px-6 py-2.5 border-2 border-dashed border-slate-300 text-slate-500 rounded-xl hover:border-primary hover:text-primary hover:bg-primary/5 transition-all font-semibold text-sm"
+          >
+            <Plus size={16} className="mr-2" /> Thêm Nhóm Ký Khác
+          </button>
         </div>
       </div>
 

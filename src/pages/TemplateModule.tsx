@@ -16,8 +16,8 @@ const FEMALE_GIVEN_NAMES = new Set([
 ]);
 const FEMALE_MIDDLE = new Set(['thị']);
 
-export const detectGender = (fullName: string): 'Ông' | 'Bà' => {
-  if (!fullName.trim()) return 'Ông';
+export const detectGender = (fullName: string): 'Ông' | 'Bà' | 'Ông (Bà)' => {
+  if (!fullName.trim()) return 'Ông (Bà)';
   const parts = fullName.trim().toLowerCase().split(/\s+/);
   // Kiểm tra tên đệm "Thị"
   if (parts.some(p => FEMALE_MIDDLE.has(p))) return 'Bà';
@@ -29,6 +29,7 @@ export const detectGender = (fullName: string): 'Ông' | 'Bà' => {
 const resolveGender = (name: string, gender?: string): string => {
   if (gender === 'male') return 'Ông';
   if (gender === 'female') return 'Bà';
+  if (!name.trim()) return 'Ông (Bà)';
   return detectGender(name);
 };
 
@@ -141,9 +142,35 @@ export const TemplateModule: React.FC = () => {
   const [recordName, setRecordName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [customRecords, setCustomRecords] = useState<string[]>([]);
+  const [dynamicContentControls, setDynamicContentControls] = useState(contentControls);
+  const [customGroups, setCustomGroups] = useState<any[]>([]);
 
   useEffect(() => {
     setCustomRecords(StorageService.getRecordTypes());
+    
+    // Khởi tạo danh sách biến động và nút Bảng động
+    const savedGroups = StorageService.get('hoso_participants_v2') || [];
+    const cGroups = savedGroups.filter((g: any) => g.prefix.startsWith('custom_'));
+    setCustomGroups(cGroups);
+    
+    const dControls = [...contentControls];
+    cGroups.forEach((g: any) => {
+       g.signers.forEach((s: any, idx: number) => {
+         dControls.push({
+           id: `${g.prefix}${idx + 1}_name`,
+           label: `${g.label} ${idx + 1} - Tên`,
+           icon: User,
+           category: g.label
+         });
+         dControls.push({
+           id: `${g.prefix}${idx + 1}_pos`,
+           label: `${g.label} ${idx + 1} - Chức vụ`,
+           icon: FileText,
+           category: g.label
+         });
+       });
+    });
+    setDynamicContentControls(dControls);
   }, []);
 
   const handleDeleteRecord = (type: string) => {
@@ -492,7 +519,7 @@ export const TemplateModule: React.FC = () => {
     }).catch((err: any) => alert('Lỗi chèn bảng tổng hợp: ' + err.message));
   };
 
-  const insertParticipantTable = (role: 'cdt' | 'tc' | 'tv' | 'tvtk') => {
+  const insertParticipantTable = (role: string) => {
     try {
       console.log(`insertParticipantTable started for role: ${role}`);
       if (!isWordApiAvailable()) {
@@ -556,7 +583,11 @@ export const TemplateModule: React.FC = () => {
               nameCC.tag = `${prefix}_s${r + 1}_name`;
               nameCC.placeholderText = '[Họ tên]';
               nameCC.appearance = 'BoundingBox';
-              if (s?.name) nameCC.insertText(s.name, 'Replace');
+              if (s?.name) {
+                nameCC.insertText(s.name, 'Replace');
+              } else {
+                nameCC.insertText('..............................', 'Replace');
+              }
 
               const posCell = insertedTable.getCell(r * 2 + 2, c);
               posCell.body.insertText('Chức vụ: ', 'Replace');
@@ -565,7 +596,11 @@ export const TemplateModule: React.FC = () => {
               posCC.tag = `${prefix}_s${r + 1}_pos`;
               posCC.placeholderText = '[Chức vụ]';
               posCC.appearance = 'BoundingBox';
-              if (s?.position) posCC.insertText(s.position, 'Replace');
+              if (s?.position) {
+                posCC.insertText(s.position, 'Replace');
+              } else {
+                posCC.insertText('..............................', 'Replace');
+              }
             }
           }
         } else {
@@ -590,7 +625,11 @@ export const TemplateModule: React.FC = () => {
             nameCC.tag = `${role}${i + 1}_name`;
             nameCC.placeholderText = '[Họ tên]';
             nameCC.appearance = 'BoundingBox';
-            if (s.name) nameCC.insertText(s.name, 'Replace');
+            if (s.name) {
+              nameCC.insertText(s.name, 'Replace');
+            } else {
+              nameCC.insertText('..............................', 'Replace');
+            }
 
             const posCell = insertedTable.getCell(i, 1);
             posCell.body.insertText('Chức vụ: ', 'Replace');
@@ -599,7 +638,11 @@ export const TemplateModule: React.FC = () => {
             posCC.tag = `${role}${i + 1}_pos`;
             posCC.placeholderText = '[Chức vụ]';
             posCC.appearance = 'BoundingBox';
-            if (s.position) posCC.insertText(s.position, 'Replace');
+            if (s.position) {
+              posCC.insertText(s.position, 'Replace');
+            } else {
+              posCC.insertText('..............................', 'Replace');
+            }
           }
         }
 
@@ -691,14 +734,14 @@ export const TemplateModule: React.FC = () => {
       </div>
 
       <div className="space-y-12">
-        {['Dự án', 'Công việc', 'Nhân sự', 'Vật liệu', 'Máy móc', 'PTN'].map((category) => (
+        {Array.from(new Set(dynamicContentControls.map(c => c.category))).map((category) => (
           <section key={category} className="space-y-4">
             <div className="border-l-4 border-primary pl-4">
               <h2 className="text-sm font-black text-primary uppercase tracking-widest">{category}</h2>
             </div>
 
-            <div className="grid grid-cols-4 gap-3">
-              {contentControls.filter(cc => cc.category === category).map((cc) => (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {dynamicContentControls.filter(cc => cc.category === category).map((cc) => (
                 <button
                   key={cc.id}
                   onClick={() => insertContentControl(cc.id, cc.label)}
@@ -789,6 +832,18 @@ export const TemplateModule: React.FC = () => {
               </div>
               <span className="text-[10px] font-bold text-center leading-tight">Bảng Thiết Kế (TVTK)</span>
             </button>
+            {customGroups.map((cg) => (
+              <button
+                key={cg.prefix}
+                onClick={() => insertParticipantTable(cg.prefix)}
+                className="flex flex-col items-center justify-center p-3 bg-card border border-border rounded-xl hover:border-orange-500 hover:shadow-lg hover:shadow-orange-500/5 transition-all group"
+              >
+                <div className="p-2 bg-muted rounded-lg mb-2 group-hover:bg-orange-500/10 group-hover:text-orange-600 transition-colors">
+                  <Users size={20} />
+                </div>
+                <span className="text-[10px] font-bold text-center leading-tight">Bảng {cg.label.split('.')[1]?.trim() || cg.label}</span>
+              </button>
+            ))}
           </div>
         </section>
       </div>
