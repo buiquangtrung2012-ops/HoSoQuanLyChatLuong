@@ -82,6 +82,11 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1528 (14/05/2026)
+- **Cơ chế Safe-Sync đột phá**: Khắc phục triệt để lỗi `InvalidArgument` bằng cách kiểm tra thuộc tính `cannotEdit` (Chống chỉnh sửa) của từng ô dữ liệu trước khi điền.
+- **Xử lý lỗi theo thời gian thực**: Thực hiện đồng bộ API ngay sau mỗi ô dữ liệu. Nếu một ô bị lỗi, hệ thống sẽ phát hiện ngay và bỏ qua để điền tiếp các ô còn lại, không còn tình trạng bị treo ngay từ ô thứ hai.
+- **Tăng cường khả năng tương thích**: Bỏ qua các loại Content Control không tương thích (như Group) để tránh gây lỗi hệ thống.
+
 ### v14052026.1523 (14/05/2026)
 - **Tối ưu hóa vòng lặp đổ dữ liệu**: Thêm cơ chế xử lý lỗi cho từng Content Control riêng biệt. Nếu một trường bị lỗi (do sai kiểu dữ liệu hoặc bị khóa), hệ thống sẽ bỏ qua và tiếp tục đổ dữ liệu cho các trường còn lại thay vì dừng toàn bộ tiến trình.
 - **Tự động đồng bộ định kỳ**: Thêm bước đồng bộ API (context.sync) sau mỗi 20 trường dữ liệu để đảm bảo kết nối ổn định với Microsoft Word, đặc biệt hữu ích cho các hồ sơ dài.

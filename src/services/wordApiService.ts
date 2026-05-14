@@ -135,49 +135,51 @@ export const WordApiService = {
       await Word.run(async (context: any) => {
         console.log("WordApiService: Inside Word.run context");
         const ccs = context.document.contentControls;
-        ccs.load('items/tag,items/type');
+        ccs.load('items/tag,items/type,items/cannotEdit');
         await context.sync();
         
         let filledCount = 0;
-        let batchCounter = 0;
-
-        // 1. Fill normal text controls
+        
+        // 1. Fill normal text controls - Using a safer one-by-one or small-batch approach
+        // for these critical fields to ensure we don't crash on the first error.
         for (const item of ccs.items) {
-          try {
-            const val = allData[item.tag];
-            const isTableOrSummary = item.tag.startsWith('table_') || item.tag.startsWith('summary_');
-            
-            if (val !== undefined && val !== '' && !isTableOrSummary) {
-              // Only attempt insertText on compatible types if possible, 
-              // but try-catch is the ultimate safety net.
+          const val = allData[item.tag];
+          const isTableOrSummary = item.tag.startsWith('table_') || item.tag.startsWith('summary_');
+          
+          if (val !== undefined && val !== '' && !isTableOrSummary) {
+            try {
+              // PROACTIVE CHECKS: Skip locked or incompatible controls
+              if (item.cannotEdit) {
+                console.warn(`WordApiService: Skipping locked CC: ${item.tag}`);
+                continue;
+              }
+              if (item.type === 'Group') {
+                console.warn(`WordApiService: Skipping Group CC: ${item.tag}`);
+                continue;
+              }
+
               item.insertText(String(val), 'Replace');
               
               try {
-                // Clear any existing highlighting/formatting that might be in the template
+                // Formatting reset is optional and can fail separately
                 item.font.bold = null;
                 item.font.italic = null;
                 item.font.underline = 'None';
                 item.font.color = 'Auto';
-                item.font.size = null;
-                item.font.name = null;
-              } catch (fontErr) {}
-              
+              } catch (fErr) {}
+
+              // IMPORTANT: We must sync frequently to catch errors locally.
+              // For text fields, we sync every item to be 100% safe against "InvalidArgument" 
+              // halting the whole loop. The overhead is acceptable for 20-50 fields.
+              await context.sync();
               filledCount++;
-              batchCounter++;
-              
-              // Periodic sync every 20 items to keep the connection alive and stable
-              if (batchCounter >= 20) {
-                await context.sync();
-                batchCounter = 0;
-              }
+            } catch (itemErr: any) {
+              console.warn(`WordApiService: Failed to fill [${item.tag}]: ${itemErr.message}`);
+              // Error is now caught here, loop WILL continue to the next item.
             }
-          } catch (itemErr: any) {
-            console.warn(`WordApiService: Error filling item with tag "${item.tag}":`, itemErr);
-            // Continue to next item
           }
         }
 
-        await context.sync();
         console.log(`WordApiService: Finished filling ${filledCount} text controls`);
 
         // 2. Refresh dynamic participant tables
