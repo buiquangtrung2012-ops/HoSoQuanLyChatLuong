@@ -82,6 +82,11 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1418 (14/05/2026)
+- **Nút Đổ dữ liệu Toàn cầu**: Đưa nút "Đổ dữ liệu" (Zap icon) lên thanh Topbar để người dùng có thể cập nhật dữ liệu vào văn bản Word từ bất kỳ tab nào (Công trình, Nhật ký, Nhân sự, v.v.) mà không cần quay lại tab Tạo mẫu.
+- **Sửa lỗi cập nhật Bảng thành phần**: Cải tiến logic đồng bộ Word API, đảm bảo bảng Thành phần tham gia luôn được làm mới chính xác khi dữ liệu trong tab Ký hồ sơ thay đổi.
+- **Tối ưu hóa kiến trúc**: Chuyển đổi logic Word API sang service dùng chung để tăng tốc độ phản hồi và tính ổn định.
+
 ### v14052026.1149 (14/05/2026)
 - **Cải tiến quy trình Cập nhật**: Khi nhấn nút "Cập nhật", hệ thống sẽ tiến hành kiểm tra phiên bản mới nhất từ server (hiển thị trạng thái "Đang kiểm tra...") trước khi hiển thị bảng Quản lý phiên bản.
 

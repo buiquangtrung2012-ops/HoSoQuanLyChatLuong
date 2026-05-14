@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Search, RefreshCw, Bell } from 'lucide-react';
+import { Search, RefreshCw, Zap } from 'lucide-react';
 import { useVersionManager, VersionModal, CURRENT_VERSION } from './VersionManager';
+import { WordApiService } from '../services/wordApiService';
 
 export const Topbar: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
@@ -26,6 +27,16 @@ export const Topbar: React.FC = () => {
             <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold tracking-tighter">
               {CURRENT_VERSION}
             </span>
+
+            {/* Global Fill Data Button */}
+            <button
+              onClick={() => WordApiService.fillDataToDocument()}
+              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-sm font-bold shadow-md shadow-green-600/20 gap-2"
+            >
+              <Zap size={16} /> 
+              <span className="hidden lg:inline">Đổ dữ liệu</span>
+              <span className="lg:hidden">Đổ</span>
+            </button>
 
             {/* Update / Version Manager button with pulsing badge when update available */}
             <button
