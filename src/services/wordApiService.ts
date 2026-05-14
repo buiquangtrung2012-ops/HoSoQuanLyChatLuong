@@ -495,7 +495,6 @@ export const WordApiService = {
 
     // @ts-ignore
     await Word.run(async (context: any) => {
-      console.log(`WordApiService: Inserting participant table for ${role}...`);
       const range = context.document.getSelection();
       
       // Get current font for inheritance
@@ -506,51 +505,27 @@ export const WordApiService = {
         currentFont = range.font;
       } catch (e) {}
 
-      let insertedTable: any = null;
-      let rowCount = 0;
-      let colCount = 0;
-
-      if (isJV) {
-        const members = project.contractorMembers || [];
-        colCount = members.length;
-        const memberSigners = members.map((_: any, idx: number) => {
-          const g = savedGroups.find((gr: any) => gr.prefix === `tc_ld${idx + 1}`);
-          return (g && Array.isArray(g.signers)) ? g.signers : [];
-        });
-        const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
-        rowCount = maxSigners * 2 + 1;
-        
-        insertedTable = range.insertTable(rowCount, colCount, 'Replace');
-      } else {
-        const group = savedGroups.find((g: any) => g.prefix === role);
-        const signersRaw = (group && Array.isArray(group.signers)) ? group.signers : [];
-        const signersCount = Math.max(signersRaw.length, (role === 'tc' || role === 'tv' ? 3 : 2));
-        rowCount = Math.max(signersCount, 1);
-        colCount = 2;
-        
-        insertedTable = range.insertTable(rowCount, colCount, 'Replace');
-      }
-
-      // Sync to ensure table is created before wrapping
-      await context.sync();
-
-      // Wrap the table in a Content Control
-      const wrapper = insertedTable.getRange().insertContentControl();
+      // Create a wrapper Content Control (Stable v1620 logic)
+      const wrapper = range.insertContentControl();
       wrapper.tag = `table_${role}`;
       wrapper.title = `Bảng Thành phần: ${role.toUpperCase()}`;
       wrapper.appearance = 'BoundingBox';
       wrapper.placeholderText = ' '; // Hide placeholder
 
-      applyFontToTable(insertedTable, currentFont);
-      hideTableBorders(insertedTable);
-
+      let insertedTable: any = null;
       if (isJV) {
         const members = project.contractorMembers || [];
+        const colCount = members.length;
         const memberSigners = members.map((_: any, idx: number) => {
           const g = savedGroups.find((gr: any) => gr.prefix === `tc_ld${idx + 1}`);
           return (g && Array.isArray(g.signers)) ? g.signers : [];
         });
         const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
+        const rowCount = maxSigners * 2 + 1;
+
+        insertedTable = wrapper.insertTable(rowCount, colCount, 'Start');
+        applyFontToTable(insertedTable, currentFont);
+        hideTableBorders(insertedTable);
 
         for (let c = 0; c < colCount; c++) {
           const cell = insertedTable.getCell(0, c);
@@ -590,7 +565,13 @@ export const WordApiService = {
       } else {
         const group = savedGroups.find((g: any) => g.prefix === role);
         const signersRaw = (group && Array.isArray(group.signers)) ? group.signers : [];
+        const signersCount = Math.max(signersRaw.length, (role === 'tc' || role === 'tv' ? 3 : 2));
+        const rowCount = Math.max(signersCount, 1);
         const signers: any[] = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
+
+        insertedTable = wrapper.insertTable(rowCount, 2, 'Start');
+        applyFontToTable(insertedTable, currentFont);
+        hideTableBorders(insertedTable);
         
         for (let i = 0; i < rowCount; i++) {
           const s = signers[i] || { name: '', position: '', gender: 'auto' };
