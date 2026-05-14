@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, RefreshCw, Zap } from 'lucide-react';
+import { Search, RefreshCw, Zap, Trash2 } from 'lucide-react';
 import { useVersionManager, VersionModal, CURRENT_VERSION } from './VersionManager';
+import { StorageService } from '../services/storageService';
 
 export const Topbar: React.FC = () => {
   const { changelog, hasUpdate, isChecking, checkUpdates } = useVersionManager();
@@ -14,6 +15,12 @@ export const Topbar: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [statusMsg]);
+
+  const handleClearAll = () => {
+    if (window.confirm("BẠN CÓ CHẮC CHẮN MUỐN XOÁ TẤT CẢ DỮ LIỆU?\n\nHành động này sẽ xoá sạch toàn bộ thông tin dự án, nhân sự, nhật ký... và không thể hoàn tác.")) {
+      StorageService.clearAll();
+    }
+  };
 
   return (
     <>
@@ -43,6 +50,15 @@ export const Topbar: React.FC = () => {
         <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold tracking-tighter">
           {CURRENT_VERSION}
         </span>
+
+        {/* Clear All Button */}
+        <button
+          onClick={handleClearAll}
+          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-200 shadow-sm"
+          title="Xoá tất cả dữ liệu"
+        >
+          <Trash2 size={16} />
+        </button>
 
         {/* Global Fill Data Button */}
         <button

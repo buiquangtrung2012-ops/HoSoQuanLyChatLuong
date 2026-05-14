@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, RefreshCw, Calendar, Plus, X, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Save, RefreshCw, Calendar, Plus, X, ToggleLeft, ToggleRight, CheckCircle } from 'lucide-react';
 import type { Project } from '../types';
 import { StorageService } from '../services/storageService';
 
@@ -29,6 +29,14 @@ export const ProjectModule: React.FC = () => {
       setProject({ ...project, ...saved });
     }
   }, []);
+
+  // Auto-save logic
+  useEffect(() => {
+    StorageService.saveProject(project);
+    setIsSaving(true);
+    const timer = setTimeout(() => setIsSaving(false), 1000);
+    return () => clearTimeout(timer);
+  }, [project]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -64,15 +72,6 @@ export const ProjectModule: React.FC = () => {
     if (e.key === 'Enter') handleAddMember();
   };
 
-  const handleSave = () => {
-    setIsSaving(true);
-    StorageService.saveProject(project);
-    setTimeout(() => {
-      setIsSaving(false);
-      alert('Đã lưu thông tin dự án thành công!');
-    }, 500);
-  };
-
   const handleRefresh = () => {
     const saved = StorageService.getProject();
     if (saved) setProject({ ...project, ...saved });
@@ -81,20 +80,26 @@ export const ProjectModule: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Thông tin dự án</h1>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight uppercase text-slate-800">Thông tin dự án</h1>
+          <p className="text-sm text-slate-500 mt-1 flex items-center">
+            {isSaving ? (
+              <span className="flex items-center text-primary animate-pulse">
+                <RefreshCw size={14} className="mr-1.5 animate-spin" /> Đang tự động lưu...
+              </span>
+            ) : (
+              <span className="flex items-center text-green-600">
+                <CheckCircle size={14} className="mr-1.5" /> Đã lưu tự động
+              </span>
+            )}
+          </p>
+        </div>
         <div className="flex space-x-2">
           <button 
             onClick={handleRefresh}
-            className="flex items-center px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors"
+            className="flex items-center px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-bold text-sm"
           >
             <RefreshCw size={18} className="mr-2" /> Tải lại
-          </button>
-          <button 
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50"
-          >
-            <Save size={18} className="mr-2" /> {isSaving ? 'Đang lưu...' : 'Lưu thông tin'}
           </button>
         </div>
       </div>

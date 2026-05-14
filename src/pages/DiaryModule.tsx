@@ -35,13 +35,6 @@ export const DiaryModule: React.FC = () => {
     }
   }, [date]);
 
-  const handleAiFill = async () => {
-    setIsAiLoading(true);
-    const suggestion = await AiService.generateWorkDescription("Lắp dựng cột đèn và rải cáp");
-    setDiaryContent(suggestion);
-    setIsAiLoading(false);
-  };
-
   const handleFetchFromWorkItems = () => {
     const allDates = [...new Set(workItems.map((w: any) => w.inspectionDate))];
     
@@ -94,13 +87,12 @@ export const DiaryModule: React.FC = () => {
     }
   };
 
-  const handleNew = () => {
-    setDiaryContent("");
-    setDate(new Date().toISOString().split('T')[0]);
-    setIsSaved(false);
-  };
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
+  // Auto-save logic
+  useEffect(() => {
+    if (!date || diaryContent === undefined) return;
+    
     const newEntry = {
       id: Date.now().toString(),
       date,
@@ -116,35 +108,54 @@ export const DiaryModule: React.FC = () => {
     setAllEntries(updatedEntries);
     StorageService.saveDiary(updatedEntries);
     
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2000);
-    alert('Đã lưu nhật ký ngày ' + date.split('-').reverse().join('/'));
+    setIsSaving(true);
+    const timer = setTimeout(() => setIsSaving(false), 1000);
+    return () => clearTimeout(timer);
+  }, [diaryContent, weather, temp, manpower, equipment]);
+
+  const handleAiFill = async () => {
+    setIsAiLoading(true);
+    const suggestion = await AiService.generateWorkDescription("Lắp dựng cột đèn và rải cáp");
+    setDiaryContent(suggestion);
+    setIsAiLoading(false);
+  };
+
+  const handleNew = () => {
+    setDiaryContent("");
+    setDate(new Date().toISOString().split('T')[0]);
+    setIsSaved(false);
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Nhật ký thi công</h1>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight uppercase text-slate-800">Nhật ký thi công</h1>
+          <p className="text-sm text-slate-500 mt-1 flex items-center">
+            {isSaving ? (
+              <span className="flex items-center text-primary animate-pulse font-medium">
+                <RefreshCcw size={14} className="mr-1.5 animate-spin" /> Đang tự động lưu...
+              </span>
+            ) : (
+              <span className="flex items-center text-green-600 font-medium">
+                <CheckCircle size={14} className="mr-1.5" /> Đã lưu tự động cho ngày {date.split('-').reverse().join('/')}
+              </span>
+            )}
+          </p>
+        </div>
         <div className="flex space-x-2">
           <button 
             onClick={handleNew}
-            className="flex items-center px-4 py-2 border rounded-lg hover:bg-accent transition-all text-sm font-medium"
+            className="flex items-center px-4 py-2 border rounded-lg hover:bg-accent transition-all text-sm font-bold text-slate-700 bg-white shadow-sm"
           >
             <Plus size={18} className="mr-2" /> Tạo mới
           </button>
           <button 
             onClick={handleFetchFromWorkItems}
-            className="flex items-center px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-all text-sm font-bold"
+            className="flex items-center px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20 transition-all text-sm font-bold shadow-sm"
             title="Lấy nội dung từ danh sách công việc cùng ngày"
           >
             <RefreshCcw size={18} className="mr-2" /> Lấy từ công việc
-          </button>
-          <button 
-            onClick={handleSave}
-            className="flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 shadow-sm transition-all text-sm font-medium"
-          >
-            {isSaved ? <CheckCircle size={18} className="mr-2" /> : <Save size={18} className="mr-2" />}
-            {isSaved ? "Đã lưu" : "Lưu nhật ký"}
           </button>
         </div>
       </div>

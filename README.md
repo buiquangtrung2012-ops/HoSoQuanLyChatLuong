@@ -82,6 +82,12 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1550 (14/05/2026)
+- **Hệ thống Tự động lưu (Auto-save)**: Loại bỏ hoàn toàn các nút "Lưu" thủ công. Mọi thay đổi trong Thông tin dự án, Cấu hình ký và Nhật ký thi công đều được lưu ngay lập tức vào bộ nhớ.
+- **Nút Xoá tất cả (Clear All)**: Thêm biểu tượng thùng rác trên Topbar cho phép xoá sạch dữ liệu để bắt đầu dự án mới (có xác nhận bảo mật).
+- **Sửa lỗi Nhóm ký tùy chỉnh**: Khắc phục lỗi mất nhóm ký tự tạo khi chuyển tab. Giờ đây các nhóm ký "Khác" sẽ được bảo toàn tuyệt đối.
+- **Cải thiện UI/UX**: Thêm các chỉ báo "Đã lưu tự động" mượt mà để người dùng yên tâm về dữ liệu.
+
 ### v14052026.1528 (14/05/2026)
 - **Cơ chế Safe-Sync đột phá**: Khắc phục triệt để lỗi `InvalidArgument` bằng cách kiểm tra thuộc tính `cannotEdit` (Chống chỉnh sửa) của từng ô dữ liệu trước khi điền.
 - **Xử lý lỗi theo thời gian thực**: Thực hiện đồng bộ API ngay sau mỗi ô dữ liệu. Nếu một ô bị lỗi, hệ thống sẽ phát hiện ngay và bỏ qua để điền tiếp các ô còn lại, không còn tình trạng bị treo ngay từ ô thứ hai.

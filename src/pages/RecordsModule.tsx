@@ -114,7 +114,10 @@ export const RecordsModule: React.FC = () => {
     
     const tvtkGroup = saved.find((g: any) => g.prefix === 'tvtk') || baseGroups[3];
     
-    const finalGroups = [cdtGroup, ...tcGroups, tvGroup, tvtkGroup];
+    // Fix: Include custom groups from saved data
+    const customGroups = saved.filter((g: any) => g.prefix.startsWith('custom_'));
+    
+    const finalGroups = [cdtGroup, ...tcGroups, tvGroup, tvtkGroup, ...customGroups];
     
     const migrated = finalGroups.map((g: any) => ({
       ...g,
@@ -123,6 +126,26 @@ export const RecordsModule: React.FC = () => {
     
     setGroups(migrated);
   }, []);
+
+  // Auto-save logic
+  useEffect(() => {
+    // Skip first render save if needed, but here it's fine
+    if (groups.length === 0) return;
+
+    StorageService.save('hoso_participants_v2', groups);
+    const flat: Record<string, string> = {};
+    groups.forEach(g => {
+      g.signers.forEach((s, i) => {
+        flat[`${g.prefix}${i + 1}_name`] = s.name;
+        flat[`${g.prefix}${i + 1}_pos`] = s.position;
+        flat[`${g.prefix}${i + 1}_gender`] = s.gender || 'auto';
+      });
+    });
+    StorageService.save('hoso_participants', flat);
+    setIsSaved(true);
+    const timer = setTimeout(() => setIsSaved(false), 2000);
+    return () => clearTimeout(timer);
+  }, [groups]);
 
   const toggleCollapse = (prefix: string) => {
     setCollapsedGroups(prev => ({ ...prev, [prefix]: !prev[prefix] }));
@@ -459,19 +482,17 @@ export const RecordsModule: React.FC = () => {
       {/* Sticky Action Bar */}
       <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-white border-t border-slate-200 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] z-40 px-6 py-4 transition-all">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3 text-sm text-slate-500 font-medium hidden md:flex">
-             Mọi thay đổi sẽ được áp dụng vào mẫu Word ngay khi lưu.
+          <div className="flex items-center gap-3 text-sm text-slate-500 font-medium">
+             Mọi thay đổi sẽ được tự động áp dụng vào mẫu Word.
           </div>
-          <div className="flex gap-3 w-full md:w-auto">
-            <button className="flex-1 md:flex-none flex justify-center items-center px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-bold text-sm">
+          <div className="flex gap-3 items-center">
+            {isSaved && (
+              <span className="flex items-center text-green-600 text-xs font-bold animate-in fade-in zoom-in">
+                <CheckCircle size={14} className="mr-1" /> Đã tự động lưu
+              </span>
+            )}
+            <button className="flex justify-center items-center px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-bold text-sm">
               <Copy size={16} className="mr-2" /> Sao chép mẫu
-            </button>
-            <button
-              onClick={handleSave}
-              className="flex-1 md:flex-none flex justify-center items-center px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all shadow-md shadow-primary/20 font-bold text-sm relative overflow-hidden"
-            >
-              {isSaved ? <CheckCircle size={18} className="mr-2 animate-in zoom-in" /> : <Save size={18} className="mr-2" />}
-              {isSaved ? 'Đã lưu thành công' : 'Lưu cấu hình ký'}
             </button>
           </div>
         </div>

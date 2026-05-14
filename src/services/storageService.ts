@@ -56,5 +56,12 @@ export const StorageService = {
   get: (key: string) => {
     const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : null;
+  },
+
+  clearAll: () => {
+    Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
+    localStorage.removeItem('hoso_participants_v2');
+    localStorage.removeItem('hoso_participants');
+    window.location.reload();
   }
 };
