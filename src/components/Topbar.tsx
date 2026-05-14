@@ -4,7 +4,7 @@ import { useVersionManager, VersionModal, CURRENT_VERSION } from './VersionManag
 
 export const Topbar: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
-  const { changelog, hasUpdate } = useVersionManager();
+  const { changelog, hasUpdate, isChecking, checkUpdates } = useVersionManager();
 
   return (
     <>
@@ -30,12 +30,16 @@ export const Topbar: React.FC = () => {
             {/* Update / Version Manager button with pulsing badge when update available */}
             <button
               id="btn-version-manager"
-              onClick={() => setShowModal(true)}
-              className="relative flex items-center px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-all text-sm font-medium"
+              disabled={isChecking}
+              onClick={async () => {
+                await checkUpdates();
+                setShowModal(true);
+              }}
+              className="relative flex items-center px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-all text-sm font-medium disabled:opacity-70"
             >
-              <RefreshCw size={18} className="mr-2" />
-              Cập nhật
-              {hasUpdate && (
+              <RefreshCw size={18} className={`mr-2 ${isChecking ? 'animate-spin' : ''}`} />
+              {isChecking ? 'Đang kiểm tra...' : 'Cập nhật'}
+              {hasUpdate && !isChecking && (
                 <span
                   className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-red-500 flex items-center justify-center"
                   style={{ animation: 'pulse-badge 1.5s infinite' }}

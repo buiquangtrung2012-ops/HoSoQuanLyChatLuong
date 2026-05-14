@@ -82,6 +82,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1149 (14/05/2026)
+- **Cải tiến quy trình Cập nhật**: Khi nhấn nút "Cập nhật", hệ thống sẽ tiến hành kiểm tra phiên bản mới nhất từ server (hiển thị trạng thái "Đang kiểm tra...") trước khi hiển thị bảng Quản lý phiên bản.
+
 ### v14052026.1144 (14/05/2026)
 - **Cập nhật cơ chế điền dữ liệu**: Thay vì áp dụng mặc định chữ đậm và màu đen, dữ liệu khi điền vào Content Control sẽ tự động kế thừa hoàn toàn định dạng (font, cỡ chữ, màu sắc, in đậm/nghiêng) của dòng văn bản hiện tại trong mẫu Word.
 

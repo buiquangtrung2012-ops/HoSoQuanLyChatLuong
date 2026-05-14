@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, RefreshCw, Clock, CheckCircle, ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
 
 // The current app version — must match what's in Topbar.tsx
-export const CURRENT_VERSION = 'v14052026.1144';
+export const CURRENT_VERSION = 'v14052026.1149';
 
 interface VersionEntry {
   version: string;
@@ -19,25 +19,35 @@ interface Changelog {
 export const useVersionManager = () => {
   const [changelog, setChangelog] = useState<Changelog | null>(null);
   const [hasUpdate, setHasUpdate] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+
+  const checkUpdates = async () => {
+    setIsChecking(true);
+    try {
+      const base = import.meta.env.BASE_URL || '/';
+      const url = `${base}changelog.json?v=${Date.now()}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Failed to fetch');
+      const data: Changelog = await res.json();
+      setChangelog(data);
+      setHasUpdate(data.latest !== CURRENT_VERSION);
+      // Artificial delay for UX so user sees the "checking" state
+      await new Promise(resolve => setTimeout(resolve, 800));
+      return data;
+    } catch (err) {
+      console.error('Check update failed:', err);
+      return null;
+    } finally {
+      setIsChecking(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchChangelog = async () => {
-      try {
-        const base = import.meta.env.BASE_URL || '/';
-        const url = `${base}changelog.json?v=${Date.now()}`;
-        const res = await fetch(url);
-        if (!res.ok) return;
-        const data: Changelog = await res.json();
-        setChangelog(data);
-        setHasUpdate(data.latest !== CURRENT_VERSION);
-      } catch {
-        // Silently fail — offline or local dev
-      }
-    };
-    fetchChangelog();
+    // Initial silent check
+    checkUpdates();
   }, []);
 
-  return { changelog, hasUpdate };
+  return { changelog, hasUpdate, isChecking, checkUpdates };
 };
 
 interface VersionModalProps {
