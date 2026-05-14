@@ -82,6 +82,10 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1454 (14/05/2026)
+- **Chuyển nút Đổ dữ liệu sang Sidebar**: Di dời nút Đổ dữ liệu xuống dưới cùng của thanh Menu (Sidebar). Đây là vùng giao diện ổn định hơn, tránh hoàn toàn lỗi chồng lấn hoặc chặn sự kiện click thường gặp trên thanh Topbar của Word.
+- **Dọn dẹp Topbar**: Loại bỏ các nút thử nghiệm lỗi trên thanh tiêu đề để giao diện gọn gàng hơn.
+
 ### v14052026.1448 (14/05/2026)
 - **Đổi vị trí và phương thức Click**: Hoán đổi vị trí giữa nút Cập nhật và Đổ dữ liệu để kiểm tra vùng tương tác. Đồng thời chuyển nút Đổ dữ liệu sang thẻ `div` với nhiều sự kiện (`onMouseDown`, `onClick`) để bắt lệnh chắc chắn hơn.
 

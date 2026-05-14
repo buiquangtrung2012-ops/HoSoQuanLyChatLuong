@@ -46,20 +46,6 @@ export const Topbar: React.FC = () => {
               />
             )}
           </button>
-
-          {/* Global Fill Data Button - DIV TEST with multiple events */}
-          <div
-            onMouseDown={() => {
-              alert("MOUSE DOWN DETECTED!");
-            }}
-            onClick={() => {
-              alert("CLICK DETECTED! Bắt đầu đổ...");
-              WordApiService.fillDataToDocument();
-            }}
-            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-xs font-bold shadow-md cursor-pointer z-[100] active:scale-95 select-none"
-          >
-            ĐỔ DỮ LIỆU
-          </div>
         </div>
       </div>
 
