@@ -31,6 +31,7 @@ export const Topbar: React.FC = () => {
             {/* Global Fill Data Button */}
             <button
               onClick={async () => {
+                alert("Đã nhận lệnh Đổ dữ liệu!");
                 try {
                   await WordApiService.fillDataToDocument();
                 } catch (err: any) {

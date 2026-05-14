@@ -82,6 +82,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1433 (14/05/2026)
+- **Thêm cảnh báo gỡ lỗi (Debug alerts)**: Thêm các thông báo alert để xác nhận lệnh click và tiến trình xử lý dữ liệu Word, giúp xác định điểm nghẽn khi nhấn nút "Đổ dữ liệu".
+
 ### v14052026.1429 (14/05/2026)
 - **Thu gọn giao diện Ký hồ sơ**: Chuyển đổi dropdown chọn nhân sự thành biểu tượng thu gọn (User icon) để tối ưu không gian, nhưng vẫn giữ nguyên chức năng chọn nhanh khi nhấn vào.
 - **Tăng cường ổn định Nút Đổ dữ liệu**: Thêm cơ chế bọc lỗi (Try-catch) và logging chi tiết cho chức năng Đổ dữ liệu toàn cầu để dễ dàng chẩn đoán và khắc phục sự cố.

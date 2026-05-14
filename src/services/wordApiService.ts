@@ -67,6 +67,7 @@ export const SUMMARY_CONFIG: Record<string, { label: string, columns: string[] }
 
 export const WordApiService = {
   fillDataToDocument: async () => {
+    alert("Hệ thống đang chuẩn bị dữ liệu...");
     console.log("WordApiService: Starting fillDataToDocument...");
     
     if (!isWordApiAvailable()) {
