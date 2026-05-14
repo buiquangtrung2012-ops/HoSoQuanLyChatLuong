@@ -134,15 +134,42 @@ export const WordApiService = {
       // @ts-ignore
       await Word.run(async (context: any) => {
         console.log("WordApiService: Inside Word.run context");
-        const ccs = context.document.contentControls;
-        ccs.load('items/tag,items/type,items/cannotEdit');
+        
+        // 1. Collect all Content Controls from all parts of the document
+        const allCCItems: any[] = [];
+        const bodyCCs = context.document.contentControls;
+        bodyCCs.load('items/tag,items/title,items/cannotEdit');
+        const sections = context.document.sections;
+        sections.load('items');
         await context.sync();
         
+        allCCItems.push(...bodyCCs.items);
+
+        for (let i = 0; i < sections.items.length; i++) {
+          try {
+            const section = sections.items[i];
+            const hfTypes: any[] = ['Primary', 'FirstPage', 'EvenPages'];
+            for (const type of hfTypes) {
+              const hccs = section.headers.getHeader(type).contentControls;
+              const fccs = section.footers.getFooter(type).contentControls;
+              hccs.load('items/tag,items/title,items/cannotEdit');
+              fccs.load('items/tag,items/title,items/cannotEdit');
+              await context.sync();
+              allCCItems.push(...hccs.items, ...fccs.items);
+            }
+          } catch (e) {
+            console.warn("WordApiService: Section skip", e);
+          }
+        }
+
+        const allCCs = allCCItems;
+        if (onStatus) onStatus(`Tìm thấy ${allCCs.length} vị trí dữ liệu...`);
         let filledCount = 0;
+        let tablesRefreshed = 0;
         
         // 1. Fill normal text controls - Using a safer one-by-one or small-batch approach
         // for these critical fields to ensure we don't crash on the first error.
-        for (const item of ccs.items) {
+        for (const item of allCCs) {
           const val = allData[item.tag];
           const isTableOrSummary = item.tag.startsWith('table_') || item.tag.startsWith('summary_');
           
@@ -183,8 +210,7 @@ export const WordApiService = {
         console.log(`WordApiService: Finished filling ${filledCount} text controls`);
 
         // 2. Refresh dynamic participant tables
-        const allTableCCs = ccs.items.filter((cc: any) => cc.tag && cc.tag.startsWith('table_'));
-        let tablesRefreshed = 0;
+        const allTableCCs = allCCs.filter((cc: any) => cc.tag && cc.tag.startsWith('table_'));
 
         for (const wrapper of allTableCCs) {
           try {
@@ -315,7 +341,7 @@ export const WordApiService = {
         for (const tag of summaryTags) {
           try {
             const type = tag.replace('summary_', '');
-            const foundSummaries = ccs.items.filter((cc: any) => cc.tag === tag);
+            const foundSummaries = allCCs.filter((cc: any) => cc.tag === tag);
             if (foundSummaries.length === 0) continue;
 
             const config = SUMMARY_CONFIG[type];

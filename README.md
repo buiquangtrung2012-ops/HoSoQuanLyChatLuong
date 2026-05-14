@@ -82,6 +82,11 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1615 (14/05/2026)
+- **Quét dữ liệu Toàn diện**: Mở rộng khả năng tìm kiếm Content Control ra toàn bộ tài liệu, bao gồm cả Header, Footer và tất cả các Section. Đảm bảo không bỏ sót bất kỳ vị trí dữ liệu nào.
+- **Sửa lỗi đồng bộ**: Khắc phục các lỗi kỹ thuật khiến việc đổ dữ liệu vào bảng Thành phần tham gia bị gián đoạn hoặc không tìm thấy vị trí.
+- **Báo cáo kết quả chính xác**: Cập nhật thông báo trạng thái cuối cùng hiển thị đầy đủ số lượng cả trường văn bản và số lượng bảng đã được làm mới thành công.
+
 ### v14052026.1610 (14/05/2026)
 - **Cơ chế Mở khoá thông minh**: Tự động phát hiện và tạm thời mở khoá (unlock) các Content Control bị thiết lập "Chống chỉnh sửa" trong Word để đảm bảo việc làm mới bảng luôn thành công.
 - **Tăng cường làm sạch dữ liệu**: Bổ sung bước kiểm tra và xoá các bảng rác còn sót lại trong quá trình đổ dữ liệu, giúp bảng Thành phần tham gia luôn khớp 100% với cấu hình trong ứng dụng.
