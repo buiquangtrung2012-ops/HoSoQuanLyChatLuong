@@ -82,6 +82,11 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1600 (14/05/2026)
+- **Sửa nút Xoá tất cả**: Chuyển sang xác nhận trực tiếp trên giao diện để đảm bảo hoạt động trong mọi môi trường (Word, Browser).
+- **Đổ dữ liệu bảng linh hoạt**: Tự động nhận diện và làm mới tất cả các bảng thành phần ký (CĐT, TVGS, Đơn vị thi công, TVTK và cả các nhóm ký tự tạo).
+- **Làm sạch bảng triệt để**: Sử dụng cơ chế xoá bảng mạnh mẽ hơn trước khi chèn bảng mới, đảm bảo số dòng trong Word luôn khớp chính xác với số người ký đã chọn trong ứng dụng.
+
 ### v14052026.1550 (14/05/2026)
 - **Hệ thống Tự động lưu (Auto-save)**: Loại bỏ hoàn toàn các nút "Lưu" thủ công. Mọi thay đổi trong Thông tin dự án, Cấu hình ký và Nhật ký thi công đều được lưu ngay lập tức vào bộ nhớ.
 - **Nút Xoá tất cả (Clear All)**: Thêm biểu tượng thùng rác trên Topbar cho phép xoá sạch dữ liệu để bắt đầu dự án mới (có xác nhận bảo mật).

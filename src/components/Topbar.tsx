@@ -8,6 +8,8 @@ export const Topbar: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
 
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+
   // Clear status after 5 seconds
   useEffect(() => {
     if (statusMsg) {
@@ -17,9 +19,8 @@ export const Topbar: React.FC = () => {
   }, [statusMsg]);
 
   const handleClearAll = () => {
-    if (window.confirm("BẠN CÓ CHẮC CHẮN MUỐN XOÁ TẤT CẢ DỮ LIỆU?\n\nHành động này sẽ xoá sạch toàn bộ thông tin dự án, nhân sự, nhật ký... và không thể hoàn tác.")) {
-      StorageService.clearAll();
-    }
+    StorageService.clearAll();
+    setShowClearConfirm(false);
   };
 
   return (
@@ -51,14 +52,36 @@ export const Topbar: React.FC = () => {
           {CURRENT_VERSION}
         </span>
 
-        {/* Clear All Button */}
-        <button
-          onClick={handleClearAll}
-          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-200 shadow-sm"
-          title="Xoá tất cả dữ liệu"
-        >
-          <Trash2 size={16} />
-        </button>
+        {/* Clear All Button with In-place Confirmation */}
+        <div className="relative">
+          <button
+            onClick={() => setShowClearConfirm(!showClearConfirm)}
+            className={`p-1.5 rounded-lg transition-all border shadow-sm ${showClearConfirm ? 'bg-red-500 text-white border-red-600' : 'text-red-500 hover:bg-red-50 border-transparent hover:border-red-200'}`}
+            title="Xoá tất cả dữ liệu"
+          >
+            <Trash2 size={16} />
+          </button>
+          
+          {showClearConfirm && (
+            <div className="absolute right-0 mt-2 w-48 bg-white border rounded-xl shadow-xl z-50 p-3 animate-in slide-in-from-top-2 duration-200">
+              <p className="text-[10px] font-bold text-slate-800 mb-2 leading-tight">XOÁ SẠCH TOÀN BỘ DỮ LIỆU DỰ ÁN?</p>
+              <div className="flex gap-2">
+                <button 
+                  onClick={handleClearAll}
+                  className="flex-1 py-1 bg-red-600 text-white text-[10px] font-bold rounded-md hover:bg-red-700"
+                >
+                  XÁC NHẬN
+                </button>
+                <button 
+                  onClick={() => setShowClearConfirm(false)}
+                  className="flex-1 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-md hover:bg-slate-200"
+                >
+                  HUỶ
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Global Fill Data Button */}
         <button

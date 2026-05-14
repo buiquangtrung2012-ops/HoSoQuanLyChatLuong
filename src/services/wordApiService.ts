@@ -183,105 +183,115 @@ export const WordApiService = {
         console.log(`WordApiService: Finished filling ${filledCount} text controls`);
 
         // 2. Refresh dynamic participant tables
-        const roleTags = ['table_cdt', 'table_tc', 'table_tv'];
+        const allTableCCs = ccs.items.filter((cc: any) => cc.tag && cc.tag.startsWith('table_'));
         let tablesRefreshed = 0;
 
-        for (const tag of roleTags) {
+        for (const wrapper of allTableCCs) {
           try {
-            const role = tag.replace('table_', '') as 'cdt' | 'tc' | 'tv';
-            const foundTables = ccs.items.filter((cc: any) => cc.tag === tag);
-            if (foundTables.length === 0) continue;
+            const tag = wrapper.tag;
+            const role = tag.replace('table_', '');
+            
+            if (onStatus) onStatus(`Đang đổ bảng: ${role.toUpperCase()}...`);
 
-            if (onStatus) onStatus(`Đang đổ bảng: ${tag.split('_')[1].toUpperCase()}...`);
+            // Find group data
+            const group = savedGroups.find((g: any) => g.prefix === role);
+            if (!group || !group.signers) continue;
+
+            // Aggressive clear: remove all content and then specifically check for tables
+            wrapper.clear();
+            const internalTables = wrapper.body.tables;
+            internalTables.load('items');
+            await context.sync();
+            
+            if (internalTables.items.length > 0) {
+              internalTables.items.forEach((t: Word.Table) => t.delete());
+              await context.sync();
+            }
             
             const isJV = role === 'tc' && projectData.isJointVenture && projectData.contractorMembers?.length;
             
-            for (const wrapper of foundTables) {
-              wrapper.clear();
-              await context.sync();
-              
-              if (isJV) {
-                const members = projectData.contractorMembers || [];
-                const colCount = members.length;
-                if (colCount === 0) continue;
+            if (isJV) {
+              const members = projectData.contractorMembers || [];
+              const colCount = members.length;
+              if (colCount === 0) continue;
 
-                const memberSigners = members.map((_: any, idx: number) => {
-                  const group = savedGroups.find((g: any) => g.prefix === `tc_ld${idx + 1}`);
-                  return (group && Array.isArray(group.signers)) ? group.signers : [];
-                });
-                const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
-                const rowCount = maxSigners * 2 + 1;
+              const memberSigners = members.map((_: any, idx: number) => {
+                const g = savedGroups.find((gr: any) => gr.prefix === `tc_ld${idx + 1}`);
+                return (g && Array.isArray(g.signers)) ? g.signers : [];
+              });
+              const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
+              const rowCount = maxSigners * 2 + 1;
 
-                const table = wrapper.insertTable(rowCount, colCount, 'Start');
-                hideTableBorders(table);
+              const table = wrapper.insertTable(rowCount, colCount, 'Start');
+              hideTableBorders(table);
 
+              for (let c = 0; c < colCount; c++) {
+                const cell = table.getCell(0, c);
+                cell.body.insertText(members[c], 'Replace');
+                cell.body.paragraphs.getFirst().font.bold = true;
+              }
+
+              for (let r = 0; r < maxSigners; r++) {
                 for (let c = 0; c < colCount; c++) {
-                  const cell = table.getCell(0, c);
-                  cell.body.insertText(members[c], 'Replace');
-                  cell.body.paragraphs.getFirst().font.bold = true;
-                }
-
-                for (let r = 0; r < maxSigners; r++) {
-                  for (let c = 0; c < colCount; c++) {
-                    const signersOfMember = memberSigners[c];
-                    const s: any = (signersOfMember && signersOfMember[r]) ? signersOfMember[r] : { name: '', position: '', gender: 'auto' };
-                    const prefix = `tc_ld${c + 1}`;
-                    
-                    const nameCell = table.getCell(r * 2 + 1, c);
-                    const honorific = resolveGender(s?.name || '', s?.gender) + ': ';
-                    nameCell.body.insertText(honorific, 'Replace');
-                    const nameCC = nameCell.body.getRange('End').insertContentControl();
-                    nameCC.title = `${members[c]} - Người ${r + 1} - Tên`;
-                    nameCC.tag = `${prefix}_s${r + 1}_name`;
-                    nameCC.placeholderText = '[Họ tên]';
-                    nameCC.appearance = 'BoundingBox';
-                    if (s?.name) nameCC.insertText(s.name, 'Replace');
-
-                    const posCell = table.getCell(r * 2 + 2, c);
-                    posCell.body.insertText('Chức vụ: ', 'Replace');
-                    const posCC = posCell.body.getRange('End').insertContentControl();
-                    posCC.title = `${members[c]} - Người ${r + 1} - Chức vụ`;
-                    posCC.tag = `${prefix}_s${r + 1}_pos`;
-                    posCC.placeholderText = '[Chức vụ]';
-                    posCC.appearance = 'BoundingBox';
-                    if (s?.position) posCC.insertText(s.position, 'Replace');
-                  }
-                }
-              } else {
-                const group = savedGroups.find((g: any) => g.prefix === role);
-                const signersRaw = (group && Array.isArray(group.signers)) ? group.signers : [];
-                const rowCount = Math.max(signersRaw.length, (role === 'tc' ? 3 : 2));
-                const actualSigners = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
-
-                const table = wrapper.insertTable(rowCount, 2, 'Start');
-                hideTableBorders(table);
-
-                for (let i = 0; i < rowCount; i++) {
-                  const s = actualSigners[i] || { name: '', position: '', gender: 'auto' };
-                  const honorific = resolveGender(s.name || '', s.gender) + ': ';
-                  const nameCell = table.getCell(i, 0);
+                  const signersOfMember = memberSigners[c];
+                  const s: any = (signersOfMember && signersOfMember[r]) ? signersOfMember[r] : { name: '', position: '', gender: 'auto' };
+                  const prefix = `tc_ld${c + 1}`;
+                  
+                  const nameCell = table.getCell(r * 2 + 1, c);
+                  const honorific = resolveGender(s?.name || '', s?.gender) + ': ';
                   nameCell.body.insertText(honorific, 'Replace');
                   const nameCC = nameCell.body.getRange('End').insertContentControl();
-                  nameCC.title = `${role.toUpperCase()} ${i + 1} - Tên`;
-                  nameCC.tag = `${role}${i + 1}_name`;
+                  nameCC.title = `${members[c]} - Người ${r + 1} - Tên`;
+                  nameCC.tag = `${prefix}_s${r + 1}_name`;
                   nameCC.placeholderText = '[Họ tên]';
                   nameCC.appearance = 'BoundingBox';
-                  if (s.name) nameCC.insertText(s.name, 'Replace');
+                  if (s?.name) nameCC.insertText(s.name, 'Replace');
 
-                  const posCell = table.getCell(i, 1);
+                  const posCell = table.getCell(r * 2 + 2, c);
                   posCell.body.insertText('Chức vụ: ', 'Replace');
                   const posCC = posCell.body.getRange('End').insertContentControl();
-                  posCC.title = `${role.toUpperCase()} ${i + 1} - Chức vụ`;
-                  posCC.tag = `${role}${i + 1}_pos`;
+                  posCC.title = `${members[c]} - Người ${r + 1} - Chức vụ`;
+                  posCC.tag = `${prefix}_s${r + 1}_pos`;
                   posCC.placeholderText = '[Chức vụ]';
                   posCC.appearance = 'BoundingBox';
-                  if (s.position) posCC.insertText(s.position, 'Replace');
+                  if (s?.position) posCC.insertText(s.position, 'Replace');
                 }
               }
-              tablesRefreshed++;
+            } else {
+              const signersRaw = group.signers;
+              const minRows = role === 'tc' ? 3 : 2;
+              const rowCount = Math.max(signersRaw.length, minRows);
+              const actualSigners = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
+
+              const table = wrapper.insertTable(rowCount, 2, 'Start');
+              hideTableBorders(table);
+
+              for (let i = 0; i < rowCount; i++) {
+                const s = actualSigners[i] || { name: '', position: '', gender: 'auto' };
+                const honorific = resolveGender(s.name || '', s.gender) + ': ';
+                const nameCell = table.getCell(i, 0);
+                nameCell.body.insertText(honorific, 'Replace');
+                const nameCC = nameCell.body.getRange('End').insertContentControl();
+                nameCC.title = `${role.toUpperCase()} ${i + 1} - Tên`;
+                nameCC.tag = `${role}${i + 1}_name`;
+                nameCC.placeholderText = '[Họ tên]';
+                nameCC.appearance = 'BoundingBox';
+                if (s.name) nameCC.insertText(s.name, 'Replace');
+
+                const posCell = table.getCell(i, 1);
+                posCell.body.insertText('Chức vụ: ', 'Replace');
+                const posCC = posCell.body.getRange('End').insertContentControl();
+                posCC.title = `${role.toUpperCase()} ${i + 1} - Chức vụ`;
+                posCC.tag = `${role}${i + 1}_pos`;
+                posCC.placeholderText = '[Chức vụ]';
+                posCC.appearance = 'BoundingBox';
+                if (s.position) posCC.insertText(s.position, 'Replace');
+              }
             }
+            tablesRefreshed++;
+            await context.sync();
           } catch (tableErr: any) {
-            console.warn(`Error refreshing table ${tag}:`, tableErr);
+            console.warn(`Error refreshing table ${wrapper.tag}:`, tableErr);
           }
         }
 
