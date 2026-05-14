@@ -82,6 +82,11 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1610 (14/05/2026)
+- **Cơ chế Mở khoá thông minh**: Tự động phát hiện và tạm thời mở khoá (unlock) các Content Control bị thiết lập "Chống chỉnh sửa" trong Word để đảm bảo việc làm mới bảng luôn thành công.
+- **Tăng cường làm sạch dữ liệu**: Bổ sung bước kiểm tra và xoá các bảng rác còn sót lại trong quá trình đổ dữ liệu, giúp bảng Thành phần tham gia luôn khớp 100% với cấu hình trong ứng dụng.
+- **Cập nhật trạng thái chi tiết**: Hiển thị rõ ràng tên từng bảng đang được xử lý để người dùng dễ dàng theo dõi tiến độ.
+
 ### v14052026.1600 (14/05/2026)
 - **Sửa nút Xoá tất cả**: Chuyển sang xác nhận trực tiếp trên giao diện để đảm bảo hoạt động trong mọi môi trường (Word, Browser).
 - **Đổ dữ liệu bảng linh hoạt**: Tự động nhận diện và làm mới tất cả các bảng thành phần ký (CĐT, TVGS, Đơn vị thi công, TVTK và cả các nhóm ký tự tạo).

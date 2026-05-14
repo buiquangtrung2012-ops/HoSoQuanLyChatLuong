@@ -191,11 +191,18 @@ export const WordApiService = {
             const tag = wrapper.tag;
             const role = tag.replace('table_', '');
             
-            if (onStatus) onStatus(`Đang đổ bảng: ${role.toUpperCase()}...`);
-
             // Find group data
             const group = savedGroups.find((g: any) => g.prefix === role);
-            if (!group || !group.signers) continue;
+            if (!group || !group.signers) {
+              console.log(`WordApiService: No data for table tag ${tag}, skipping.`);
+              continue;
+            }
+
+            if (onStatus) onStatus(`Đang làm mới bảng: ${role.toUpperCase()}...`);
+
+            // Temporarily unlock if locked
+            const originalLock = wrapper.cannotEdit;
+            if (originalLock) wrapper.cannotEdit = false;
 
             // Aggressive clear: remove all content and then specifically check for tables
             wrapper.clear();
@@ -204,6 +211,7 @@ export const WordApiService = {
             await context.sync();
             
             if (internalTables.items.length > 0) {
+              console.log(`WordApiService: Deleting ${internalTables.items.length} residual tables in ${tag}`);
               internalTables.items.forEach((t: Word.Table) => t.delete());
               await context.sync();
             }
@@ -211,6 +219,7 @@ export const WordApiService = {
             const isJV = role === 'tc' && projectData.isJointVenture && projectData.contractorMembers?.length;
             
             if (isJV) {
+              if (onStatus) onStatus(`Đang đổ bảng Liên danh (${role.toUpperCase()})...`);
               const members = projectData.contractorMembers || [];
               const colCount = members.length;
               if (colCount === 0) continue;
@@ -229,6 +238,7 @@ export const WordApiService = {
                 const cell = table.getCell(0, c);
                 cell.body.insertText(members[c], 'Replace');
                 cell.body.paragraphs.getFirst().font.bold = true;
+                cell.body.paragraphs.getFirst().alignment = 'Center';
               }
 
               for (let r = 0; r < maxSigners; r++) {
@@ -259,7 +269,7 @@ export const WordApiService = {
               }
             } else {
               const signersRaw = group.signers;
-              const minRows = role === 'tc' ? 3 : 2;
+              const minRows = (role === 'tc' || role === 'tv') ? 3 : 2;
               const rowCount = Math.max(signersRaw.length, minRows);
               const actualSigners = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
 
@@ -269,6 +279,7 @@ export const WordApiService = {
               for (let i = 0; i < rowCount; i++) {
                 const s = actualSigners[i] || { name: '', position: '', gender: 'auto' };
                 const honorific = resolveGender(s.name || '', s.gender) + ': ';
+                
                 const nameCell = table.getCell(i, 0);
                 nameCell.body.insertText(honorific, 'Replace');
                 const nameCC = nameCell.body.getRange('End').insertContentControl();
@@ -288,6 +299,10 @@ export const WordApiService = {
                 if (s.position) posCC.insertText(s.position, 'Replace');
               }
             }
+
+            // Restore lock if needed
+            if (originalLock) wrapper.cannotEdit = true;
+            
             tablesRefreshed++;
             await context.sync();
           } catch (tableErr: any) {
