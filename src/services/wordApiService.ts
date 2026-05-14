@@ -66,14 +66,14 @@ export const SUMMARY_CONFIG: Record<string, { label: string, columns: string[] }
 };
 
 export const WordApiService = {
-  fillDataToDocument: async () => {
-    alert("Hệ thống đang chuẩn bị dữ liệu...");
+  fillDataToDocument: async (onStatus?: (msg: string) => void) => {
+    if (onStatus) onStatus("Đang chuẩn bị dữ liệu...");
     console.log("WordApiService: Starting fillDataToDocument...");
     
     if (!isWordApiAvailable()) {
       const msg = 'Chức năng này chỉ hoạt động khi mở trong Microsoft Word.';
       console.warn("WordApiService:", msg);
-      alert(msg);
+      if (onStatus) onStatus(msg);
       return;
     }
 
@@ -118,6 +118,8 @@ export const WordApiService = {
         labExpiry: lab.expiry || '',
         ...participants,
       };
+
+      if (onStatus) onStatus("Đang đồng bộ với Word...");
 
       console.log("WordApiService: Data prepared, starting Word.run...");
       
@@ -313,17 +315,17 @@ export const WordApiService = {
       }
 
       await context.sync();
-      let resultMsg = `Đã cập nhật ${filledCount} trường dữ liệu`;
-      if (tablesRefreshed > 0) resultMsg += ` và làm mới ${tablesRefreshed} bảng dữ liệu`;
+      let resultMsg = `Thành công! Đã cập nhật ${filledCount} trường`;
+      if (tablesRefreshed > 0) resultMsg += ` và ${tablesRefreshed} bảng`;
       console.log("WordApiService: Success! " + resultMsg);
-      alert(resultMsg + '!');
+      if (onStatus) onStatus(resultMsg);
     }).catch((err: any) => {
       console.error("WordApiService error in Word.run:", err);
-      alert('Lỗi Word API: ' + err.message);
+      if (onStatus) onStatus('Lỗi Word API: ' + err.message);
     });
     } catch (err: any) {
       console.error("WordApiService critical error:", err);
-      alert('Lỗi hệ thống: ' + err.message);
+      if (onStatus) onStatus('Lỗi hệ thống: ' + err.message);
     }
   },
 

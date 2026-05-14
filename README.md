@@ -82,6 +82,11 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1511 (14/05/2026)
+- **Hệ thống thông báo trạng thái (Status Bar)**: Thay thế toàn bộ các thông báo `alert` (vốn hay bị Word chặn) bằng một thanh trạng thái mượt mà trực tiếp trên Topbar. Người dùng có thể theo dõi tiến trình "Đang chuẩn bị", "Đang đồng bộ" và "Thành công" ngay trên giao diện.
+- **Tối ưu hóa phản hồi**: Khắc phục triệt để lỗi "nhấn không phản hồi" bằng cách sử dụng cơ chế phản hồi bất đồng bộ (Async status updates).
+- **Khôi phục vị trí Đổ dữ liệu**: Đưa nút Đổ dữ liệu về lại Topbar với thiết kế tinh gọn và hiệu quả hơn.
+
 ### v14052026.1504 (14/05/2026)
 - **Nút TEST chẩn đoán**: Thêm nút TEST CLICK màu đỏ ở góc trái Topbar để kiểm tra trực tiếp khả năng nhận lệnh của ứng dụng.
 - **Toàn cục hóa WordApiService**: Đưa bộ xử lý dữ liệu Word ra biến toàn cục (window.WordApiService) để đảm bảo các nút bấm ở Sidebar và Topbar đều có thể gọi lệnh thành công, tránh lỗi phạm vi (scope).
