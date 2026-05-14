@@ -84,6 +84,10 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > **QUY ƯỚC ĐÁNH VERSION:**
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
+### v14052026.0918 (14/05/2026)
+- **Sửa lỗi Giao diện**: Thay thế hàm tự động xóa viền bằng cách sử dụng style `Table Normal` của Word để đảm bảo bảng Thành phần tham gia thực sự không có viền.
+- **Sửa lỗi Khoảng trắng**: Sửa lỗi sinh ra 2 dòng trống (dấu enter) dư thừa dưới bảng khi chèn liên tục. Bảng giờ đây sẽ thay thế (Replace) khoảng trống mặc định của Content Control thay vì chèn vào đầu (Start).
+
 ### v14052026.0855 (14/05/2026)
 - **Sửa lỗi & Tối ưu hóa**: Hoàn tất việc sửa lỗi các nút chèn "Bảng Thành phần tham gia" trong module Tạo mẫu. Tách biệt logic API, xử lý an toàn lỗi nạp Font, và tinh chỉnh cấu trúc Component. Cải thiện độ ổn định khi tương tác với Word API.
 - **Hệ thống**: Cập nhật lại README để nhấn mạnh yêu cầu bắt buộc phải đẩy code lên GitHub sau mỗi lần chỉnh sửa.

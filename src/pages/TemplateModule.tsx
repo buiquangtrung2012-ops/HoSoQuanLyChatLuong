@@ -534,9 +534,9 @@ export const TemplateModule: React.FC = () => {
           const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
           const rowCount = maxSigners * 2 + 1;
 
-          const table = wrapper.insertTable(rowCount, colCount, 'Start');
+          const table = wrapper.insertTable(rowCount, colCount, 'Replace');
+          table.style = 'Table Normal';
           applyFontToTable(table, currentFont);
-          hideTableBorders(table);
 
           for (let c = 0; c < colCount; c++) {
             const cell = table.getCell(0, c);
@@ -578,9 +578,9 @@ export const TemplateModule: React.FC = () => {
           
           const signers: any[] = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
 
-          const table = wrapper.insertTable(rowCount, 2, 'Start');
+          const table = wrapper.insertTable(rowCount, 2, 'Replace');
+          table.style = 'Table Normal';
           applyFontToTable(table, currentFont);
-          hideTableBorders(table);
           
           for (let i = 0; i < rowCount; i++) {
             const s = signers[i] || { name: '', position: '', gender: 'auto' };
