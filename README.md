@@ -82,6 +82,11 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1635 (14/05/2026)
+- **Sửa lỗi Rollback (404)**: Khắc phục sự cố không thể quay lại phiên bản cũ trên GitHub Pages. Hệ thống hiện đã lưu trữ đầy đủ lịch sử các phiên bản để bạn có thể rollback an toàn bất cứ lúc nào.
+- **Chẩn đoán lỗi thông minh**: Bổ sung thông báo (Alert) chi tiết khi có sự cố chèn bảng. Nếu vẫn không hoạt động, thông báo này sẽ giúp xác định chính xác nguyên nhân lỗi từ Word API.
+- **Tăng cường ổn định**: Thêm bước đồng bộ (Sync) bắt buộc trước khi tạo khung bao bọc bảng, đảm bảo đối tượng bảng đã sẵn sàng trong tài liệu.
+
 ### v14052026.1630 (14/05/2026)
 - **Sửa lỗi Nút bấm**: Khắc phục sự cố nút chèn bảng Thành phần tham gia không phản hồi do gọi sai phương thức Word API. Hệ thống hiện đã hoạt động ổn định trở lại.
 - **Duy trì Cải tiến**: Tiếp tục giữ nguyên cơ chế bao bọc bảng (Wrapper) và ẩn Placeholder để đảm bảo đồng bộ dữ liệu tốt nhất.

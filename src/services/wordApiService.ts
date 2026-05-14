@@ -495,6 +495,7 @@ export const WordApiService = {
 
     // @ts-ignore
     await Word.run(async (context: any) => {
+      console.log(`WordApiService: Inserting participant table for ${role}...`);
       const range = context.document.getSelection();
       
       // Get current font for inheritance
@@ -519,7 +520,6 @@ export const WordApiService = {
         const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
         rowCount = maxSigners * 2 + 1;
         
-        // Insert table first to avoid extra newlines from CC
         insertedTable = range.insertTable(rowCount, colCount, 'Replace');
       } else {
         const group = savedGroups.find((g: any) => g.prefix === role);
@@ -530,6 +530,9 @@ export const WordApiService = {
         
         insertedTable = range.insertTable(rowCount, colCount, 'Replace');
       }
+
+      // Sync to ensure table is created before wrapping
+      await context.sync();
 
       // Wrap the table in a Content Control
       const wrapper = insertedTable.getRange().insertContentControl();
@@ -618,8 +621,8 @@ export const WordApiService = {
       insertedTable.getRange('After').select();
       await context.sync();
     }).catch((err: any) => {
-      console.error('Lỗi Word API:', err);
-      alert('Lỗi Word API: ' + (err.message || 'Không xác định'));
+      console.error('WordApiService error:', err);
+      alert('Lỗi chèn bảng tham gia: ' + (err.message || 'Không xác định'));
     });
   }
 };

@@ -106,17 +106,26 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # ─────────────────────────────────────────────
-# Step 4: Fetch existing changelog.json from gh-pages (for old version paths)
+# Step 4: Fetch existing versions and changelog from gh-pages
 # ─────────────────────────────────────────────
-Write-Host "4. Fetching existing changelog from gh-pages..." -ForegroundColor Cyan
-$changelogUrl = "https://raw.githubusercontent.com/buiquangtrung2012-ops/HoSoQuanLyChatLuong/gh-pages/changelog.json"
-$existingChangelog = $null
+Write-Host "4. Fetching existing versions from gh-pages..." -ForegroundColor Cyan
+$tempGhPages = "temp_gh_pages"
+if (Test-Path $tempGhPages) { Remove-Item -Path $tempGhPages -Recurse -Force }
+
 try {
-    $response = Invoke-WebRequest -Uri $changelogUrl -UseBasicParsing -ErrorAction Stop
-    $existingChangelog = $response.Content | ConvertFrom-Json
-    Write-Host "   Existing changelog fetched. Previous latest: $($existingChangelog.latest)" -ForegroundColor Gray
+    git clone --branch gh-pages --depth 1 $remoteUrl $tempGhPages
+    if (Test-Path "$tempGhPages\versions") {
+        if (-not (Test-Path "dist\versions")) { New-Item -ItemType Directory -Path "dist\versions" -Force | Out-Null }
+        Copy-Item -Path "$tempGhPages\versions\*" -Destination "dist\versions" -Recurse -Force
+        Write-Host "   Previous versions restored from gh-pages." -ForegroundColor Green
+    }
+    if (Test-Path "$tempGhPages\changelog.json") {
+        $existingChangelog = Get-Content "$tempGhPages\changelog.json" | ConvertFrom-Json
+        Write-Host "   Existing changelog found." -ForegroundColor Gray
+    }
+    Remove-Item -Path $tempGhPages -Recurse -Force
 } catch {
-    Write-Host "   No existing changelog found (first deploy). Creating fresh one." -ForegroundColor Yellow
+    Write-Host "   Could not fetch existing versions (first deploy or branch missing)." -ForegroundColor Yellow
 }
 
 # ─────────────────────────────────────────────
