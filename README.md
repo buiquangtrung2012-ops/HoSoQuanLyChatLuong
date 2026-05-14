@@ -82,6 +82,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1144 (14/05/2026)
+- **Cập nhật cơ chế điền dữ liệu**: Thay vì áp dụng mặc định chữ đậm và màu đen, dữ liệu khi điền vào Content Control sẽ tự động kế thừa hoàn toàn định dạng (font, cỡ chữ, màu sắc, in đậm/nghiêng) của dòng văn bản hiện tại trong mẫu Word.
+
 ### v14052026.1139 (14/05/2026)
 - **Sửa lỗi layout Tab Ký hồ sơ**: Dòng người ký giờ đây luôn hiển thị thành 1 dòng gọn nhẹ bằng CSS Grid cố định, không bị xuống dòng khi cửa sổ add-in hẹp.
 - **Sửa lỗi cập nhật dữ liệu**: Chữ sau khi điền vào Content Control giờ được định dạng đúng (in đậm, màu đen) thay vì chữ thường màu xám.

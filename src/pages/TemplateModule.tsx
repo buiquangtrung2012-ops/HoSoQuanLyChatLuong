@@ -311,10 +311,15 @@ export const TemplateModule: React.FC = () => {
         const val = allData[item.tag];
         if (val !== undefined && val !== '' && !item.tag.startsWith('table_') && !item.tag.startsWith('summary_')) {
           item.insertText(String(val), 'Replace');
-          // Ensure text is bold and black (not gray placeholder style)
+          // Reset all character-level font overrides so the text inherits
+          // the paragraph's own formatting (bold, color, size, italic, etc.)
           try {
-            item.font.bold = true;
-            item.font.color = '#000000';
+            item.font.bold = null;          // null = inherit from paragraph style
+            item.font.italic = null;
+            item.font.underline = 'None';
+            item.font.color = 'Auto';       // 'Auto' = follow paragraph/theme color
+            item.font.size = null;
+            item.font.name = null;
           } catch (e) {}
           filledCount++;
         }
