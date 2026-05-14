@@ -9,58 +9,63 @@ export const Topbar: React.FC = () => {
 
   return (
     <>
-      <div className="h-16 border-b bg-card flex items-center justify-between px-6 sticky top-0 z-10">
-        <div className="relative w-64">
-          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-muted-foreground">
-            <Search size={18} />
+      <div className="h-16 border-b bg-card flex items-center justify-between px-4 sticky top-0 z-10 gap-2">
+        <div className="relative flex-1 min-w-0 max-w-[160px]">
+          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-muted-foreground pointer-events-none">
+            <Search size={16} />
           </span>
           <input
             type="text"
-            placeholder="Tìm kiếm..."
+            placeholder="Tìm..."
             spellCheck={false}
-            className="w-full pl-10 pr-4 py-2 bg-accent/50 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="w-full pl-9 pr-3 py-1.5 bg-accent/50 border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
         </div>
 
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-3">
-            <button 
-              onClick={() => alert("CLICKED VERSION: " + CURRENT_VERSION)}
-              className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold tracking-tighter"
-            >
-              {CURRENT_VERSION}
-            </button>
+        <div className="flex items-center space-x-2 flex-shrink-0">
+          <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold tracking-tighter">
+            {CURRENT_VERSION}
+          </span>
 
-            {/* Global Fill Data Button - ULTRA SIMPLE TEST */}
-            <button
-              onClick={() => {
-                alert("BẮT ĐẦU ĐỔ DỮ LIỆU...");
-                WordApiService.fillDataToDocument();
-              }}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-bold"
-            >
-              ĐỔ DỮ LIỆU
-            </button>
+          {/* Global Fill Data Button - More robust */}
+          <button
+            onClick={() => {
+              alert("BẮT ĐẦU ĐỔ DỮ LIỆU...");
+              WordApiService.fillDataToDocument();
+            }}
+            className="flex items-center px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-xs font-bold shadow-md shadow-green-600/20 gap-1.5 cursor-pointer z-20"
+          >
+            <Zap size={14} /> 
+            <span className="whitespace-nowrap">ĐỔ DỮ LIỆU</span>
+          </button>
 
-            {/* Update / Version Manager button */}
-            <button
-              disabled={isChecking}
-              onClick={async () => {
-                await checkUpdates();
-                setShowModal(true);
-              }}
-              className="flex items-center px-4 py-2 bg-primary/10 text-primary rounded-lg text-sm font-medium"
-            >
-              <RefreshCw size={18} className={`mr-2 ${isChecking ? 'animate-spin' : ''}`} />
-              Cập nhật
-            </button>
-          </div>
+          {/* Update / Version Manager button - RESTORED DESIGN */}
+          <button
+            id="btn-version-manager"
+            disabled={isChecking}
+            onClick={async () => {
+              await checkUpdates();
+              setShowModal(true);
+            }}
+            className="relative flex items-center px-3 py-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-all text-xs font-medium disabled:opacity-70 cursor-pointer"
+          >
+            <RefreshCw size={16} className={`mr-1.5 ${isChecking ? 'animate-spin' : ''}`} />
+            {isChecking ? 'Đang...' : 'Cập nhật'}
+            {hasUpdate && !isChecking && (
+              <span
+                className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500"
+                style={{ animation: 'pulse-badge 1.5s infinite' }}
+              />
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Version Manager Modal */}
       {showModal && (
-        <VersionModal changelog={changelog} onClose={() => setShowModal(false)} />
+        <VersionModal 
+          changelog={changelog}
+          onClose={() => setShowModal(false)} 
+        />
       )}
 
       <style>{`

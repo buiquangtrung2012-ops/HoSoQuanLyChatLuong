@@ -82,6 +82,11 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1444 (14/05/2026)
+- **Tối ưu Layout Topbar**: Thu nhỏ thanh tìm kiếm và sử dụng layout linh hoạt (Flexbox) để tránh chồng lấn các nút bấm trên màn hình hẹp.
+- **Khôi phục thiết kế Cập nhật**: Trả lại giao diện chuẩn cho nút Cập nhật trong khi vẫn duy trì các thông báo gỡ lỗi cho nút Đổ dữ liệu.
+- **Sửa lỗi tương tác**: Thêm lớp `z-index` và `cursor-pointer` để đảm bảo nút Đổ dữ liệu có thể click được.
+
 ### v14052026.1439 (14/05/2026)
 - **Kiểm tra tương tác cơ bản (Simple Interaction Test)**: Tối giản hóa tối đa nút Đổ dữ liệu và nhãn phiên bản, sử dụng các hàm alert cơ bản nhất để kiểm tra phản hồi của Word Add-in.
 
