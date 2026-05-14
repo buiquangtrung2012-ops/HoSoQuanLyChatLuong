@@ -54,6 +54,8 @@ const hideTableBorders = (table: any) => {
 
 const applyFontToTable = (table: any, font: any) => {
   try {
+    // Clear any default bolding first
+    table.font.bold = false;
     if (font && font.name) table.font.name = font.name;
     if (font && font.size) table.font.size = font.size;
   } catch (e) {
@@ -212,17 +214,17 @@ export const WordApiService = {
         // 2. Refresh dynamic participant tables
         const allTableCCs = allCCs.filter((cc: any) => cc.tag && cc.tag.startsWith('table_'));
 
-        // Load document font for inheritance
-        let currentFont: any = null;
-        try {
-          const firstPara = context.document.body.paragraphs.getFirst();
-          firstPara.load('font/name,font/size');
-          await context.sync();
-          currentFont = firstPara.font;
-        } catch (e) {}
 
         for (const wrapper of allTableCCs) {
           try {
+            // Load font from the wrapper itself to maintain local styling
+            let localFont: any = null;
+            try {
+              wrapper.load('font/name,font/size');
+              await context.sync();
+              localFont = wrapper.font;
+            } catch (e) {}
+
             const tag = wrapper.tag;
             const role = tag.replace('table_', '');
             
@@ -274,7 +276,7 @@ export const WordApiService = {
               await context.sync();
               paras.items.forEach((p: any) => { p.font.size = 1; });
 
-              applyFontToTable(table, currentFont);
+              applyFontToTable(table, localFont);
               hideTableBorders(table);
 
               for (let c = 0; c < colCount; c++) {
@@ -328,7 +330,7 @@ export const WordApiService = {
               await context.sync();
               paras.items.forEach((p: any) => { p.font.size = 1; });
 
-              applyFontToTable(table, currentFont);
+              applyFontToTable(table, localFont);
               hideTableBorders(table);
 
               for (let i = 0; i < rowCount; i++) {

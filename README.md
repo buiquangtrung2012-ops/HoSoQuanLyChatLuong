@@ -82,6 +82,10 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1715 (14/05/2026)
+- **Sửa lỗi Bôi đậm**: Khắc phục tình trạng bảng bị bôi đậm mặc định. Hiện tại chỉ những phần cần thiết mới được bôi đậm.
+- **Thừa hưởng Font thông minh**: Bảng hiện đã tự động nhận diện và sử dụng đúng Font chữ cũng như Cỡ chữ của đoạn văn bản nơi bảng được chèn vào, đảm bảo tính đồng nhất tuyệt đối cho tài liệu.
+
 ### v14052026.1710 (14/05/2026)
 - **Hoàn thiện Layout**: Tự động rà soát và ép kích thước toàn bộ các dòng trống trong khung bao bảng xuống 1pt, đảm bảo văn bản gọn gàng nhất có thể.
 - **Tăng cường Tin cậy**: Cải tiến quy trình làm mới bảng để ngăn chặn tình trạng khung bị rỗng khi đồng bộ.
