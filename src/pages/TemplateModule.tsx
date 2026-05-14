@@ -41,6 +41,29 @@ const isWordApiAvailable = () => {
   }
 };
 
+// ---- Helper functions for Word API ----
+const hideTableBorders = (table: any) => {
+  try {
+    table.borders.insideHorizontal.style = 'None';
+    table.borders.insideVertical.style = 'None';
+    table.borders.outsideTop.style = 'None';
+    table.borders.outsideBottom.style = 'None';
+    table.borders.outsideLeft.style = 'None';
+    table.borders.outsideRight.style = 'None';
+  } catch (e) {
+    console.warn("Could not hide table borders", e);
+  }
+};
+
+const applyFontToTable = (table: any, font: any) => {
+  try {
+    if (font && font.name) table.font.name = font.name;
+    if (font && font.size) table.font.size = font.size;
+  } catch (e) {
+    console.warn("Could not apply font to table", e);
+  }
+};
+
 const contentControls = [
   // Thông tin chung dự án
   { id: 'projectName', label: 'Tên Dự án', icon: FileText, category: 'Dự án' },
@@ -482,19 +505,25 @@ export const TemplateModule: React.FC = () => {
       // @ts-ignore
       Word.run(async (context: any) => {
         const range = context.document.getSelection();
-        // Cố gắng load font nhưng không fail nếu không được
+        
+        // 1. Cố gắng lấy định dạng font hiện tại một cách an toàn
+        let currentFont: any = null;
         try {
-          range.load('font');
+          range.load('font/name,font/size');
           await context.sync();
+          currentFont = range.font;
         } catch (e) {
-          console.warn('Could not load selection font', e);
+          console.warn('Không thể nạp font của vùng chọn', e);
         }
         
+        // 2. Chèn Content Control bao quanh bảng
         const wrapper = range.insertContentControl();
         wrapper.tag = `table_${role}`;
         wrapper.title = `Bảng ${role.toUpperCase()}`;
         wrapper.appearance = 'BoundingBox';
+        wrapper.cannotEdit = false;
 
+        // 3. Xử lý logic tạo bảng tùy theo loại (Liên danh hoặc Đơn lẻ)
         if (isJV) {
           const members = project.contractorMembers || [];
           const colCount = members.length;
@@ -506,9 +535,7 @@ export const TemplateModule: React.FC = () => {
           const rowCount = maxSigners * 2 + 1;
 
           const table = wrapper.insertTable(rowCount, colCount, 'Start');
-          try {
-             if (range.font && range.font.name) table.font.name = range.font.name;
-          } catch(e) {}
+          applyFontToTable(table, currentFont);
           hideTableBorders(table);
 
           for (let c = 0; c < colCount; c++) {
@@ -552,9 +579,7 @@ export const TemplateModule: React.FC = () => {
           const signers: any[] = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
 
           const table = wrapper.insertTable(rowCount, 2, 'Start');
-          try {
-            if (range.font && range.font.name) table.font.name = range.font.name;
-          } catch(e) {}
+          applyFontToTable(table, currentFont);
           hideTableBorders(table);
           
           for (let i = 0; i < rowCount; i++) {
@@ -581,40 +606,21 @@ export const TemplateModule: React.FC = () => {
         }
 
         await context.sync();
+        // 4. Di chuyển con trỏ ra sau bảng
         wrapper.getRange('After').select();
         await context.sync();
+        console.log(`Bảng ${role.toUpperCase()} đã được chèn thành công`);
         alert(`Đã chèn Bảng ${role.toUpperCase()} thành công!`);
       }).catch((err: any) => {
-        console.error(err);
-        alert('Lỗi Word API: ' + err.message);
+        console.error('Lỗi Word API:', err);
+        alert('Lỗi Word API: ' + (err.message || 'Không xác định'));
       });
     } catch (err: any) {
-      console.error(err);
-      alert('Lỗi ứng dụng: ' + err.message);
+      console.error('Lỗi ứng dụng:', err);
+      alert('Lỗi ứng dụng: ' + (err.message || 'Không xác định'));
     }
   };
 
-  // Helper functions for Word API to keep code clean
-  const applyFontToTable = (table: any, font: any) => {
-    try {
-      if (font.name) table.font.name = font.name;
-      if (font.size) table.font.size = font.size;
-      if (font.color) table.font.color = font.color;
-      table.font.bold = font.bold || false;
-      table.font.italic = font.italic || false;
-    } catch (e) {
-      console.warn("Could not apply font to table", e);
-    }
-  };
-
-  const hideTableBorders = (table: any) => {
-    table.borders.insideHorizontal.style = 'None';
-    table.borders.insideVertical.style = 'None';
-    table.borders.outsideTop.style = 'None';
-    table.borders.outsideBottom.style = 'None';
-    table.borders.outsideLeft.style = 'None';
-    table.borders.outsideRight.style = 'None';
-  };
 
 
   return (
