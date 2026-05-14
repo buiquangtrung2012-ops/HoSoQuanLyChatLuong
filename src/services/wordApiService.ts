@@ -67,78 +67,89 @@ export const SUMMARY_CONFIG: Record<string, { label: string, columns: string[] }
 
 export const WordApiService = {
   fillDataToDocument: async () => {
+    console.log("WordApiService: Starting fillDataToDocument...");
+    
     if (!isWordApiAvailable()) {
-      alert('Chức năng này chỉ hoạt động khi mở trong Microsoft Word.');
+      const msg = 'Chức năng này chỉ hoạt động khi mở trong Microsoft Word.';
+      console.warn("WordApiService:", msg);
+      alert(msg);
       return;
     }
 
-    const participants = StorageService.get('hoso_participants') || {};
-    const project = StorageService.getProject() || {};
-    const materials = StorageService.get('hoso_materials') || [];
-    const equipment = StorageService.get('hoso_equipment') || [];
-    const labs = StorageService.get('hoso_labs') || [];
-    const workItems = StorageService.getWorkItems() || [];
+    try {
+      console.log("WordApiService: Fetching data from StorageService...");
+      const participants = StorageService.get('hoso_participants') || {};
+      const project = StorageService.getProject() || {};
+      const materials = StorageService.get('hoso_materials') || [];
+      const equipment = StorageService.get('hoso_equipment') || [];
+      const labs = StorageService.get('hoso_labs') || [];
+      const workItems = StorageService.getWorkItems() || [];
 
-    const mat = materials[0] || {};
-    const equip = equipment[0] || {};
-    const lab = labs[0] || {};
-    const work = workItems[0] || {};
+      const mat = materials[0] || {};
+      const equip = equipment[0] || {};
+      const lab = labs[0] || {};
+      const work = workItems[0] || {};
 
-    const allData: Record<string, string> = {
-      projectName: project.name || '',
-      contractNumber: project.contractNumber || '',
-      packageName: project.packageName || '',
-      contractor: project.contractor || '',
-      investorRep: project.investor || '',
-      designRep: project.designer || '',
-      projectLocation: project.location || '',
-      workName: work.name || '',
-      workCode: work.code || '',
-      workLine: work.line || '',
-      workCategory: work.category || '',
-      workQty: work.quantity?.toString() || '',
-      workUnit: work.unit || '',
-      workInspectDate: work.inspectionDate?.split('-').reverse().join('/') || '',
-      matName: mat.name || '',
-      matSource: mat.source || '',
-      matLot: mat.lot || '',
-      matQty: mat.qty?.toString() || '',
-      equipName: equip.name || '',
-      equipSerial: equip.serial || '',
-      equipExpiry: equip.expiry || '',
-      labName: lab.name || '',
-      labCode: lab.code || '',
-      labExpiry: lab.expiry || '',
-      ...participants,
-    };
+      const allData: Record<string, string> = {
+        projectName: project.name || '',
+        contractNumber: project.contractNumber || '',
+        packageName: project.packageName || '',
+        contractor: project.contractor || '',
+        investorRep: project.investor || '',
+        designRep: project.designer || '',
+        projectLocation: project.location || '',
+        workName: work.name || '',
+        workCode: work.code || '',
+        workLine: work.line || '',
+        workCategory: work.category || '',
+        workQty: work.quantity?.toString() || '',
+        workUnit: work.unit || '',
+        workInspectDate: work.inspectionDate?.split('-').reverse().join('/') || '',
+        matName: mat.name || '',
+        matSource: mat.source || '',
+        matLot: mat.lot || '',
+        matQty: mat.qty?.toString() || '',
+        equipName: equip.name || '',
+        equipSerial: equip.serial || '',
+        equipExpiry: equip.expiry || '',
+        labName: lab.name || '',
+        labCode: lab.code || '',
+        labExpiry: lab.expiry || '',
+        ...participants,
+      };
 
-    const projectData = StorageService.getProject() || {};
-    const savedGroupsData = StorageService.get('hoso_participants_v2');
-    const savedGroups = Array.isArray(savedGroupsData) ? savedGroupsData : [];
-
-    // @ts-ignore
-    await Word.run(async (context: any) => {
-      const ccs = context.document.contentControls;
-      ccs.load('items/tag');
-      await context.sync();
+      console.log("WordApiService: Data prepared, starting Word.run...");
       
-      let filledCount = 0;
-      // 1. Fill normal text controls
-      for (const item of ccs.items) {
-        const val = allData[item.tag];
-        if (val !== undefined && val !== '' && !item.tag.startsWith('table_') && !item.tag.startsWith('summary_')) {
-          item.insertText(String(val), 'Replace');
-          try {
-            item.font.bold = null;
-            item.font.italic = null;
-            item.font.underline = 'None';
-            item.font.color = 'Auto';
-            item.font.size = null;
-            item.font.name = null;
-          } catch (e) {}
-          filledCount++;
+      const projectData = StorageService.getProject() || {};
+      const savedGroupsData = StorageService.get('hoso_participants_v2');
+      const savedGroups = Array.isArray(savedGroupsData) ? savedGroupsData : [];
+
+      // @ts-ignore
+      await Word.run(async (context: any) => {
+        console.log("WordApiService: Inside Word.run context");
+        const ccs = context.document.contentControls;
+        ccs.load('items/tag');
+        await context.sync();
+        
+        let filledCount = 0;
+        // 1. Fill normal text controls
+        for (const item of ccs.items) {
+          const val = allData[item.tag];
+          if (val !== undefined && val !== '' && !item.tag.startsWith('table_') && !item.tag.startsWith('summary_')) {
+            item.insertText(String(val), 'Replace');
+            try {
+              item.font.bold = null;
+              item.font.italic = null;
+              item.font.underline = 'None';
+              item.font.color = 'Auto';
+              item.font.size = null;
+              item.font.name = null;
+            } catch (e) {}
+            filledCount++;
+          }
         }
-      }
+
+        console.log(`WordApiService: Filled ${filledCount} text controls`);
 
       // 2. Refresh dynamic participant tables
       const roleTags = ['table_cdt', 'table_tc', 'table_tv'];
@@ -303,11 +314,16 @@ export const WordApiService = {
       await context.sync();
       let resultMsg = `Đã cập nhật ${filledCount} trường dữ liệu`;
       if (tablesRefreshed > 0) resultMsg += ` và làm mới ${tablesRefreshed} bảng dữ liệu`;
+      console.log("WordApiService: Success! " + resultMsg);
       alert(resultMsg + '!');
     }).catch((err: any) => {
-      console.error(err);
-      alert('Lỗi khi cập nhật dữ liệu: ' + err.message);
+      console.error("WordApiService error in Word.run:", err);
+      alert('Lỗi Word API: ' + err.message);
     });
+    } catch (err: any) {
+      console.error("WordApiService critical error:", err);
+      alert('Lỗi hệ thống: ' + err.message);
+    }
   },
 
   insertContentControl: async (id: string, label: string) => {

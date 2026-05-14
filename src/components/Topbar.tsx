@@ -30,7 +30,13 @@ export const Topbar: React.FC = () => {
 
             {/* Global Fill Data Button */}
             <button
-              onClick={() => WordApiService.fillDataToDocument()}
+              onClick={async () => {
+                try {
+                  await WordApiService.fillDataToDocument();
+                } catch (err: any) {
+                  alert("Lỗi thực thi: " + err.message);
+                }
+              }}
               className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-sm font-bold shadow-md shadow-green-600/20 gap-2"
             >
               <Zap size={16} /> 

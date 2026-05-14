@@ -82,6 +82,11 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1429 (14/05/2026)
+- **Thu gọn giao diện Ký hồ sơ**: Chuyển đổi dropdown chọn nhân sự thành biểu tượng thu gọn (User icon) để tối ưu không gian, nhưng vẫn giữ nguyên chức năng chọn nhanh khi nhấn vào.
+- **Tăng cường ổn định Nút Đổ dữ liệu**: Thêm cơ chế bọc lỗi (Try-catch) và logging chi tiết cho chức năng Đổ dữ liệu toàn cầu để dễ dàng chẩn đoán và khắc phục sự cố.
+- **Sửa lỗi Layout Bảng**: Đảm bảo tiêu đề bảng và các dòng dữ liệu luôn căn chỉnh chính xác sau khi thu gọn cột.
+
 ### v14052026.1418 (14/05/2026)
 - **Nút Đổ dữ liệu Toàn cầu**: Đưa nút "Đổ dữ liệu" (Zap icon) lên thanh Topbar để người dùng có thể cập nhật dữ liệu vào văn bản Word từ bất kỳ tab nào (Công trình, Nhật ký, Nhân sự, v.v.) mà không cần quay lại tab Tạo mẫu.
 - **Sửa lỗi cập nhật Bảng thành phần**: Cải tiến logic đồng bộ Word API, đảm bảo bảng Thành phần tham gia luôn được làm mới chính xác khi dữ liệu trong tab Ký hồ sơ thay đổi.

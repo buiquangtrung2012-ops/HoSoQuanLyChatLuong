@@ -336,7 +336,7 @@ export const RecordsModule: React.FC = () => {
                     {/* Header Row — always visible */}
                     <div
                       className="px-2 pb-2 mb-2 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider"
-                      style={{ display: 'grid', gridTemplateColumns: '28px minmax(0,1.4fr) minmax(0,1.4fr) minmax(0,1.4fr) 104px 36px', gap: '6px', alignItems: 'center' }}
+                      style={{ display: 'grid', gridTemplateColumns: '28px 42px minmax(0,1.4fr) minmax(0,1.4fr) 104px 36px', gap: '6px', alignItems: 'center' }}
                     >
                       <div />
                       <div className="pl-1">Nhân sự</div>
@@ -356,26 +356,29 @@ export const RecordsModule: React.FC = () => {
                           onDragOver={handleDragOver}
                           onDrop={(e) => handleDrop(e, groupIdx, signerIdx)}
                           className="items-center p-1.5 bg-white border border-slate-200 rounded-lg group/row hover:border-primary/40 hover:shadow-sm transition-all"
-                          style={{ display: 'grid', gridTemplateColumns: '28px minmax(0,1.4fr) minmax(0,1.4fr) minmax(0,1.4fr) 104px 36px', gap: '6px' }}
+                          style={{ display: 'grid', gridTemplateColumns: '28px 42px minmax(0,1.4fr) minmax(0,1.4fr) 104px 36px', gap: '6px' }}
                         >
                           {/* Col 1: Drag handle */}
                           <div className="flex items-center justify-center cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500">
                             <GripVertical size={15} />
                           </div>
 
-                          {/* Col 2: Personnel dropdown */}
-                          <div className="relative flex items-center">
+                          {/* Col 2: Personnel dropdown (Compact Icon) */}
+                          <div className="relative flex items-center justify-center">
                             <select
-                              className="w-full pl-7 pr-1 py-1 border border-slate-200 rounded-md text-[11px] bg-slate-50 hover:bg-slate-100 focus:bg-white focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none text-slate-700 font-medium"
+                              className="absolute inset-0 opacity-0 cursor-pointer z-10 w-full h-full"
                               onChange={e => handlePersonSelect(groupIdx, signerIdx, e.target.value)}
                               value=""
+                              title="Chọn từ danh sách nhân sự"
                             >
                               <option value="">-- Chọn nhân sự --</option>
                               {personnel.map(p => (
                                 <option key={p.id} value={p.id}>{p.name} - {p.position}</option>
                               ))}
                             </select>
-                            <User size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-400 group-hover/row:border-primary/30 group-hover/row:text-primary transition-all">
+                              <UserPlus size={16} />
+                            </div>
                           </div>
 
                           {/* Col 3: Name */}
