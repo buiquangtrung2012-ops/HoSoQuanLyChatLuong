@@ -212,6 +212,15 @@ export const WordApiService = {
         // 2. Refresh dynamic participant tables
         const allTableCCs = allCCs.filter((cc: any) => cc.tag && cc.tag.startsWith('table_'));
 
+        // Load document font for inheritance
+        let currentFont: any = null;
+        try {
+          const firstPara = context.document.body.paragraphs.getFirst();
+          firstPara.load('font/name,font/size');
+          await context.sync();
+          currentFont = firstPara.font;
+        } catch (e) {}
+
         for (const wrapper of allTableCCs) {
           try {
             const tag = wrapper.tag;
