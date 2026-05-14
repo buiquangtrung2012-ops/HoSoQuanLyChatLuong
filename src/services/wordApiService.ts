@@ -532,7 +532,7 @@ export const WordApiService = {
       }
 
       // Wrap the table in a Content Control
-      const wrapper = insertedTable.insertContentControl();
+      const wrapper = insertedTable.getRange().insertContentControl();
       wrapper.tag = `table_${role}`;
       wrapper.title = `Bảng Thành phần: ${role.toUpperCase()}`;
       wrapper.appearance = 'BoundingBox';
