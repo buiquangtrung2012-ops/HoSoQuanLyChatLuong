@@ -53,6 +53,16 @@ const defaultGroups = (): ParticipantGroup[] => [
       { id: 'tv_2', name: '', position: '', gender: 'auto' },
     ],
   },
+  {
+    label: '4. Đại diện Đơn vị Tư vấn thiết kế',
+    prefix: 'tvtk',
+    colorClass: 'bg-purple-50',
+    borderClass: 'border-purple-200',
+    labelColorClass: 'text-purple-800',
+    signers: [
+      { id: 'tvtk_1', name: '', position: '', gender: 'auto' },
+    ],
+  },
 ];
 
 export const RecordsModule: React.FC = () => {
@@ -97,7 +107,9 @@ export const RecordsModule: React.FC = () => {
       tcGroups = [existingTC];
     }
     
-    const finalGroups = [cdtGroup, ...tcGroups, tvGroup];
+    const tvtkGroup = saved.find((g: any) => g.prefix === 'tvtk') || baseGroups[3];
+    
+    const finalGroups = [cdtGroup, ...tcGroups, tvGroup, tvtkGroup];
     
     // Đảm bảo tất cả signers có trường gender cho dữ liệu cũ
     const migrated = finalGroups.map((g: any) => ({

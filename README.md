@@ -84,6 +84,10 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > **QUY ƯỚC ĐÁNH VERSION:**
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
+### v14052026.0954 (14/05/2026)
+- **Sửa lỗi Nghiêm trọng (Regression)**: Khắc phục lỗi bảng Thành phần tham gia bị trống ("Click or tap here to enter text") do dùng tham số Replace trên một Content Control rỗng hoặc lỗi API trên bản Word tiếng Việt. Khôi phục lại hàm `hideTableBorders` với cách xóa viền an toàn bằng thuộc tính `type = 'None'`. Xóa bỏ khung bọc (Wrapper) để triệt để loại bỏ dấu enter thừa.
+- **Tính năng Mới**: Thêm vai trò **Tư vấn thiết kế (TVTK)** vào module Ký hồ sơ và Tạo mẫu. Người dùng giờ đây có thể cấu hình và chèn bảng ký cho Tư vấn thiết kế.
+
 ### v14052026.0918 (14/05/2026)
 - **Sửa lỗi Giao diện**: Thay thế hàm tự động xóa viền bằng cách sử dụng style `Table Normal` của Word để đảm bảo bảng Thành phần tham gia thực sự không có viền.
 - **Sửa lỗi Khoảng trắng**: Sửa lỗi sinh ra 2 dòng trống (dấu enter) dư thừa dưới bảng khi chèn liên tục. Bảng giờ đây sẽ thay thế (Replace) khoảng trống mặc định của Content Control thay vì chèn vào đầu (Start).

@@ -44,12 +44,12 @@ const isWordApiAvailable = () => {
 // ---- Helper functions for Word API ----
 const hideTableBorders = (table: any) => {
   try {
-    table.borders.insideHorizontal.style = 'None';
-    table.borders.insideVertical.style = 'None';
-    table.borders.outsideTop.style = 'None';
-    table.borders.outsideBottom.style = 'None';
-    table.borders.outsideLeft.style = 'None';
-    table.borders.outsideRight.style = 'None';
+    const borders = ['top', 'bottom', 'left', 'right', 'insideHorizontal', 'insideVertical'];
+    borders.forEach(b => {
+      if (table.borders && table.borders[b]) {
+        table.borders[b].type = 'None';
+      }
+    });
   } catch (e) {
     console.warn("Could not hide table borders", e);
   }
@@ -102,11 +102,15 @@ const contentControls = [
   { id: 'tc3_name', label: 'Thi công 3 - Tên', icon: User, category: 'Thành phần tham gia' },
   { id: 'tc3_pos', label: 'Thi công 3 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
 
-  // Thành phần tham gia (Tư vấn)
-  { id: 'tv1_name', label: 'Tư vấn 1 - Tên', icon: User, category: 'Thành phần tham gia' },
-  { id: 'tv1_pos', label: 'Tư vấn 1 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
-  { id: 'tv2_name', label: 'Tư vấn 2 - Tên', icon: User, category: 'Thành phần tham gia' },
-  { id: 'tv2_pos', label: 'Tư vấn 2 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
+  // Thành phần tham gia (Tư vấn giám sát)
+  { id: 'tv1_name', label: 'TVGS 1 - Tên', icon: User, category: 'Thành phần tham gia' },
+  { id: 'tv1_pos', label: 'TVGS 1 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
+  { id: 'tv2_name', label: 'TVGS 2 - Tên', icon: User, category: 'Thành phần tham gia' },
+  { id: 'tv2_pos', label: 'TVGS 2 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
+
+  // Thành phần tham gia (Tư vấn thiết kế)
+  { id: 'tvtk1_name', label: 'TVTK 1 - Tên', icon: User, category: 'Thành phần tham gia' },
+  { id: 'tvtk1_pos', label: 'TVTK 1 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
 
   // Thông tin Vật liệu
   { id: 'matName', label: 'Tên Vật liệu', icon: Package, category: 'Vật liệu' },
@@ -488,7 +492,7 @@ export const TemplateModule: React.FC = () => {
     }).catch((err: any) => alert('Lỗi chèn bảng tổng hợp: ' + err.message));
   };
 
-  const insertParticipantTable = (role: 'cdt' | 'tc' | 'tv') => {
+  const insertParticipantTable = (role: 'cdt' | 'tc' | 'tv' | 'tvtk') => {
     try {
       console.log(`insertParticipantTable started for role: ${role}`);
       if (!isWordApiAvailable()) {
@@ -515,15 +519,9 @@ export const TemplateModule: React.FC = () => {
         } catch (e) {
           console.warn('Không thể nạp font của vùng chọn', e);
         }
-        
-        // 2. Chèn Content Control bao quanh bảng
-        const wrapper = range.insertContentControl();
-        wrapper.tag = `table_${role}`;
-        wrapper.title = `Bảng ${role.toUpperCase()}`;
-        wrapper.appearance = 'BoundingBox';
-        wrapper.cannotEdit = false;
 
-        // 3. Xử lý logic tạo bảng tùy theo loại (Liên danh hoặc Đơn lẻ)
+        // 2. Xử lý logic tạo bảng tùy theo loại (Liên danh hoặc Đơn lẻ)
+        let insertedTable: any = null;
         if (isJV) {
           const members = project.contractorMembers || [];
           const colCount = members.length;
@@ -534,12 +532,12 @@ export const TemplateModule: React.FC = () => {
           const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
           const rowCount = maxSigners * 2 + 1;
 
-          const table = wrapper.insertTable(rowCount, colCount, 'Replace');
-          table.style = 'Table Normal';
-          applyFontToTable(table, currentFont);
+          insertedTable = range.insertTable(rowCount, colCount, 'After');
+          applyFontToTable(insertedTable, currentFont);
+          hideTableBorders(insertedTable);
 
           for (let c = 0; c < colCount; c++) {
-            const cell = table.getCell(0, c);
+            const cell = insertedTable.getCell(0, c);
             cell.body.insertText(members[c], 'Replace');
             cell.body.paragraphs.getFirst().font.bold = true;
           }
@@ -550,7 +548,7 @@ export const TemplateModule: React.FC = () => {
               const s: any = (signersOfMember && signersOfMember[r]) ? signersOfMember[r] : { name: '', position: '', gender: 'auto' };
               const prefix = `tc_ld${c + 1}`;
               
-              const nameCell = table.getCell(r * 2 + 1, c);
+              const nameCell = insertedTable.getCell(r * 2 + 1, c);
               const honorific = resolveGender(s?.name || '', s?.gender) + ': ';
               nameCell.body.insertText(honorific, 'Replace');
               const nameCC = nameCell.body.getRange('End').insertContentControl();
@@ -560,7 +558,7 @@ export const TemplateModule: React.FC = () => {
               nameCC.appearance = 'BoundingBox';
               if (s?.name) nameCC.insertText(s.name, 'Replace');
 
-              const posCell = table.getCell(r * 2 + 2, c);
+              const posCell = insertedTable.getCell(r * 2 + 2, c);
               posCell.body.insertText('Chức vụ: ', 'Replace');
               const posCC = posCell.body.getRange('End').insertContentControl();
               posCC.title = `${members[c]} - Người ${r + 1} - Chức vụ`;
@@ -578,14 +576,14 @@ export const TemplateModule: React.FC = () => {
           
           const signers: any[] = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
 
-          const table = wrapper.insertTable(rowCount, 2, 'Replace');
-          table.style = 'Table Normal';
-          applyFontToTable(table, currentFont);
+          insertedTable = range.insertTable(rowCount, 2, 'After');
+          applyFontToTable(insertedTable, currentFont);
+          hideTableBorders(insertedTable);
           
           for (let i = 0; i < rowCount; i++) {
             const s = signers[i] || { name: '', position: '', gender: 'auto' };
             const honorific = resolveGender(s.name || '', s.gender) + ': ';
-            const nameCell = table.getCell(i, 0);
+            const nameCell = insertedTable.getCell(i, 0);
             nameCell.body.insertText(honorific, 'Replace');
             const nameCC = nameCell.body.getRange('End').insertContentControl();
             nameCC.title = `${role.toUpperCase()} ${i + 1} - Tên`;
@@ -594,7 +592,7 @@ export const TemplateModule: React.FC = () => {
             nameCC.appearance = 'BoundingBox';
             if (s.name) nameCC.insertText(s.name, 'Replace');
 
-            const posCell = table.getCell(i, 1);
+            const posCell = insertedTable.getCell(i, 1);
             posCell.body.insertText('Chức vụ: ', 'Replace');
             const posCC = posCell.body.getRange('End').insertContentControl();
             posCC.title = `${role.toUpperCase()} ${i + 1} - Chức vụ`;
@@ -606,9 +604,11 @@ export const TemplateModule: React.FC = () => {
         }
 
         await context.sync();
-        // 4. Di chuyển con trỏ ra sau bảng
-        wrapper.getRange('After').select();
-        await context.sync();
+        
+        if (insertedTable) {
+          insertedTable.getRange('After').select();
+          await context.sync();
+        }
         console.log(`Bảng ${role.toUpperCase()} đã được chèn thành công`);
         alert(`Đã chèn Bảng ${role.toUpperCase()} thành công!`);
       }).catch((err: any) => {
@@ -752,7 +752,7 @@ export const TemplateModule: React.FC = () => {
             <p className="text-xs text-muted-foreground mt-1 font-medium">Tự động chèn bảng ẩn viền với 2 cột. Xưng hô Ông/Bà tự nhận diện từ tên đã cấu hình trong Tab <strong>Ký hồ sơ</strong>.</p>
           </div>
 
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <button
               onClick={() => insertParticipantTable('cdt')}
               className="flex flex-col items-center justify-center p-3 bg-card border border-border rounded-xl hover:border-teal-500 hover:shadow-lg hover:shadow-teal-500/5 transition-all group"
@@ -778,7 +778,16 @@ export const TemplateModule: React.FC = () => {
               <div className="p-2 bg-muted rounded-lg mb-2 group-hover:bg-teal-500/10 group-hover:text-teal-600 transition-colors">
                 <Users size={20} />
               </div>
-              <span className="text-[10px] font-bold text-center leading-tight">Bảng Tư Vấn</span>
+              <span className="text-[10px] font-bold text-center leading-tight">Bảng Tư Vấn (TVGS)</span>
+            </button>
+            <button
+              onClick={() => insertParticipantTable('tvtk')}
+              className="flex flex-col items-center justify-center p-3 bg-card border border-border rounded-xl hover:border-teal-500 hover:shadow-lg hover:shadow-teal-500/5 transition-all group"
+            >
+              <div className="p-2 bg-muted rounded-lg mb-2 group-hover:bg-teal-500/10 group-hover:text-teal-600 transition-colors">
+                <Users size={20} />
+              </div>
+              <span className="text-[10px] font-bold text-center leading-tight">Bảng Thiết Kế (TVTK)</span>
             </button>
           </div>
         </section>
