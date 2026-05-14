@@ -492,10 +492,8 @@ export const WordApiService = {
         insertedTable.getRange('After').select();
         await context.sync();
       }
-      alert(`Đã chèn Bảng ${role.toUpperCase()} thành công!`);
-    }).catch((err: any) => {
-      console.error('Lỗi Word API:', err);
-      alert('Lỗi Word API: ' + (err.message || 'Không xác định'));
     });
   }
 };
+
+(window as any).WordApiService = WordApiService;

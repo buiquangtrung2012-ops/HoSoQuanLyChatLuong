@@ -9,8 +9,23 @@ export const Topbar: React.FC = () => {
 
   return (
     <>
-      <div className="h-16 border-b bg-card flex items-center justify-between px-4 sticky top-0 z-10 gap-2">
-        <div className="relative flex-1 min-w-0 max-w-[160px]">
+    <div className="h-16 border-b bg-card flex items-center justify-between px-4 sticky top-0 z-10 gap-2">
+      {/* DIAGNOSTIC BUTTON - VERY LEFT */}
+      <button 
+        onClick={() => {
+          alert("TOPBAR TEST CLICK!");
+          if ((window as any).WordApiService) {
+            (window as any).WordApiService.fillDataToDocument();
+          } else {
+            alert("WordApiService NOT FOUND on window!");
+          }
+        }}
+        className="px-2 py-1 bg-red-600 text-white text-[10px] rounded z-[9999]"
+      >
+        TEST CLICK
+      </button>
+
+      <div className="relative flex-1 min-w-0 max-w-[160px]">
           <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-muted-foreground pointer-events-none">
             <Search size={16} />
           </span>
