@@ -242,19 +242,12 @@ export const WordApiService = {
             // Hide placeholder text
             wrapper.placeholderText = ' ';
 
-            // Aggressive clear: remove all content and then specifically check for tables
+            // Sequence change: Clear then insert (with explicit paragraph font fix)
             wrapper.clear();
-            const internalTables = wrapper.body.tables;
-            internalTables.load('items');
             await context.sync();
             
-            if (internalTables.items.length > 0) {
-              console.log(`WordApiService: Deleting ${internalTables.items.length} residual tables in ${tag}`);
-              internalTables.items.forEach((t: Word.Table) => t.delete());
-              await context.sync();
-            }
-            
             const isJV = role === 'tc' && projectData.isJointVenture && projectData.contractorMembers?.length;
+            let table: Word.Table;
             
             if (isJV) {
               if (onStatus) onStatus(`Đang đổ bảng Liên danh (${role.toUpperCase()})...`);
@@ -272,9 +265,15 @@ export const WordApiService = {
               // Set wrapper font size to 1pt to minimize newline space
               wrapper.font.size = 1;
 
-              const table = wrapper.insertTable(rowCount, colCount, 'Start');
+              table = wrapper.insertTable(rowCount, colCount, 'Start');
               await context.sync();
               
+              // Explicitly set all paragraphs in wrapper to 1pt font size
+              const paras = wrapper.paragraphs;
+              paras.load('items');
+              await context.sync();
+              paras.items.forEach(p => { p.font.size = 1; });
+
               applyFontToTable(table, currentFont);
               hideTableBorders(table);
 
@@ -320,9 +319,15 @@ export const WordApiService = {
               // Set wrapper font size to 1pt to minimize newline space
               wrapper.font.size = 1;
 
-              const table = wrapper.insertTable(rowCount, 2, 'Start');
+              table = wrapper.insertTable(rowCount, 2, 'Start');
               await context.sync();
               
+              // Explicitly set all paragraphs in wrapper to 1pt font size
+              const paras = wrapper.paragraphs;
+              paras.load('items');
+              await context.sync();
+              paras.items.forEach(p => { p.font.size = 1; });
+
               applyFontToTable(table, currentFont);
               hideTableBorders(table);
 
@@ -550,6 +555,12 @@ export const WordApiService = {
         insertedTable = wrapper.insertTable(rowCount, colCount, 'Start');
         await context.sync();
         
+        // Fix font size for all paragraphs in wrapper
+        const paras = wrapper.paragraphs;
+        paras.load('items');
+        await context.sync();
+        paras.items.forEach(p => { p.font.size = 1; });
+
         applyFontToTable(insertedTable, currentFont);
         hideTableBorders(insertedTable);
 
@@ -598,6 +609,12 @@ export const WordApiService = {
         insertedTable = wrapper.insertTable(rowCount, 2, 'Start');
         await context.sync();
         
+        // Fix font size for all paragraphs in wrapper
+        const paras = wrapper.paragraphs;
+        paras.load('items');
+        await context.sync();
+        paras.items.forEach(p => { p.font.size = 1; });
+
         applyFontToTable(insertedTable, currentFont);
         hideTableBorders(insertedTable);
         

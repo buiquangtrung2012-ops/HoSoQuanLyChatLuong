@@ -93,7 +93,7 @@ export const Topbar: React.FC = () => {
           className="flex items-center px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-xs font-bold shadow-md cursor-pointer"
         >
           <Zap size={14} className="mr-1.5" />
-          <span>ĐỔ DỮ LIỆU</span>
+          <span>ĐỒNG BỘ DỮ LIỆU</span>
         </button>
 
         {/* Update / Version Manager button */}

@@ -82,6 +82,11 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1710 (14/05/2026)
+- **Hoàn thiện Layout**: Tự động rà soát và ép kích thước toàn bộ các dòng trống trong khung bao bảng xuống 1pt, đảm bảo văn bản gọn gàng nhất có thể.
+- **Tăng cường Tin cậy**: Cải tiến quy trình làm mới bảng để ngăn chặn tình trạng khung bị rỗng khi đồng bộ.
+- **Đổi tên nút bấm**: Đổi tên nút "ĐỔ DỮ LIỆU" thành "ĐỒNG BỘ DỮ LIỆU" để phản ánh đúng chức năng của hệ thống.
+
 ### v14052026.1700 (14/05/2026)
 - **Tối ưu Layout (Ảnh 4)**: Thu nhỏ kích thước font của các dòng trống trong khung bao bảng xuống 1pt, giúp bảng bám sát nội dung văn bản hơn và chuyên nghiệp hơn.
 - **Sửa lỗi Đổ dữ liệu (Ảnh 5)**: Khắc phục triệt để sự cố bảng bị xoá rỗng khi nhấn "Đổ dữ liệu". Đã thêm bước đồng bộ bắt buộc để đảm bảo dữ liệu luôn được hiển thị chính xác.
