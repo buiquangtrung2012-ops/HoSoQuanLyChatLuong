@@ -84,6 +84,11 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > **QUY ƯỚC ĐÁNH VERSION:**
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
+
+### v14052026.1055 (14/05/2026)
+- **Cập nhật Bảng Thành phần tham gia (Tạo mẫu)**: Sửa lỗi không xóa viền bảng (No Border) bằng cách áp dụng `Table Normal` và vòng lặp gỡ viền tuyệt đối. Layout các nút chèn bảng được chia thành 4 cột thống nhất.
+- **Thêm biến dữ liệu**: Bổ sung Tag (Content Control) cho "Đại diện Tư vấn thiết kế" (designRep) vào mục Dự án để chèn vào Word.
+
 ### v14052026.1035 (14/05/2026)
 - **Tính năng Mới**: Hỗ trợ tạo **Đơn vị ký Tùy chỉnh**. Người dùng giờ đây có thể thêm các nhóm ký tự do (như Sở ban ngành, Quản lý dự án, v.v.), có thể đổi tên và xóa nhóm.
 - **Tối ưu Bảng Thành phần tham gia (Tạo mẫu)**: Tự động sinh nút chèn bảng cho các đơn vị tùy chỉnh. Các biến dữ liệu (Content Controls) của nhóm tùy chỉnh cũng được tự động thêm vào danh sách thả xuống.

@@ -45,11 +45,12 @@ const isWordApiAvailable = () => {
 // ---- Helper functions for Word API ----
 const hideTableBorders = (table: any) => {
   try {
-    const borders = ['top', 'bottom', 'left', 'right', 'insideHorizontal', 'insideVertical'];
+    table.style = 'Table Normal';
+    const borders = ['Top', 'Bottom', 'Left', 'Right', 'InsideHorizontal', 'InsideVertical'];
     borders.forEach(b => {
-      if (table.borders && table.borders[b]) {
-        table.borders[b].type = 'None';
-      }
+      try {
+        table.borders.getItem(b).type = 'None';
+      } catch (e) {}
     });
   } catch (e) {
     console.warn("Could not hide table borders", e);
@@ -73,6 +74,7 @@ const contentControls = [
   { id: 'contractor', label: 'Đơn vị Thi công', icon: Building2, category: 'Dự án' },
   { id: 'investorRep', label: 'Đại diện CDT', icon: User, category: 'Dự án' },
   { id: 'supervisorRep', label: 'Tư vấn Giám sát', icon: Users, category: 'Dự án' },
+  { id: 'designRep', label: 'Tư vấn Thiết kế', icon: Users, category: 'Dự án' },
   { id: 'projectLocation', label: 'Địa điểm', icon: MapPin, category: 'Dự án' },
   
   // Thông tin Công việc
@@ -261,6 +263,7 @@ export const TemplateModule: React.FC = () => {
       packageName: project.packageName || '',
       contractor: project.contractor || '',
       investorRep: project.investor || '',
+      designRep: project.designer || '',
       projectLocation: project.location || '',
       // Work
       workName: work.name || '',
@@ -795,7 +798,7 @@ export const TemplateModule: React.FC = () => {
             <p className="text-xs text-muted-foreground mt-1 font-medium">Tự động chèn bảng ẩn viền với 2 cột. Xưng hô Ông/Bà tự nhận diện từ tên đã cấu hình trong Tab <strong>Ký hồ sơ</strong>.</p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             <button
               onClick={() => insertParticipantTable('cdt')}
               className="flex flex-col items-center justify-center p-3 bg-card border border-border rounded-xl hover:border-teal-500 hover:shadow-lg hover:shadow-teal-500/5 transition-all group"
