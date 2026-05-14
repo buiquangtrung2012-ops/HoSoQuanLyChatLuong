@@ -36,11 +36,15 @@ export const isWordApiAvailable = () => {
 
 const hideTableBorders = (table: any) => {
   try {
-    table.style = 'Table Normal';
+    try {
+      table.style = 'Table Normal';
+    } catch (e) {}
+    
     const borders = ['Top', 'Bottom', 'Left', 'Right', 'InsideHorizontal', 'InsideVertical'];
     borders.forEach(b => {
       try {
-        table.borders.getItem(b).type = 'None';
+        const border = table.borders.getItem(b);
+        if (border) border.type = 'None';
       } catch (e) {}
     });
   } catch (e) {
@@ -154,175 +158,191 @@ export const WordApiService = {
 
         console.log(`WordApiService: Filled ${filledCount} text controls`);
 
-      // 2. Refresh dynamic participant tables
-      const roleTags = ['table_cdt', 'table_tc', 'table_tv'];
-      let tablesRefreshed = 0;
+        // 2. Refresh dynamic participant tables
+        const roleTags = ['table_cdt', 'table_tc', 'table_tv'];
+        let tablesRefreshed = 0;
 
-      for (const tag of roleTags) {
-        const role = tag.replace('table_', '') as 'cdt' | 'tc' | 'tv';
-        const foundTables = ccs.items.filter((cc: any) => cc.tag === tag);
-        if (foundTables.length === 0) continue;
+        for (const tag of roleTags) {
+          try {
+            const role = tag.replace('table_', '') as 'cdt' | 'tc' | 'tv';
+            const foundTables = ccs.items.filter((cc: any) => cc.tag === tag);
+            if (foundTables.length === 0) continue;
 
-        const isJV = role === 'tc' && projectData.isJointVenture && projectData.contractorMembers?.length;
-        
-        for (const wrapper of foundTables) {
-          wrapper.clear();
-          // FIX: Sync after clear to ensure DOM is ready for new table
-          await context.sync();
-          
-          if (isJV) {
-            const members = projectData.contractorMembers || [];
-            const colCount = members.length;
-            const memberSigners = members.map((_: any, idx: number) => {
-              const group = savedGroups.find((g: any) => g.prefix === `tc_ld${idx + 1}`);
-              return (group && Array.isArray(group.signers)) ? group.signers : [];
-            });
-            const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
-            const rowCount = maxSigners * 2 + 1;
+            if (onStatus) onStatus(`Đang đổ bảng: ${tag.split('_')[1].toUpperCase()}...`);
+            
+            const isJV = role === 'tc' && projectData.isJointVenture && projectData.contractorMembers?.length;
+            
+            for (const wrapper of foundTables) {
+              wrapper.clear();
+              await context.sync();
+              
+              if (isJV) {
+                const members = projectData.contractorMembers || [];
+                const colCount = members.length;
+                if (colCount === 0) continue;
 
-            const table = wrapper.insertTable(rowCount, colCount, 'Start');
-            hideTableBorders(table);
+                const memberSigners = members.map((_: any, idx: number) => {
+                  const group = savedGroups.find((g: any) => g.prefix === `tc_ld${idx + 1}`);
+                  return (group && Array.isArray(group.signers)) ? group.signers : [];
+                });
+                const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
+                const rowCount = maxSigners * 2 + 1;
 
-            for (let c = 0; c < colCount; c++) {
-              const cell = table.getCell(0, c);
-              cell.body.insertText(members[c], 'Replace');
-              cell.body.paragraphs.getFirst().font.bold = true;
-            }
+                const table = wrapper.insertTable(rowCount, colCount, 'Start');
+                hideTableBorders(table);
 
-            for (let r = 0; r < maxSigners; r++) {
-              for (let c = 0; c < colCount; c++) {
-                const signersOfMember = memberSigners[c];
-                const s: any = (signersOfMember && signersOfMember[r]) ? signersOfMember[r] : { name: '', position: '', gender: 'auto' };
-                const prefix = `tc_ld${c + 1}`;
-                
-                const nameCell = table.getCell(r * 2 + 1, c);
-                const honorific = resolveGender(s?.name || '', s?.gender) + ': ';
-                nameCell.body.insertText(honorific, 'Replace');
-                const nameCC = nameCell.body.getRange('End').insertContentControl();
-                nameCC.title = `${members[c]} - Người ${r + 1} - Tên`;
-                nameCC.tag = `${prefix}_s${r + 1}_name`;
-                nameCC.placeholderText = '[Họ tên]';
-                nameCC.appearance = 'BoundingBox';
-                if (s?.name) nameCC.insertText(s.name, 'Replace');
+                for (let c = 0; c < colCount; c++) {
+                  const cell = table.getCell(0, c);
+                  cell.body.insertText(members[c], 'Replace');
+                  cell.body.paragraphs.getFirst().font.bold = true;
+                }
 
-                const posCell = table.getCell(r * 2 + 2, c);
-                posCell.body.insertText('Chức vụ: ', 'Replace');
-                const posCC = posCell.body.getRange('End').insertContentControl();
-                posCC.title = `${members[c]} - Người ${r + 1} - Chức vụ`;
-                posCC.tag = `${prefix}_s${r + 1}_pos`;
-                posCC.placeholderText = '[Chức vụ]';
-                posCC.appearance = 'BoundingBox';
-                if (s?.position) posCC.insertText(s.position, 'Replace');
+                for (let r = 0; r < maxSigners; r++) {
+                  for (let c = 0; c < colCount; c++) {
+                    const signersOfMember = memberSigners[c];
+                    const s: any = (signersOfMember && signersOfMember[r]) ? signersOfMember[r] : { name: '', position: '', gender: 'auto' };
+                    const prefix = `tc_ld${c + 1}`;
+                    
+                    const nameCell = table.getCell(r * 2 + 1, c);
+                    const honorific = resolveGender(s?.name || '', s?.gender) + ': ';
+                    nameCell.body.insertText(honorific, 'Replace');
+                    const nameCC = nameCell.body.getRange('End').insertContentControl();
+                    nameCC.title = `${members[c]} - Người ${r + 1} - Tên`;
+                    nameCC.tag = `${prefix}_s${r + 1}_name`;
+                    nameCC.placeholderText = '[Họ tên]';
+                    nameCC.appearance = 'BoundingBox';
+                    if (s?.name) nameCC.insertText(s.name, 'Replace');
+
+                    const posCell = table.getCell(r * 2 + 2, c);
+                    posCell.body.insertText('Chức vụ: ', 'Replace');
+                    const posCC = posCell.body.getRange('End').insertContentControl();
+                    posCC.title = `${members[c]} - Người ${r + 1} - Chức vụ`;
+                    posCC.tag = `${prefix}_s${r + 1}_pos`;
+                    posCC.placeholderText = '[Chức vụ]';
+                    posCC.appearance = 'BoundingBox';
+                    if (s?.position) posCC.insertText(s.position, 'Replace');
+                  }
+                }
+              } else {
+                const group = savedGroups.find((g: any) => g.prefix === role);
+                const signersRaw = (group && Array.isArray(group.signers)) ? group.signers : [];
+                const rowCount = Math.max(signersRaw.length, (role === 'tc' ? 3 : 2));
+                const actualSigners = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
+
+                const table = wrapper.insertTable(rowCount, 2, 'Start');
+                hideTableBorders(table);
+
+                for (let i = 0; i < rowCount; i++) {
+                  const s = actualSigners[i] || { name: '', position: '', gender: 'auto' };
+                  const honorific = resolveGender(s.name || '', s.gender) + ': ';
+                  const nameCell = table.getCell(i, 0);
+                  nameCell.body.insertText(honorific, 'Replace');
+                  const nameCC = nameCell.body.getRange('End').insertContentControl();
+                  nameCC.title = `${role.toUpperCase()} ${i + 1} - Tên`;
+                  nameCC.tag = `${role}${i + 1}_name`;
+                  nameCC.placeholderText = '[Họ tên]';
+                  nameCC.appearance = 'BoundingBox';
+                  if (s.name) nameCC.insertText(s.name, 'Replace');
+
+                  const posCell = table.getCell(i, 1);
+                  posCell.body.insertText('Chức vụ: ', 'Replace');
+                  const posCC = posCell.body.getRange('End').insertContentControl();
+                  posCC.title = `${role.toUpperCase()} ${i + 1} - Chức vụ`;
+                  posCC.tag = `${role}${i + 1}_pos`;
+                  posCC.placeholderText = '[Chức vụ]';
+                  posCC.appearance = 'BoundingBox';
+                  if (s.position) posCC.insertText(s.position, 'Replace');
+                }
               }
+              tablesRefreshed++;
             }
-          } else {
-            const group = savedGroups.find((g: any) => g.prefix === role);
-            const signersRaw = (group && Array.isArray(group.signers)) ? group.signers : [];
-            const rowCount = Math.max(signersRaw.length, (role === 'tc' ? 3 : 2));
-            const actualSigners = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
-
-            const table = wrapper.insertTable(rowCount, 2, 'Start');
-            hideTableBorders(table);
-
-            for (let i = 0; i < rowCount; i++) {
-              const s = actualSigners[i] || { name: '', position: '', gender: 'auto' };
-              const honorific = resolveGender(s.name || '', s.gender) + ': ';
-              const nameCell = table.getCell(i, 0);
-              nameCell.body.insertText(honorific, 'Replace');
-              const nameCC = nameCell.body.getRange('End').insertContentControl();
-              nameCC.title = `${role.toUpperCase()} ${i + 1} - Tên`;
-              nameCC.tag = `${role}${i + 1}_name`;
-              nameCC.placeholderText = '[Họ tên]';
-              nameCC.appearance = 'BoundingBox';
-              if (s.name) nameCC.insertText(s.name, 'Replace');
-
-              const posCell = table.getCell(i, 1);
-              posCell.body.insertText('Chức vụ: ', 'Replace');
-              const posCC = posCell.body.getRange('End').insertContentControl();
-              posCC.title = `${role.toUpperCase()} ${i + 1} - Chức vụ`;
-              posCC.tag = `${role}${i + 1}_pos`;
-              posCC.placeholderText = '[Chức vụ]';
-              posCC.appearance = 'BoundingBox';
-              if (s.position) posCC.insertText(s.position, 'Replace');
-            }
+          } catch (tableErr: any) {
+            console.warn(`Error refreshing table ${tag}:`, tableErr);
           }
-          tablesRefreshed++;
         }
-      }
 
-      // 3. Refresh summary tables
-      const summaryTags = Object.keys(SUMMARY_CONFIG).map(k => `summary_${k}`);
-      for (const tag of summaryTags) {
-        const type = tag.replace('summary_', '');
-        const foundSummaries = ccs.items.filter((cc: any) => cc.tag === tag);
-        if (foundSummaries.length === 0) continue;
+        // 3. Refresh summary tables
+        const summaryTags = Object.keys(SUMMARY_CONFIG).map(k => `summary_${k}`);
+        for (const tag of summaryTags) {
+          try {
+            const type = tag.replace('summary_', '');
+            const foundSummaries = ccs.items.filter((cc: any) => cc.tag === tag);
+            if (foundSummaries.length === 0) continue;
 
-        const config = SUMMARY_CONFIG[type];
-        let dataList: any[] = [];
-        if (type === 'personnel') dataList = StorageService.get('hoso_personnel') || [];
-        if (type === 'materials') dataList = StorageService.get('hoso_materials') || [];
-        if (type === 'equipment') dataList = StorageService.get('hoso_equipment') || [];
-        if (type === 'lab') dataList = StorageService.get('hoso_labs') || [];
-        if (type === 'workitems') dataList = StorageService.getWorkItems() || [];
-        
-        const rowCount = dataList.length + 1;
-        for (const wrapper of foundSummaries) {
-          wrapper.clear();
-          await context.sync();
-          const table = wrapper.insertTable(rowCount, config.columns.length, 'Start');
-          table.style = 'Table Normal';
-          config.columns.forEach((col, i) => {
-            const cell = table.getCell(0, i);
-            cell.body.insertText(col, 'Replace');
-            cell.body.paragraphs.getFirst().font.bold = true;
-            cell.shadingColor = '#F3F4F6';
-          });
-          dataList.forEach((item, rIdx) => {
-            const row = rIdx + 1;
-            table.getCell(row, 0).body.insertText((rIdx + 1).toString(), 'Replace');
-            if (type === 'personnel') {
-              table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
-              table.getCell(row, 2).body.insertText(item.position || '', 'Replace');
-              table.getCell(row, 3).body.insertText(item.unit || '', 'Replace');
+            const config = SUMMARY_CONFIG[type];
+            if (onStatus) onStatus(`Đang đổ bảng tổng hợp: ${config.label}...`);
+            
+            let dataList: any[] = [];
+            if (type === 'personnel') dataList = StorageService.get('hoso_personnel') || [];
+            if (type === 'materials') dataList = StorageService.get('hoso_materials') || [];
+            if (type === 'equipment') dataList = StorageService.get('hoso_equipment') || [];
+            if (type === 'lab') dataList = StorageService.get('hoso_labs') || [];
+            if (type === 'workitems') dataList = StorageService.getWorkItems() || [];
+            
+            const rowCount = dataList.length + 1;
+            for (const wrapper of foundSummaries) {
+              wrapper.clear();
+              await context.sync();
+              const table = wrapper.insertTable(rowCount, config.columns.length, 'Start');
+              try {
+                table.style = 'Table Normal';
+              } catch (e) {}
+              
+              config.columns.forEach((col, i) => {
+                const cell = table.getCell(0, i);
+                cell.body.insertText(col, 'Replace');
+                cell.body.paragraphs.getFirst().font.bold = true;
+                cell.shadingColor = '#F3F4F6';
+              });
+              dataList.forEach((item, rIdx) => {
+                const row = rIdx + 1;
+                table.getCell(row, 0).body.insertText((rIdx + 1).toString(), 'Replace');
+                if (type === 'personnel') {
+                  table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+                  table.getCell(row, 2).body.insertText(item.position || '', 'Replace');
+                  table.getCell(row, 3).body.insertText(item.unit || '', 'Replace');
+                }
+                if (type === 'materials') {
+                  table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+                  table.getCell(row, 2).body.insertText(item.origin || '', 'Replace');
+                  table.getCell(row, 3).body.insertText(item.supplier || '', 'Replace');
+                  table.getCell(row, 4).body.insertText(item.qty?.toString() || '', 'Replace');
+                }
+                if (type === 'equipment') {
+                  table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+                  table.getCell(row, 2).body.insertText(item.serial || '', 'Replace');
+                  table.getCell(row, 3).body.insertText(item.inspectionDate?.split('-').reverse().join('/') || '', 'Replace');
+                  table.getCell(row, 4).body.insertText(item.expiryDate?.split('-').reverse().join('/') || '', 'Replace');
+                }
+                if (type === 'workitems') {
+                  table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+                  table.getCell(row, 2).body.insertText(item.code || '', 'Replace');
+                  table.getCell(row, 3).body.insertText(item.quantity?.toString() || '', 'Replace');
+                  table.getCell(row, 4).body.insertText(item.unit || '', 'Replace');
+                }
+                if (type === 'lab') {
+                  table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+                  table.getCell(row, 2).body.insertText(item.code || '', 'Replace');
+                  table.getCell(row, 3).body.insertText(item.expiry || '', 'Replace');
+                  table.getCell(row, 4).body.insertText(item.equipment || '', 'Replace');
+                }
+              });
+              tablesRefreshed++;
             }
-            if (type === 'materials') {
-              table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
-              table.getCell(row, 2).body.insertText(item.origin || '', 'Replace');
-              table.getCell(row, 3).body.insertText(item.supplier || '', 'Replace');
-              table.getCell(row, 4).body.insertText(item.qty?.toString() || '', 'Replace');
-            }
-            if (type === 'equipment') {
-              table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
-              table.getCell(row, 2).body.insertText(item.serial || '', 'Replace');
-              table.getCell(row, 3).body.insertText(item.inspectionDate?.split('-').reverse().join('/') || '', 'Replace');
-              table.getCell(row, 4).body.insertText(item.expiryDate?.split('-').reverse().join('/') || '', 'Replace');
-            }
-            if (type === 'workitems') {
-              table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
-              table.getCell(row, 2).body.insertText(item.code || '', 'Replace');
-              table.getCell(row, 3).body.insertText(item.quantity?.toString() || '', 'Replace');
-              table.getCell(row, 4).body.insertText(item.unit || '', 'Replace');
-            }
-            if (type === 'lab') {
-              table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
-              table.getCell(row, 2).body.insertText(item.code || '', 'Replace');
-              table.getCell(row, 3).body.insertText(item.expiry || '', 'Replace');
-              table.getCell(row, 4).body.insertText(item.equipment || '', 'Replace');
-            }
-          });
-          tablesRefreshed++;
+          } catch (summaryErr: any) {
+            console.warn(`Error refreshing summary ${tag}:`, summaryErr);
+          }
         }
-      }
 
-      await context.sync();
-      let resultMsg = `Thành công! Đã cập nhật ${filledCount} trường`;
-      if (tablesRefreshed > 0) resultMsg += ` và ${tablesRefreshed} bảng`;
-      console.log("WordApiService: Success! " + resultMsg);
-      if (onStatus) onStatus(resultMsg);
-    }).catch((err: any) => {
-      console.error("WordApiService error in Word.run:", err);
-      if (onStatus) onStatus('Lỗi Word API: ' + err.message);
-    });
+        await context.sync();
+        let resultMsg = `Thành công! Đã cập nhật ${filledCount} trường`;
+        if (tablesRefreshed > 0) resultMsg += ` và ${tablesRefreshed} bảng`;
+        console.log("WordApiService: Success! " + resultMsg);
+        if (onStatus) onStatus(resultMsg);
+      }).catch((err: any) => {
+        console.error("WordApiService error in Word.run:", err);
+        if (onStatus) onStatus('Lỗi Word API: ' + err.message);
+      });
     } catch (err: any) {
       console.error("WordApiService critical error:", err);
       if (onStatus) onStatus('Lỗi hệ thống: ' + err.message);
@@ -366,7 +386,9 @@ export const WordApiService = {
       wrapper.appearance = 'BoundingBox';
 
       const table = wrapper.insertTable(2, config.columns.length, 'Start');
-      table.style = 'Table Normal';
+      try {
+        table.style = 'Table Normal';
+      } catch (e) {}
       
       config.columns.forEach((col, i) => {
         const cell = table.getCell(0, i);
@@ -494,6 +516,9 @@ export const WordApiService = {
         insertedTable.getRange('After').select();
         await context.sync();
       }
+    }).catch((err: any) => {
+      console.error('Lỗi Word API:', err);
+      alert('Lỗi Word API: ' + (err.message || 'Không xác định'));
     });
   }
 };

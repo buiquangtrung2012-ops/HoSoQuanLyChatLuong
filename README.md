@@ -82,6 +82,11 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1517 (14/05/2026)
+- **Sửa lỗi InvalidArgument**: Khắc phục triệt để lỗi "InvalidArgument" khi đổ dữ liệu vào Word bằng cách thêm các bước kiểm tra kích thước bảng và xử lý lỗi cục bộ cho từng bảng.
+- **Tối ưu hóa mã nguồn**: Viết lại bộ xử lý WordApiService để đảm bảo cấu trúc lệnh chính xác, tránh các lỗi cú pháp làm treo ứng dụng.
+- **Phản hồi chi tiết**: Hiển thị chính xác bảng nào đang được xử lý trên thanh trạng thái.
+
 ### v14052026.1511 (14/05/2026)
 - **Hệ thống thông báo trạng thái (Status Bar)**: Thay thế toàn bộ các thông báo `alert` (vốn hay bị Word chặn) bằng một thanh trạng thái mượt mà trực tiếp trên Topbar. Người dùng có thể theo dõi tiến trình "Đang chuẩn bị", "Đang đồng bộ" và "Thành công" ngay trên giao diện.
 - **Tối ưu hóa phản hồi**: Khắc phục triệt để lỗi "nhấn không phản hồi" bằng cách sử dụng cơ chế phản hồi bất đồng bộ (Async status updates).
