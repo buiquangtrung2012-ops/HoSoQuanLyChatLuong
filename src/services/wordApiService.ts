@@ -272,7 +272,7 @@ export const WordApiService = {
               const paras = wrapper.paragraphs;
               paras.load('items');
               await context.sync();
-              paras.items.forEach(p => { p.font.size = 1; });
+              paras.items.forEach((p: any) => { p.font.size = 1; });
 
               applyFontToTable(table, currentFont);
               hideTableBorders(table);
@@ -281,7 +281,7 @@ export const WordApiService = {
                 const cell = table.getCell(0, c);
                 cell.body.insertText(members[c], 'Replace');
                 cell.body.paragraphs.getFirst().font.bold = true;
-                cell.body.paragraphs.getFirst().alignment = 'Center';
+                cell.body.paragraphs.getFirst().alignment = 'Centered';
               }
 
               for (let r = 0; r < maxSigners; r++) {
@@ -326,7 +326,7 @@ export const WordApiService = {
               const paras = wrapper.paragraphs;
               paras.load('items');
               await context.sync();
-              paras.items.forEach(p => { p.font.size = 1; });
+              paras.items.forEach((p: any) => { p.font.size = 1; });
 
               applyFontToTable(table, currentFont);
               hideTableBorders(table);
@@ -559,7 +559,7 @@ export const WordApiService = {
         const paras = wrapper.paragraphs;
         paras.load('items');
         await context.sync();
-        paras.items.forEach(p => { p.font.size = 1; });
+        paras.items.forEach((p: any) => { p.font.size = 1; });
 
         applyFontToTable(insertedTable, currentFont);
         hideTableBorders(insertedTable);
@@ -613,7 +613,7 @@ export const WordApiService = {
         const paras = wrapper.paragraphs;
         paras.load('items');
         await context.sync();
-        paras.items.forEach(p => { p.font.size = 1; });
+        paras.items.forEach((p: any) => { p.font.size = 1; });
 
         applyFontToTable(insertedTable, currentFont);
         hideTableBorders(insertedTable);
