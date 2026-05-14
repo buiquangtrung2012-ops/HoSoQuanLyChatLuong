@@ -24,25 +24,30 @@ export const Topbar: React.FC = () => {
 
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-3">
-            <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold tracking-tighter">
+            <span 
+              onClick={() => alert("Version Badge Clicked! Version: " + CURRENT_VERSION)}
+              className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold tracking-tighter cursor-help"
+            >
               {CURRENT_VERSION}
             </span>
 
             {/* Global Fill Data Button */}
             <button
-              onClick={async () => {
-                alert("Đã nhận lệnh Đổ dữ liệu!");
+              id="btn-fill-data-global"
+              onClick={async (e) => {
+                e.stopPropagation();
+                alert("Đã nhấn nút Đổ dữ liệu (Global)");
                 try {
                   await WordApiService.fillDataToDocument();
                 } catch (err: any) {
                   alert("Lỗi thực thi: " + err.message);
                 }
               }}
-              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-sm font-bold shadow-md shadow-green-600/20 gap-2"
+              className="relative z-50 flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all text-sm font-bold shadow-md shadow-green-600/20 gap-2 cursor-pointer"
             >
-              <Zap size={16} /> 
-              <span className="hidden lg:inline">Đổ dữ liệu</span>
-              <span className="lg:hidden">Đổ</span>
+              <Zap size={16} className="pointer-events-none" /> 
+              <span className="hidden lg:inline pointer-events-none">Đổ dữ liệu</span>
+              <span className="lg:hidden pointer-events-none">Đổ</span>
             </button>
 
             {/* Update / Version Manager button with pulsing badge when update available */}
