@@ -61,13 +61,10 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 > 💡 **Tại sao phải 2 bước?** Bước 1 chỉ lưu source code lên `main`. Bước 2 mới thực sự **build** ra file tĩnh và **deploy** lên `gh-pages` — là nhánh mà GitHub Pages phục vụ. Thiếu Bước 2 thì Add-in vẫn cũ.
 
-### Phiên bản v11052026.1615 (Mới nhất)
-- **Ẩn viền bảng tuyệt đối (No Border):** Các bảng Thành phần tham gia giờ đây được thiết lập ẩn toàn bộ viền ngay khi chèn và khi làm mới.
-- **Thêm trường Gói thầu:** Bổ sung ô nhập "Tên gói thầu" trong Tab **Dự án**, ngay sau tên dự án để quản lý thông tin chi tiết hơn.
-- **Tắt kiểm tra chính tả:** Bổ sung `spellCheck={false}` trên toàn bộ các input/textarea.
-- **Tính năng Chỉnh sửa:** Triển khai nút "Sửa" và logic cập nhật dữ liệu cho tất cả các module.
-- **Gộp Chức vụ/Vai trò:** Trong quản lý nhân sự, gộp 2 trường này thành một để tối ưu giao diện.
-- **Bảng ký tên chuyên nghiệp:** Bố cục 2 cột mỗi hàng, ẩn viền, và dùng tên đơn vị từ dự án.
+### Phiên bản v14052026.1108 (Mới nhất)
+- **Hệ thống Quản lý Phiên bản (Version Manager):** Triển khai component `VersionManager.tsx` tự động fetch `changelog.json` từ GitHub Pages, so sánh version hiện tại vs mới nhất, và hiện badge đỏ nhấp nháy trên nút "Cập nhật" khi có bản mới.
+- **Modal Changelog:** Mở modal đẹp khi nhấn "Cập nhật", hiển thị danh sách thay đổi, nút Cập nhật ngay và danh sách phiên bản cũ có nút Rollback.
+- **Script Deploy nâng cấp:** `deploy_gh_pages.ps1` tự động lưu bản build vào `dist/versions/vXXX/`, fetch changelog cũ từ gh-pages, tạo/cập nhật `changelog.json`, giữ tối đa 5 phiên bản gần nhất.
 
 ## Các tính năng chính
 - Quản lý thông tin dự án, nhân sự và vai trò ký tên.
@@ -84,6 +81,10 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > **QUY ƯỚC ĐÁNH VERSION:**
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
+
+### v14052026.1108 (14/05/2026)
+- **Hệ thống Quản lý Phiên bản (Version Manager)**: Triển khai component `VersionManager.tsx` tự động fetch `changelog.json`, so sánh version, hiện badge đỏ nhấp nháy và modal Rollback.
+- **Script Deploy nâng cấp**: `deploy_gh_pages.ps1` tự động lưu bản cũ vào `/versions/vXXX/`, tạo/cập nhật `changelog.json`, giữ tối đa 5 phiên bản.
 
 ### v14052026.1055 (14/05/2026)
 - **Cập nhật Bảng Thành phần tham gia (Tạo mẫu)**: Sửa lỗi không xóa viền bảng (No Border) bằng cách áp dụng `Table Normal` và vòng lặp gỡ viền tuyệt đối. Layout các nút chèn bảng được chia thành 4 cột thống nhất.
