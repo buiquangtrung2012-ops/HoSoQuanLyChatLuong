@@ -333,81 +333,82 @@ export const RecordsModule: React.FC = () => {
                 {/* Card Body */}
                 {!isCollapsed && (
                   <div className="p-4 bg-white">
-                    {/* Header Row Desktop */}
-                    <div className="hidden md:grid grid-cols-12 gap-3 px-2 pb-2 mb-2 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                      <div className="col-span-3 pl-6">Nhân sự (Tự động điền)</div>
-                      <div className="col-span-3">Họ và tên</div>
-                      <div className="col-span-3">Chức vụ</div>
-                      <div className="col-span-2 text-center">Xưng hô</div>
-                      <div className="col-span-1 text-center">Tác vụ</div>
+                    {/* Header Row — always visible */}
+                    <div
+                      className="px-2 pb-2 mb-2 border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider"
+                      style={{ display: 'grid', gridTemplateColumns: '28px minmax(0,1.4fr) minmax(0,1.4fr) minmax(0,1.4fr) 104px 36px', gap: '6px', alignItems: 'center' }}
+                    >
+                      <div />
+                      <div className="pl-1">Nhân sự</div>
+                      <div>Họ và tên</div>
+                      <div>Chức vụ</div>
+                      <div className="text-center">Xưng hô</div>
+                      <div className="text-center">Xóa</div>
                     </div>
 
                     <div className="space-y-2">
                       {group.signers.map((signer, signerIdx) => (
-                        <div 
+                        <div
                           key={signer.id}
                           draggable
                           onDragStart={(e) => handleDragStart(e, groupIdx, signerIdx)}
                           onDragEnd={handleDragEnd}
                           onDragOver={handleDragOver}
                           onDrop={(e) => handleDrop(e, groupIdx, signerIdx)}
-                          className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center p-2.5 bg-white border border-slate-200 rounded-lg group/row hover:border-primary/40 hover:shadow-sm transition-all"
+                          className="items-center p-1.5 bg-white border border-slate-200 rounded-lg group/row hover:border-primary/40 hover:shadow-sm transition-all"
+                          style={{ display: 'grid', gridTemplateColumns: '28px minmax(0,1.4fr) minmax(0,1.4fr) minmax(0,1.4fr) 104px 36px', gap: '6px' }}
                         >
-                          {/* Col 1: Drag + Dropdown */}
-                          <div className="md:col-span-3 flex items-center gap-2">
-                            <div className="cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 p-1 -ml-1">
-                              <GripVertical size={16} />
-                            </div>
-                            <div className="relative flex-1">
-                              <select
-                                className="w-full pl-8 pr-2 py-1.5 border border-slate-200 rounded-md text-xs bg-slate-50 hover:bg-slate-100 focus:bg-white focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none text-slate-700 font-medium"
-                                onChange={e => handlePersonSelect(groupIdx, signerIdx, e.target.value)}
-                                value=""
-                              >
-                                <option value="">-- Chọn nhân sự --</option>
-                                {personnel.map(p => (
-                                  <option key={p.id} value={p.id}>{p.name} - {p.position}</option>
-                                ))}
-                              </select>
-                              <User size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                            </div>
+                          {/* Col 1: Drag handle */}
+                          <div className="flex items-center justify-center cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500">
+                            <GripVertical size={15} />
                           </div>
 
-                          {/* Col 2: Name */}
-                          <div className="md:col-span-3 flex flex-col md:block">
-                            <label className="text-[10px] text-slate-400 font-medium mb-1 md:hidden">Họ và tên</label>
-                            <input
-                              value={signer.name}
-                              onChange={e => handleSignerChange(groupIdx, signerIdx, 'name', e.target.value)}
-                              placeholder="Nhập họ tên"
-                              className="w-full p-1.5 border border-transparent hover:border-slate-200 focus:border-primary/50 rounded-md text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-primary/20 outline-none bg-transparent transition-all"
-                            />
+                          {/* Col 2: Personnel dropdown */}
+                          <div className="relative flex items-center">
+                            <select
+                              className="w-full pl-7 pr-1 py-1 border border-slate-200 rounded-md text-[11px] bg-slate-50 hover:bg-slate-100 focus:bg-white focus:ring-2 focus:ring-primary/20 outline-none transition-all appearance-none text-slate-700 font-medium"
+                              onChange={e => handlePersonSelect(groupIdx, signerIdx, e.target.value)}
+                              value=""
+                            >
+                              <option value="">-- Chọn nhân sự --</option>
+                              {personnel.map(p => (
+                                <option key={p.id} value={p.id}>{p.name} - {p.position}</option>
+                              ))}
+                            </select>
+                            <User size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                           </div>
 
-                          {/* Col 3: Position */}
-                          <div className="md:col-span-3 flex flex-col md:block">
-                            <label className="text-[10px] text-slate-400 font-medium mb-1 md:hidden">Chức vụ</label>
-                            <input
-                              value={signer.position}
-                              onChange={e => handleSignerChange(groupIdx, signerIdx, 'position', e.target.value)}
-                              placeholder="Nhập chức vụ"
-                              className="w-full p-1.5 border border-transparent hover:border-slate-200 focus:border-primary/50 rounded-md text-sm text-slate-700 focus:ring-2 focus:ring-primary/20 outline-none bg-transparent transition-all"
-                            />
-                          </div>
+                          {/* Col 3: Name */}
+                          <input
+                            value={signer.name}
+                            onChange={e => handleSignerChange(groupIdx, signerIdx, 'name', e.target.value)}
+                            placeholder="Họ tên"
+                            spellCheck={false}
+                            className="p-1.5 border border-transparent hover:border-slate-200 focus:border-primary/50 rounded-md text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-primary/20 outline-none bg-transparent transition-all w-full min-w-0"
+                          />
 
-                          {/* Col 4: Gender Segmented Button */}
-                          <div className="md:col-span-2 flex items-center justify-center">
-                             <div className="flex p-0.5 bg-slate-100/80 rounded-md border border-slate-200 w-full md:w-auto">
+                          {/* Col 4: Position */}
+                          <input
+                            value={signer.position}
+                            onChange={e => handleSignerChange(groupIdx, signerIdx, 'position', e.target.value)}
+                            placeholder="Chức vụ"
+                            spellCheck={false}
+                            className="p-1.5 border border-transparent hover:border-slate-200 focus:border-primary/50 rounded-md text-sm text-slate-700 focus:ring-2 focus:ring-primary/20 outline-none bg-transparent transition-all w-full min-w-0"
+                          />
+
+                          {/* Col 5: Gender Segmented Button */}
+                          <div className="flex items-center">
+                            <div className="flex p-0.5 bg-slate-100/80 rounded-md border border-slate-200 w-full">
                               {(['auto', 'male', 'female'] as const).map(g => {
                                 const isActive = signer.gender === g || (!signer.gender && g === 'auto');
                                 return (
                                   <button
                                     key={g}
                                     onClick={() => handleSignerChange(groupIdx, signerIdx, 'gender', g)}
-                                    className={`flex-1 md:flex-none px-3 py-1 rounded-[4px] text-[11px] font-bold transition-all shadow-sm ${
+                                    className={`flex-1 py-0.5 rounded-[4px] text-[10px] font-bold transition-all ${
                                       isActive
-                                        ? 'bg-white text-primary border-slate-200/50 ring-1 ring-black/5'
-                                        : 'bg-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 shadow-none'
+                                        ? 'bg-white text-primary ring-1 ring-black/5'
+                                        : 'bg-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
                                     }`}
                                   >
                                     {genderLabel(g)}
@@ -417,19 +418,19 @@ export const RecordsModule: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* Col 5: Delete */}
-                          <div className="md:col-span-1 flex items-center justify-end">
+                          {/* Col 6: Delete */}
+                          <div className="flex items-center justify-center">
                             <button
                               onClick={() => handleRemoveSigner(groupIdx, signerIdx)}
                               disabled={group.signers.length <= 1}
-                              className={`p-2 rounded-md transition-colors ${
-                                group.signers.length <= 1 
-                                  ? 'text-slate-300 cursor-not-allowed' 
+                              className={`p-1.5 rounded-md transition-colors ${
+                                group.signers.length <= 1
+                                  ? 'text-slate-200 cursor-not-allowed'
                                   : 'text-red-400 hover:bg-red-50 hover:text-red-600'
                               }`}
-                              title={group.signers.length <= 1 ? "Không thể xóa người ký duy nhất" : "Xóa người này"}
+                              title={group.signers.length <= 1 ? 'Không thể xóa người ký duy nhất' : 'Xóa người này'}
                             >
-                              <Trash2 size={16} />
+                              <Trash2 size={15} />
                             </button>
                           </div>
                         </div>

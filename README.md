@@ -82,6 +82,11 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1139 (14/05/2026)
+- **Sửa lỗi layout Tab Ký hồ sơ**: Dòng người ký giờ đây luôn hiển thị thành 1 dòng gọn nhẹ bằng CSS Grid cố định, không bị xuống dòng khi cửa sổ add-in hẹp.
+- **Sửa lỗi cập nhật dữ liệu**: Chữ sau khi điền vào Content Control giờ được định dạng đúng (in đậm, màu đen) thay vì chữ thường màu xám.
+- **Sửa UI PTN**: Bỏ 2 nút "Chi tiết thiết bị" và "Hồ sơ năng lực" khỏi thẻ PTN.
+
 ### v14052026.1108 (14/05/2026)
 - **Hệ thống Quản lý Phiên bản (Version Manager)**: Triển khai component `VersionManager.tsx` tự động fetch `changelog.json`, so sánh version, hiện badge đỏ nhấp nháy và modal Rollback.
 - **Script Deploy nâng cấp**: `deploy_gh_pages.ps1` tự động lưu bản cũ vào `/versions/vXXX/`, tạo/cập nhật `changelog.json`, giữ tối đa 5 phiên bản.

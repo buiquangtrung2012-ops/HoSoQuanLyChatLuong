@@ -120,10 +120,7 @@ export const LabModule: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-4 border-t flex space-x-2">
-              <button className="flex-1 py-2 text-xs font-semibold border rounded-lg hover:bg-accent transition-colors">Chi tiết thiết bị</button>
-              <button className="flex-1 py-2 text-xs font-semibold border rounded-lg hover:bg-accent transition-colors">Hồ sơ năng lực</button>
-            </div>
+
           </div>
         ))}
       </div>

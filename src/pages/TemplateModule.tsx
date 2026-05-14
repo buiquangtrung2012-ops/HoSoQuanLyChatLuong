@@ -311,6 +311,11 @@ export const TemplateModule: React.FC = () => {
         const val = allData[item.tag];
         if (val !== undefined && val !== '' && !item.tag.startsWith('table_') && !item.tag.startsWith('summary_')) {
           item.insertText(String(val), 'Replace');
+          // Ensure text is bold and black (not gray placeholder style)
+          try {
+            item.font.bold = true;
+            item.font.color = '#000000';
+          } catch (e) {}
           filledCount++;
         }
       }
