@@ -260,7 +260,13 @@ export const WordApiService = {
               const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
               const rowCount = maxSigners * 2 + 1;
 
+              // Set wrapper font size to 1pt to minimize newline space
+              wrapper.font.size = 1;
+
               const table = wrapper.insertTable(rowCount, colCount, 'Start');
+              await context.sync();
+              
+              applyFontToTable(table, currentFont);
               hideTableBorders(table);
 
               for (let c = 0; c < colCount; c++) {
@@ -302,7 +308,13 @@ export const WordApiService = {
               const rowCount = Math.max(signersRaw.length, minRows);
               const actualSigners = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
 
+              // Set wrapper font size to 1pt to minimize newline space
+              wrapper.font.size = 1;
+
               const table = wrapper.insertTable(rowCount, 2, 'Start');
+              await context.sync();
+              
+              applyFontToTable(table, currentFont);
               hideTableBorders(table);
 
               for (let i = 0; i < rowCount; i++) {
@@ -512,6 +524,9 @@ export const WordApiService = {
       wrapper.appearance = 'BoundingBox';
       wrapper.placeholderText = ' '; // Hide placeholder
 
+      // Set wrapper font size to 1pt to minimize newline space
+      wrapper.font.size = 1;
+
       let insertedTable: any = null;
       if (isJV) {
         const members = project.contractorMembers || [];
@@ -524,6 +539,8 @@ export const WordApiService = {
         const rowCount = maxSigners * 2 + 1;
 
         insertedTable = wrapper.insertTable(rowCount, colCount, 'Start');
+        await context.sync();
+        
         applyFontToTable(insertedTable, currentFont);
         hideTableBorders(insertedTable);
 
@@ -570,6 +587,8 @@ export const WordApiService = {
         const signers: any[] = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
 
         insertedTable = wrapper.insertTable(rowCount, 2, 'Start');
+        await context.sync();
+        
         applyFontToTable(insertedTable, currentFont);
         hideTableBorders(insertedTable);
         
