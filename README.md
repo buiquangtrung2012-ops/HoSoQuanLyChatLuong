@@ -82,6 +82,11 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1625 (14/05/2026)
+- **Tối ưu Vị trí Bảng**: Loại bỏ hoàn toàn các dấu xuống dòng thừa khi chèn bảng. Bảng hiện tại sẽ nằm sát với nội dung phía trên mà không bị tách rời.
+- **Ẩn Placeholder**: Thiết lập khoảng trắng cho vùng nhắc của Content Control. Khắc phục lỗi hiển thị dòng chữ "Click or tap here to enter text" khi bảng đang được làm mới hoặc khi dữ liệu trống.
+- **Cải tiến Logic chèn**: Thay đổi trình tự (Chèn bảng trước -> Bao bọc sau) để đảm bảo Content Control ôm khít bảng dữ liệu, không tạo ra khoảng trắng dư thừa.
+
 ### v14052026.1620 (14/05/2026)
 - **Cấu trúc Bảng mới**: Chuyển đổi toàn bộ cơ chế chèn Bảng Thành phần tham gia thành dạng Content Control bao bọc (Wrapper). Điều này giúp hệ thống định vị chính xác toàn bộ khối bảng để xoá và chèn lại dữ liệu mới một cách tin cậy nhất.
 - **Đồng bộ hóa Hoàn hảo**: Khắc phục lỗi bảng không cập nhật sau lần chèn đầu tiên do thiếu định danh (Tag) trên Word.

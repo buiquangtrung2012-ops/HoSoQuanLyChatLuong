@@ -229,6 +229,9 @@ export const WordApiService = {
             // Temporarily unlock if locked
             const originalLock = wrapper.cannotEdit;
             if (originalLock) wrapper.cannotEdit = false;
+            
+            // Hide placeholder text
+            wrapper.placeholderText = ' ';
 
             // Aggressive clear: remove all content and then specifically check for tables
             wrapper.clear();
@@ -502,26 +505,49 @@ export const WordApiService = {
         currentFont = range.font;
       } catch (e) {}
 
-      // Create a wrapper Content Control
-      const wrapper = range.insertContentControl();
-      wrapper.tag = `table_${role}`;
-      wrapper.title = `Bảng Thành phần: ${role.toUpperCase()}`;
-      wrapper.appearance = 'BoundingBox';
-
       let insertedTable: any = null;
+      let rowCount = 0;
+      let colCount = 0;
+
       if (isJV) {
         const members = project.contractorMembers || [];
-        const colCount = members.length;
+        colCount = members.length;
         const memberSigners = members.map((_: any, idx: number) => {
           const g = savedGroups.find((gr: any) => gr.prefix === `tc_ld${idx + 1}`);
           return (g && Array.isArray(g.signers)) ? g.signers : [];
         });
         const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
-        const rowCount = maxSigners * 2 + 1;
+        rowCount = maxSigners * 2 + 1;
+        
+        // Insert table first to avoid extra newlines from CC
+        insertedTable = range.insertTable(rowCount, colCount, 'Replace');
+      } else {
+        const group = savedGroups.find((g: any) => g.prefix === role);
+        const signersRaw = (group && Array.isArray(group.signers)) ? group.signers : [];
+        const signersCount = Math.max(signersRaw.length, (role === 'tc' || role === 'tv' ? 3 : 2));
+        rowCount = Math.max(signersCount, 1);
+        colCount = 2;
+        
+        insertedTable = range.insertTable(rowCount, colCount, 'Replace');
+      }
 
-        insertedTable = wrapper.insertTable(rowCount, colCount, 'Start');
-        applyFontToTable(insertedTable, currentFont);
-        hideTableBorders(insertedTable);
+      // Wrap the table in a Content Control
+      const wrapper = insertedTable.insertContentControl();
+      wrapper.tag = `table_${role}`;
+      wrapper.title = `Bảng Thành phần: ${role.toUpperCase()}`;
+      wrapper.appearance = 'BoundingBox';
+      wrapper.placeholderText = ' '; // Hide placeholder
+
+      applyFontToTable(insertedTable, currentFont);
+      hideTableBorders(insertedTable);
+
+      if (isJV) {
+        const members = project.contractorMembers || [];
+        const memberSigners = members.map((_: any, idx: number) => {
+          const g = savedGroups.find((gr: any) => gr.prefix === `tc_ld${idx + 1}`);
+          return (g && Array.isArray(g.signers)) ? g.signers : [];
+        });
+        const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
 
         for (let c = 0; c < colCount; c++) {
           const cell = insertedTable.getCell(0, c);
@@ -561,13 +587,7 @@ export const WordApiService = {
       } else {
         const group = savedGroups.find((g: any) => g.prefix === role);
         const signersRaw = (group && Array.isArray(group.signers)) ? group.signers : [];
-        const signersCount = Math.max(signersRaw.length, (role === 'tc' || role === 'tv' ? 3 : 2));
-        const rowCount = Math.max(signersCount, 1);
         const signers: any[] = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
-
-        insertedTable = wrapper.insertTable(rowCount, 2, 'Start');
-        applyFontToTable(insertedTable, currentFont);
-        hideTableBorders(insertedTable);
         
         for (let i = 0; i < rowCount; i++) {
           const s = signers[i] || { name: '', position: '', gender: 'auto' };
@@ -595,10 +615,8 @@ export const WordApiService = {
       }
 
       await context.sync();
-      if (insertedTable) {
-        insertedTable.getRange('After').select();
-        await context.sync();
-      }
+      insertedTable.getRange('After').select();
+      await context.sync();
     }).catch((err: any) => {
       console.error('Lỗi Word API:', err);
       alert('Lỗi Word API: ' + (err.message || 'Không xác định'));
