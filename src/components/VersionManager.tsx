@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, RefreshCw, Clock, ChevronDown, ChevronUp, CheckCircle, ArrowLeft } from 'lucide-react';
+import { X, RefreshCw, Clock, CheckCircle, ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
 
 // The current app version — must match what's in Topbar.tsx
 export const CURRENT_VERSION = 'v14052026.1108';
@@ -16,18 +16,12 @@ interface Changelog {
   versions: VersionEntry[];
 }
 
-interface VersionManagerProps {
-  onOpenModal?: () => void;
-}
-
 export const useVersionManager = () => {
   const [changelog, setChangelog] = useState<Changelog | null>(null);
   const [hasUpdate, setHasUpdate] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchChangelog = async () => {
-      setLoading(true);
       try {
         const base = import.meta.env.BASE_URL || '/';
         const url = `${base}changelog.json?v=${Date.now()}`;
@@ -38,15 +32,12 @@ export const useVersionManager = () => {
         setHasUpdate(data.latest !== CURRENT_VERSION);
       } catch {
         // Silently fail — offline or local dev
-      } finally {
-        setLoading(false);
       }
     };
-
     fetchChangelog();
   }, []);
 
-  return { changelog, hasUpdate, loading };
+  return { changelog, hasUpdate };
 };
 
 interface VersionModalProps {
@@ -54,7 +45,22 @@ interface VersionModalProps {
   onClose: () => void;
 }
 
+// Single bullet item renderer
+const ChangeItem: React.FC<{ text: string; accent?: boolean }> = ({ text, accent }) => (
+  <li
+    className="flex items-start gap-2 text-xs leading-relaxed list-none"
+    style={{ color: accent ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.55)' }}
+  >
+    <span
+      className="mt-[5px] w-1.5 h-1.5 rounded-full flex-shrink-0"
+      style={{ background: accent ? '#818cf8' : 'rgba(255,255,255,0.25)' }}
+    />
+    {text}
+  </li>
+);
+
 export const VersionModal: React.FC<VersionModalProps> = ({ changelog, onClose }) => {
+  // Older versions are collapsed by default — user can expand each one
   const [expandedVersions, setExpandedVersions] = useState<Set<string>>(new Set());
 
   const toggleExpand = (version: string) => {
@@ -67,15 +73,12 @@ export const VersionModal: React.FC<VersionModalProps> = ({ changelog, onClose }
   };
 
   const handleUpdateNow = () => {
-    const url = new URL(window.location.href);
-    // Navigate to root path with cache-bust
     const rootPath = import.meta.env.BASE_URL || '/';
     window.location.href = `${rootPath}?v=${Date.now()}`;
   };
 
   const handleRollback = (path: string) => {
-    const base = window.location.origin;
-    window.location.href = `${base}${path}?v=${Date.now()}`;
+    window.location.href = `${window.location.origin}${path}?v=${Date.now()}`;
   };
 
   const latestEntry = changelog?.versions[0];
@@ -84,146 +87,210 @@ export const VersionModal: React.FC<VersionModalProps> = ({ changelog, onClose }
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+      style={{ backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }}
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg mx-4 rounded-2xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-lg mx-4 rounded-2xl shadow-2xl flex flex-col"
         style={{
-          background: 'linear-gradient(135deg, hsl(220,30%,13%) 0%, hsl(220,25%,18%) 100%)',
+          background: 'linear-gradient(155deg, hsl(225,28%,14%) 0%, hsl(220,24%,19%) 100%)',
           border: '1px solid rgba(255,255,255,0.1)',
-          maxHeight: '85vh',
-          display: 'flex',
-          flexDirection: 'column',
+          maxHeight: '90vh',
         }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        {/* ── Header ── */}
+        <div
+          className="flex items-center justify-between px-5 py-4 flex-shrink-0"
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+        >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}>
-              <RefreshCw size={18} className="text-white" />
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}
+            >
+              <RefreshCw size={17} className="text-white" />
             </div>
             <div>
               <h2 className="text-sm font-bold text-white tracking-tight">Quản lý Phiên bản</h2>
-              <p className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>Đang dùng: <span className="text-indigo-400 font-mono font-semibold">{CURRENT_VERSION}</span></p>
+              <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                Đang dùng:&nbsp;
+                <span className="text-indigo-400 font-mono font-semibold">{CURRENT_VERSION}</span>
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
-            style={{ color: 'rgba(255,255,255,0.5)' }}
+            className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors flex-shrink-0"
+            style={{ color: 'rgba(255,255,255,0.45)' }}
           >
             <X size={16} />
           </button>
         </div>
 
-        {/* Body */}
-        <div className="overflow-y-auto flex-1 px-6 py-4 space-y-4">
-          {/* Latest version */}
+        {/* ── Scrollable Body ── */}
+        <div
+          className="flex-1 overflow-y-auto px-5 py-4 space-y-3"
+          style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(99,102,241,0.4) transparent' }}
+        >
+          {/* Empty state */}
+          {!changelog && (
+            <div className="py-10 text-center" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              <RefreshCw size={24} className="mx-auto mb-3 opacity-40" />
+              <p className="text-xs">Không thể tải thông tin phiên bản.<br />Kiểm tra kết nối mạng.</p>
+            </div>
+          )}
+
+          {/* ── Latest version card ── */}
           {latestEntry && (
-            <div className="rounded-xl p-4 space-y-3" style={{ background: 'linear-gradient(135deg,rgba(99,102,241,0.15),rgba(139,92,246,0.15))', border: '1px solid rgba(99,102,241,0.3)' }}>
-              <div className="flex items-center justify-between">
+            <div
+              className="rounded-xl p-4"
+              style={{
+                background: 'linear-gradient(135deg,rgba(99,102,241,0.13),rgba(139,92,246,0.13))',
+                border: '1px solid rgba(99,102,241,0.28)',
+              }}
+            >
+              {/* Version header row */}
+              <div className="flex items-start justify-between gap-2 mb-3">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-bold text-indigo-400">{latestEntry.version}</span>
-                    <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(99,102,241,0.3)', color: '#a5b4fc' }}>MỚI NHẤT</span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-mono font-bold text-indigo-300">{latestEntry.version}</span>
+                    <span
+                      className="text-[10px] px-1.5 py-0.5 rounded-full font-bold tracking-wide"
+                      style={{ background: 'rgba(99,102,241,0.35)', color: '#a5b4fc' }}
+                    >
+                      MỚI NHẤT
+                    </span>
                   </div>
-                  <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>{latestEntry.date}</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>
+                    {latestEntry.date}
+                  </p>
                 </div>
-                {CURRENT_VERSION !== latestEntry.version && (
+                {CURRENT_VERSION !== latestEntry.version ? (
                   <button
                     onClick={handleUpdateNow}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all hover:scale-105"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white flex-shrink-0 transition-all hover:opacity-90 active:scale-95"
                     style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}
                   >
-                    <RefreshCw size={12} />
+                    <RefreshCw size={11} />
                     Cập nhật ngay
                   </button>
-                )}
-                {CURRENT_VERSION === latestEntry.version && (
-                  <div className="flex items-center gap-1 text-emerald-400 text-xs font-semibold">
-                    <CheckCircle size={14} />
+                ) : (
+                  <div className="flex items-center gap-1 text-emerald-400 text-xs font-semibold flex-shrink-0">
+                    <CheckCircle size={13} />
                     Đang dùng
                   </div>
                 )}
               </div>
-              <ul className="space-y-1.5">
+
+              {/* All changes — fully visible, scroll via parent */}
+              <ul className="space-y-2">
                 {latestEntry.changes.map((change, i) => (
-                  <li key={i} className="flex items-start gap-2 text-xs" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                    <span className="mt-1 w-1 h-1 rounded-full bg-indigo-400 flex-shrink-0" />
-                    {change}
-                  </li>
+                  <ChangeItem key={i} text={change} accent />
                 ))}
               </ul>
             </div>
           )}
 
-          {/* Older versions */}
+          {/* ── Older versions ── */}
           {olderVersions.length > 0 && (
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Clock size={14} style={{ color: 'rgba(255,255,255,0.4)' }} />
-                <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>Phiên bản cũ hơn</span>
+              <div className="flex items-center gap-2 mb-2 mt-1">
+                <Clock size={12} style={{ color: 'rgba(255,255,255,0.35)' }} />
+                <span
+                  className="text-[10px] font-semibold uppercase tracking-widest"
+                  style={{ color: 'rgba(255,255,255,0.35)' }}
+                >
+                  Phiên bản cũ hơn
+                </span>
               </div>
+
               <div className="space-y-2">
-                {olderVersions.map(entry => (
-                  <div
-                    key={entry.version}
-                    className="rounded-xl overflow-hidden"
-                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
-                  >
-                    <div className="flex items-center justify-between px-4 py-2.5">
-                      <div className="flex items-center gap-3">
+                {olderVersions.map(entry => {
+                  const isExpanded = expandedVersions.has(entry.version);
+                  const isCurrent = CURRENT_VERSION === entry.version;
+                  return (
+                    <div
+                      key={entry.version}
+                      className="rounded-xl overflow-hidden"
+                      style={{
+                        background: isCurrent
+                          ? 'rgba(16,185,129,0.08)'
+                          : 'rgba(255,255,255,0.035)',
+                        border: isCurrent
+                          ? '1px solid rgba(16,185,129,0.25)'
+                          : '1px solid rgba(255,255,255,0.07)',
+                      }}
+                    >
+                      {/* Row header */}
+                      <div className="flex items-center justify-between px-4 py-2.5">
+                        {/* Left: expand toggle + version info */}
                         <button
+                          className="flex items-center gap-2 text-left flex-1 min-w-0"
                           onClick={() => toggleExpand(entry.version)}
-                          className="flex items-center gap-2 text-xs"
-                          style={{ color: 'rgba(255,255,255,0.6)' }}
                         >
-                          {expandedVersions.has(entry.version) ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                          <span className="font-mono font-semibold" style={{ color: 'rgba(255,255,255,0.8)' }}>{entry.version}</span>
-                          <span style={{ color: 'rgba(255,255,255,0.35)' }}>{entry.date}</span>
+                          <span style={{ color: 'rgba(255,255,255,0.35)', flexShrink: 0 }}>
+                            {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                          </span>
+                          <span
+                            className="font-mono font-semibold text-xs truncate"
+                            style={{ color: isCurrent ? '#6ee7b7' : 'rgba(255,255,255,0.75)' }}
+                          >
+                            {entry.version}
+                          </span>
+                          <span className="text-[11px] flex-shrink-0" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                            {entry.date}
+                          </span>
+                          {isCurrent && (
+                            <span
+                              className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0"
+                              style={{ background: 'rgba(16,185,129,0.2)', color: '#6ee7b7' }}
+                            >
+                              Đang dùng
+                            </span>
+                          )}
                         </button>
-                        {CURRENT_VERSION === entry.version && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(16,185,129,0.2)', color: '#6ee7b7' }}>Đang dùng</span>
+
+                        {/* Right: rollback button */}
+                        {!isCurrent && (
+                          <button
+                            onClick={() => handleRollback(entry.path)}
+                            className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg transition-all hover:bg-white/10 flex-shrink-0 ml-2"
+                            style={{ color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.1)' }}
+                          >
+                            <ArrowLeft size={11} />
+                            Dùng bản này
+                          </button>
                         )}
                       </div>
-                      <button
-                        onClick={() => handleRollback(entry.path)}
-                        className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg transition-all hover:bg-white/10"
-                        style={{ color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}
-                      >
-                        <ArrowLeft size={11} />
-                        Dùng bản này
-                      </button>
-                    </div>
-                    {expandedVersions.has(entry.version) && (
-                      <div className="px-4 pb-3 pt-1 space-y-1" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                        {entry.changes.map((change, i) => (
-                          <li key={i} className="flex items-start gap-2 text-xs list-none" style={{ color: 'rgba(255,255,255,0.5)' }}>
-                            <span className="mt-1 w-1 h-1 rounded-full bg-white/30 flex-shrink-0" />
-                            {change}
-                          </li>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
-          {!changelog && (
-            <div className="py-8 text-center" style={{ color: 'rgba(255,255,255,0.35)' }}>
-              <RefreshCw size={24} className="mx-auto mb-2 opacity-50" />
-              <p className="text-xs">Không thể tải thông tin phiên bản.<br />Kiểm tra kết nối mạng.</p>
+                      {/* Expanded change list */}
+                      {isExpanded && entry.changes.length > 0 && (
+                        <div
+                          className="px-4 pb-3 pt-1"
+                          style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+                        >
+                          <ul className="space-y-1.5 mt-1">
+                            {entry.changes.map((change, i) => (
+                              <ChangeItem key={i} text={change} />
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-3 text-center" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <p className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>
+        {/* ── Footer ── */}
+        <div
+          className="px-5 py-2.5 text-center flex-shrink-0"
+          style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
+        >
+          <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.2)' }}>
             Dữ liệu người dùng (localStorage) không bị ảnh hưởng khi rollback.
           </p>
         </div>

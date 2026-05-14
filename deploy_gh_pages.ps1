@@ -1,9 +1,74 @@
 # Script to deploy the dist folder to GitHub Pages (gh-pages branch)
 # Includes: version archiving into /versions/vXXX/ and auto-updating changelog.json
+# Parses README.md to extract real changelog entries per version
 # Max old versions kept: 5
 
 $remoteUrl = "https://github.com/buiquangtrung2012-ops/HoSoQuanLyChatLuong.git"
 $MAX_OLD_VERSIONS = 5
+
+# ─────────────────────────────────────────────
+# HELPER: Parse README.md to extract changelog per version
+# Returns hashtable: version -> @(change lines)
+# ─────────────────────────────────────────────
+function Parse-ReadmeChangelog {
+    param([string]$ReadmePath)
+
+    $result = @{}
+    $lines = [System.IO.File]::ReadAllLines($ReadmePath, [System.Text.Encoding]::UTF8)
+
+    $currentVersion = $null
+    $currentChanges = [System.Collections.Generic.List[string]]::new()
+    $inHistory = $false
+
+    foreach ($line in $lines) {
+        # Detect start of history section
+        if ($line -match '^##\s+L.+c.*s.*c.*p.*nh') {
+            $inHistory = $true
+            continue
+        }
+        if (-not $inHistory) { continue }
+
+        # Detect version header like: ### vDDMMYYYY.HHMM (DD/MM/YYYY)
+        if ($line -match '^###\s+(v\d{8}\.\d{4})') {
+            # Save previous version
+            if ($currentVersion -ne $null -and $currentChanges.Count -gt 0) {
+                $result[$currentVersion] = $currentChanges.ToArray()
+            }
+            $currentVersion = $Matches[1]
+            $currentChanges = [System.Collections.Generic.List[string]]::new()
+            continue
+        }
+
+        # Stop if we hit a new H2 section (##) that is not the history section
+        if ($line -match '^##\s+' -and $line -notmatch '^###') {
+            if ($currentVersion -ne $null -and $currentChanges.Count -gt 0) {
+                $result[$currentVersion] = $currentChanges.ToArray()
+            }
+            break
+        }
+
+        if ($currentVersion -ne $null) {
+            # Collect bullet lines (- ...) and sub-bullets (indented -)
+            $trimmed = $line.TrimStart()
+            if ($trimmed.StartsWith('- ') -or $trimmed.StartsWith('* ')) {
+                # Strip markdown bold (**text**) for plain text display
+                $clean = $trimmed.Substring(2).Trim()
+                # Remove markdown bold markers but keep text
+                $clean = [regex]::Replace($clean, '\*\*([^*]+)\*\*', '$1')
+                # Remove inline code backticks
+                $clean = [regex]::Replace($clean, '`([^`]+)`', '$1')
+                $currentChanges.Add($clean) | Out-Null
+            }
+        }
+    }
+
+    # Save last version
+    if ($currentVersion -ne $null -and $currentChanges.Count -gt 0) {
+        $result[$currentVersion] = $currentChanges.ToArray()
+    }
+
+    return $result
+}
 
 # ─────────────────────────────────────────────
 # Step 1: Read current version from VersionManager.tsx
@@ -20,9 +85,19 @@ if ($versionLine.Line -match "'(v[^']+)'") {
 Write-Host "   Detected version: $CURRENT_VERSION" -ForegroundColor Green
 
 # ─────────────────────────────────────────────
-# Step 2: Build the project
+# Step 2: Parse README.md for changelog entries
 # ─────────────────────────────────────────────
-Write-Host "2. Building the project..." -ForegroundColor Cyan
+Write-Host "2. Parsing README.md for changelog entries..." -ForegroundColor Cyan
+$readmeChangelog = Parse-ReadmeChangelog -ReadmePath "README.md"
+Write-Host "   Found $($readmeChangelog.Count) version(s) in README.md" -ForegroundColor Green
+foreach ($v in $readmeChangelog.Keys) {
+    Write-Host "      $v : $($readmeChangelog[$v].Count) change(s)" -ForegroundColor Gray
+}
+
+# ─────────────────────────────────────────────
+# Step 3: Build the project
+# ─────────────────────────────────────────────
+Write-Host "3. Building the project..." -ForegroundColor Cyan
 npm run build
 
 if ($LASTEXITCODE -ne 0) {
@@ -31,70 +106,77 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # ─────────────────────────────────────────────
-# Step 3: Fetch existing changelog.json from gh-pages (if available)
+# Step 4: Fetch existing changelog.json from gh-pages (for old version paths)
 # ─────────────────────────────────────────────
-Write-Host "3. Fetching existing changelog from gh-pages..." -ForegroundColor Cyan
+Write-Host "4. Fetching existing changelog from gh-pages..." -ForegroundColor Cyan
 $changelogUrl = "https://raw.githubusercontent.com/buiquangtrung2012-ops/HoSoQuanLyChatLuong/gh-pages/changelog.json"
 $existingChangelog = $null
 try {
     $response = Invoke-WebRequest -Uri $changelogUrl -UseBasicParsing -ErrorAction Stop
     $existingChangelog = $response.Content | ConvertFrom-Json
-    Write-Host "   Existing changelog fetched. Latest was: $($existingChangelog.latest)" -ForegroundColor Gray
+    Write-Host "   Existing changelog fetched. Previous latest: $($existingChangelog.latest)" -ForegroundColor Gray
 } catch {
     Write-Host "   No existing changelog found (first deploy). Creating fresh one." -ForegroundColor Yellow
 }
 
 # ─────────────────────────────────────────────
-# Step 4: Copy current build to dist/versions/CURRENT_VERSION/
+# Step 5: Copy current build to dist/versions/CURRENT_VERSION/
 # ─────────────────────────────────────────────
-Write-Host "4. Archiving current build to dist\versions\$CURRENT_VERSION ..." -ForegroundColor Cyan
+Write-Host "5. Archiving current build to dist\versions\$CURRENT_VERSION ..." -ForegroundColor Cyan
 $versionDir = "dist\versions\$CURRENT_VERSION"
 if (-not (Test-Path $versionDir)) {
     New-Item -ItemType Directory -Path $versionDir -Force | Out-Null
 }
-# Copy all built assets into the version subfolder, preserving structure
 Get-ChildItem -Path "dist" -Exclude "versions" | Copy-Item -Destination $versionDir -Recurse -Force
 
 # ─────────────────────────────────────────────
-# Step 5: Build updated changelog.json
+# Step 6: Build updated changelog.json from README data
 # ─────────────────────────────────────────────
-Write-Host "5. Building changelog.json..." -ForegroundColor Cyan
+Write-Host "6. Building changelog.json from README.md data..." -ForegroundColor Cyan
 
-$defaultChanges = @("New deployment - see README.md for details.")
-$currentDate = Get-Date -Format "dd/MM/yyyy"
-
-$currentEntry = [ordered]@{
-    version = $CURRENT_VERSION
-    date    = $currentDate
-    changes = $defaultChanges
-    path    = "/HoSoQuanLyChatLuong/"
-}
-
-# If existing changelog already has an entry for this version, keep its changes
-if ($existingChangelog -ne $null) {
-    $existingEntry = $existingChangelog.versions | Where-Object { $_.version -eq $CURRENT_VERSION } | Select-Object -First 1
-    if ($existingEntry -ne $null) {
-        $currentEntry.changes = @($existingEntry.changes)
-        Write-Host "   Reusing existing changelog entry for $CURRENT_VERSION." -ForegroundColor Gray
+# Get all versions from README in order (newest first)
+# Sort by version string descending (vDDMMYYYY.HHMM -> YYYYMMDD.HHMM for sort)
+function Get-SortKey {
+    param([string]$ver)
+    # ver = "vDDMMYYYY.HHMM"
+    if ($ver -match '^v(\d{2})(\d{2})(\d{4})\.(\d{4})$') {
+        return "$($Matches[3])$($Matches[2])$($Matches[1]).$($Matches[4])"
     }
+    return $ver
 }
 
-# Collect older version entries (up to MAX_OLD_VERSIONS)
-$olderEntries = @()
-if ($existingChangelog -ne $null -and $existingChangelog.versions -ne $null) {
-    $filtered = $existingChangelog.versions | Where-Object { $_.version -ne $CURRENT_VERSION }
-    $limited  = @($filtered) | Select-Object -First $MAX_OLD_VERSIONS
-    foreach ($entry in $limited) {
-        $olderEntries += [ordered]@{
-            version = $entry.version
-            date    = $entry.date
-            changes = @($entry.changes)
-            path    = "/HoSoQuanLyChatLuong/versions/$($entry.version)/"
-        }
+$sortedVersions = $readmeChangelog.Keys | Sort-Object { Get-SortKey $_ } -Descending
+
+# Build version entries array
+$allVersions = @()
+
+foreach ($ver in $sortedVersions) {
+    $changes = $readmeChangelog[$ver]
+    if ($ver -eq $CURRENT_VERSION) {
+        $path = "/HoSoQuanLyChatLuong/"
+    } else {
+        $path = "/HoSoQuanLyChatLuong/versions/$ver/"
     }
+
+    # Extract date from version string vDDMMYYYY.HHMM
+    $date = ""
+    if ($ver -match '^v(\d{2})(\d{2})(\d{4})\.\d{4}$') {
+        $date = "$($Matches[1])/$($Matches[2])/$($Matches[3])"
+    }
+
+    $entry = [ordered]@{
+        version = $ver
+        date    = $date
+        changes = $changes
+        path    = $path
+    }
+    $allVersions += $entry
 }
 
-$allVersions = @($currentEntry) + $olderEntries
+# Limit to current + MAX_OLD_VERSIONS older entries
+if ($allVersions.Count -gt ($MAX_OLD_VERSIONS + 1)) {
+    $allVersions = $allVersions | Select-Object -First ($MAX_OLD_VERSIONS + 1)
+}
 
 $changelogObj = [ordered]@{
     latest   = $CURRENT_VERSION
@@ -106,9 +188,9 @@ $changelogJson = $changelogObj | ConvertTo-Json -Depth 10
 Write-Host "   changelog.json written with $($allVersions.Count) version(s)." -ForegroundColor Green
 
 # ─────────────────────────────────────────────
-# Step 6: Deploy dist to gh-pages
+# Step 7: Deploy dist to gh-pages
 # ─────────────────────────────────────────────
-Write-Host "6. Preparing dist folder for deployment..." -ForegroundColor Cyan
+Write-Host "7. Preparing dist folder for deployment..." -ForegroundColor Cyan
 if (Test-Path "dist\.git") {
     Remove-Item -Path "dist\.git" -Recurse -Force
 }
@@ -120,10 +202,11 @@ git config user.email "buiquangtrung2012@gmail.com"
 git config user.name "buiquangtrung2012-ops"
 git add .
 git commit -m "Deploy $CURRENT_VERSION to GitHub Pages"
-Write-Host "7. Pushing to gh-pages branch..." -ForegroundColor Cyan
+Write-Host "8. Pushing to gh-pages branch..." -ForegroundColor Cyan
 git push --force $remoteUrl HEAD:gh-pages
 
 Pop-Location
 
 Write-Host "Deployment of $CURRENT_VERSION complete!" -ForegroundColor Green
 Write-Host "GitHub Pages will update in ~30 seconds." -ForegroundColor Gray
+Write-Host "changelog.json has $($allVersions.Count) version(s) with full details from README.md" -ForegroundColor Gray
