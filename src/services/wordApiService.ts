@@ -135,28 +135,50 @@ export const WordApiService = {
       await Word.run(async (context: any) => {
         console.log("WordApiService: Inside Word.run context");
         const ccs = context.document.contentControls;
-        ccs.load('items/tag');
+        ccs.load('items/tag,items/type');
         await context.sync();
         
         let filledCount = 0;
+        let batchCounter = 0;
+
         // 1. Fill normal text controls
         for (const item of ccs.items) {
-          const val = allData[item.tag];
-          if (val !== undefined && val !== '' && !item.tag.startsWith('table_') && !item.tag.startsWith('summary_')) {
-            item.insertText(String(val), 'Replace');
-            try {
-              item.font.bold = null;
-              item.font.italic = null;
-              item.font.underline = 'None';
-              item.font.color = 'Auto';
-              item.font.size = null;
-              item.font.name = null;
-            } catch (e) {}
-            filledCount++;
+          try {
+            const val = allData[item.tag];
+            const isTableOrSummary = item.tag.startsWith('table_') || item.tag.startsWith('summary_');
+            
+            if (val !== undefined && val !== '' && !isTableOrSummary) {
+              // Only attempt insertText on compatible types if possible, 
+              // but try-catch is the ultimate safety net.
+              item.insertText(String(val), 'Replace');
+              
+              try {
+                // Clear any existing highlighting/formatting that might be in the template
+                item.font.bold = null;
+                item.font.italic = null;
+                item.font.underline = 'None';
+                item.font.color = 'Auto';
+                item.font.size = null;
+                item.font.name = null;
+              } catch (fontErr) {}
+              
+              filledCount++;
+              batchCounter++;
+              
+              // Periodic sync every 20 items to keep the connection alive and stable
+              if (batchCounter >= 20) {
+                await context.sync();
+                batchCounter = 0;
+              }
+            }
+          } catch (itemErr: any) {
+            console.warn(`WordApiService: Error filling item with tag "${item.tag}":`, itemErr);
+            // Continue to next item
           }
         }
 
-        console.log(`WordApiService: Filled ${filledCount} text controls`);
+        await context.sync();
+        console.log(`WordApiService: Finished filling ${filledCount} text controls`);
 
         // 2. Refresh dynamic participant tables
         const roleTags = ['table_cdt', 'table_tc', 'table_tv'];

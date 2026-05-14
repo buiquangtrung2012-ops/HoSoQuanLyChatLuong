@@ -82,6 +82,10 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v14052026.1523 (14/05/2026)
+- **Tối ưu hóa vòng lặp đổ dữ liệu**: Thêm cơ chế xử lý lỗi cho từng Content Control riêng biệt. Nếu một trường bị lỗi (do sai kiểu dữ liệu hoặc bị khóa), hệ thống sẽ bỏ qua và tiếp tục đổ dữ liệu cho các trường còn lại thay vì dừng toàn bộ tiến trình.
+- **Tự động đồng bộ định kỳ**: Thêm bước đồng bộ API (context.sync) sau mỗi 20 trường dữ liệu để đảm bảo kết nối ổn định với Microsoft Word, đặc biệt hữu ích cho các hồ sơ dài.
+
 ### v14052026.1517 (14/05/2026)
 - **Sửa lỗi InvalidArgument**: Khắc phục triệt để lỗi "InvalidArgument" khi đổ dữ liệu vào Word bằng cách thêm các bước kiểm tra kích thước bảng và xử lý lỗi cục bộ cho từng bảng.
 - **Tối ưu hóa mã nguồn**: Viết lại bộ xử lý WordApiService để đảm bảo cấu trúc lệnh chính xác, tránh các lỗi cú pháp làm treo ứng dụng.
