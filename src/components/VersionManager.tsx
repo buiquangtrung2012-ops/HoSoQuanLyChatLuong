@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, RefreshCw, Clock, CheckCircle, ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
 
 // The current app version — must match what's in Topbar.tsx
-export const CURRENT_VERSION = 'v14052026.1645';
+export const CURRENT_VERSION = 'v14052026.1648';
 
 interface VersionEntry {
   version: string;
@@ -24,8 +24,14 @@ export const useVersionManager = () => {
   const checkUpdates = async () => {
     setIsChecking(true);
     try {
-      const base = import.meta.env.BASE_URL || '/';
-      const url = `${base}changelog.json?v=${Date.now()}`;
+      // Dynamically determine the base URL of the repository
+      // On GH Pages, it's /RepoName/. If in a version folder, it's still /RepoName/
+      const origin = window.location.origin;
+      const path = window.location.pathname;
+      const match = path.match(/^(\/[^\/]+\/)/);
+      const repoBase = match ? match[1] : '/';
+      const url = `${origin}${repoBase}changelog.json?v=${Date.now()}`;
+      
       const res = await fetch(url);
       if (!res.ok) throw new Error('Failed to fetch');
       const data: Changelog = await res.json();
@@ -83,8 +89,11 @@ export const VersionModal: React.FC<VersionModalProps> = ({ changelog, onClose }
   };
 
   const handleUpdateNow = () => {
-    const rootPath = import.meta.env.BASE_URL || '/';
-    window.location.href = `${rootPath}?v=${Date.now()}`;
+    const origin = window.location.origin;
+    const path = window.location.pathname;
+    const match = path.match(/^(\/[^\/]+\/)/);
+    const repoBase = match ? match[1] : '/';
+    window.location.href = `${origin}${repoBase}?v=${Date.now()}`;
   };
 
   const handleRollback = (path: string) => {
