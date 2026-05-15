@@ -82,6 +82,15 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v15052026.1630 (15/05/2026)
+- **Vá lỗi Đồng bộ dữ liệu**: 
+  - Khắc phục triệt để lỗi mất dòng đầu tiên (header) và lỗi font chữ siêu nhỏ khi đồng bộ dữ liệu nhiều lần. 
+  - Cải tiến cơ chế kế thừa font chữ thông minh: Nếu vùng chèn bị ép về 1pt, hệ thống sẽ tự động lấy định dạng từ đoạn văn bản phía trước.
+  - Đảm bảo tỷ lệ phần trăm chiều rộng các cột (STT, Họ tên, Khối lượng...) hoạt động chính xác trong Word.
+- **Tính năng Mới - Xuất file Hàng loạt**: 
+  - Triển khai tab **Xuất Hồ Sơ** mới với khả năng xuất biên bản nghiệm thu cho **TẤT CẢ** công việc trong danh sách chỉ với 1 cú click.
+  - Hệ thống tự động điền dữ liệu vào mẫu và nén toàn bộ kết quả vào một file ZIP để tải về, giúp tiết kiệm thời gian tối đa (tương tự Mail Merge).
+
 ### v15052026.1616 (15/05/2026)
 - **Tối ưu Bảng Dữ liệu**: 
   - Căn giữa nội dung và thu nhỏ cột **STT** (~7%) cho tất cả các bảng tổng hợp.

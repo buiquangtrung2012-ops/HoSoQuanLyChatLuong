@@ -219,28 +219,43 @@ export const WordApiService = {
 
 
         for (const wrapper of allTableCCs) {
+          let currentFont: any = null;
+          try {
+            const wrapperRange = wrapper.getRange();
+            wrapperRange.load('font/name,font/size,font/bold,font/italic,font/color');
+            await context.sync();
+
+            currentFont = {
+              name: wrapperRange.font.name,
+              size: wrapperRange.font.size,
+              bold: wrapperRange.font.bold,
+              italic: wrapperRange.font.italic,
+              color: wrapperRange.font.color
+            };
+
+            // Fix: If current font size is 1 (our wrapper hack), get font from preceding paragraph
+            if (!currentFont.size || currentFont.size <= 2) {
+               try {
+                  const prevRange = wrapper.getRange('Before').paragraphs.getFirst().getRange();
+                  prevRange.load('font/name,font/size,font/bold,font/italic,font/color');
+                  await context.sync();
+                  currentFont = {
+                      name: prevRange.font.name,
+                      size: prevRange.font.size,
+                      bold: prevRange.font.bold,
+                      italic: prevRange.font.italic,
+                      color: prevRange.font.color
+                  };
+               } catch (e) {}
+            }
+            if (!currentFont.size || currentFont.size <= 2) currentFont.size = 13;
+          } catch (e) {
+            console.warn('Cannot get wrapper font', e);
+          }
+          
           try {
             const tag = wrapper.tag;
             const role = tag.replace('table_', '');
-
-            let currentFont: any = null;
-            try {
-              const wrapperRange = wrapper.getRange();
-              wrapperRange.load(
-                'font/name,font/size,font/bold,font/italic,font/color'
-              );
-              await context.sync();
-
-              currentFont = {
-                name: wrapperRange.font.name,
-                size: wrapperRange.font.size,
-                bold: wrapperRange.font.bold,
-                italic: wrapperRange.font.italic,
-                color: wrapperRange.font.color
-              };
-            } catch (e) {
-              console.warn('Cannot get wrapper font', e);
-            }
             
             // Find group data
             const group = savedGroups.find((g: any) => g.prefix === role);
@@ -434,6 +449,23 @@ export const WordApiService = {
                   italic: wrapperRange.font.italic,
                   color: wrapperRange.font.color
                 };
+
+                // Fix: If font size is 1, get from preceding paragraph
+                if (!currentFont.size || currentFont.size <= 2) {
+                   try {
+                      const prevRange = wrapper.getRange('Before').paragraphs.getFirst().getRange();
+                      prevRange.load('font/name,font/size,font/bold,font/italic,font/color');
+                      await context.sync();
+                      currentFont = {
+                          name: prevRange.font.name,
+                          size: prevRange.font.size,
+                          bold: prevRange.font.bold,
+                          italic: prevRange.font.italic,
+                          color: prevRange.font.color
+                      };
+                   } catch (e) {}
+                }
+                if (!currentFont.size || currentFont.size <= 2) currentFont.size = 13;
               } catch (e) {
                 console.warn('Cannot get wrapper font', e);
               }
@@ -454,18 +486,11 @@ export const WordApiService = {
                 paras.items[paras.items.length - 1].font.size = 1;
               }
 
+              // Apply formatting to existing table (if any) or new table
               applyFontToTable(table, currentFont);
               table.font.bold = false;
               
-              config.columns.forEach((col, i) => {
-                const cell = table.getCell(0, i);
-                cell.body.insertText(col, 'Replace');
-                cell.body.paragraphs.getFirst().font.bold = true;
-                cell.body.paragraphs.getFirst().alignment = 'Centered';
-                cell.shadingColor = '#F3F4F6';
-              });
-
-              // Apply column widths
+              // Apply column widths and alignments
               try {
                 table.preferredWidthType = 'Percent';
                 table.preferredWidth = 100;
@@ -498,13 +523,23 @@ export const WordApiService = {
                   table.columns.getItemAt(3).preferredWidth = 12;
                   table.columns.getItemAt(4).preferredWidth = 13;
                 }
+                await context.sync();
               } catch (e) {}
+
+              config.columns.forEach((col, i) => {
+                const cell = table.getCell(0, i);
+                cell.body.insertText(col, 'Replace');
+                cell.body.paragraphs.getFirst().font.bold = true;
+                cell.body.paragraphs.getFirst().alignment = 'Centered';
+                cell.shadingColor = '#F3F4F6';
+              });
 
               dataList.forEach((item: any, rIdx: number) => {
                 const row = rIdx + 1;
                 const sttCell = table.getCell(row, 0);
                 sttCell.body.insertText((rIdx + 1).toString(), 'Replace');
                 sttCell.body.paragraphs.getFirst().alignment = 'Centered';
+                
                 if (type === 'personnel') {
                   table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
                   table.getCell(row, 2).body.insertText(item.position || '', 'Replace');
