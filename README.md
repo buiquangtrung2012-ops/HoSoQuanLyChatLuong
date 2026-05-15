@@ -82,6 +82,10 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v15052026.1018 (15/05/2026)
+- **Sửa lỗi font 1pt**: Khắc phục triệt để việc nội dung bảng bị thu nhỏ về 1pt. Hệ thống hiện đã có cơ chế thông minh để chỉ thu nhỏ các dòng trống bên ngoài bảng, đồng thời cưỡng ép nội dung bên trong bảng luôn giữ cỡ chữ chuẩn (mặc định 13pt nếu không tìm thấy font kế thừa).
+- **Cải thiện độ ổn định**: Giữ vững logic của bản v1710 nhưng được tối ưu hóa để không gây lỗi "Trắng bảng".
+
 ### v15052026.1010 (15/05/2026)
 - **Khôi phục Cơ chế ổn định (Revert v1710)**: Quay trở lại toàn bộ logic chèn bảng và quản lý layout của phiên bản v1710 - vốn được xác nhận là hoạt động ổn định nhất trên máy của bạn.
 - **Vá lỗi Font**: Mặc dù dùng logic v1710, tôi đã bổ sung cải tiến để khắc phục triệt để lỗi bảng bị bôi đậm hoặc bị nhảy về cỡ chữ 12pt khi đồng bộ. Bảng giờ đây sẽ kế thừa chính xác font chữ của văn bản mẫu.

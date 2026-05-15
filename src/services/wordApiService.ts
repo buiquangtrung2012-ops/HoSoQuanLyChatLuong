@@ -54,13 +54,18 @@ const hideTableBorders = (table: any) => {
 
 const applyFontToTable = (table: any, font: any) => {
   try {
-    // Reset formatting to avoid bold/italic inherited from wrapper/document defaults
+    // Reset formatting
     table.font.bold = false;
     table.font.italic = false;
     
+    // Use inherited font or default to a safe size
     if (font && font.name) table.font.name = font.name;
-    // Only apply if it's a valid font size (not the 1pt from wrapper)
-    if (font && font.size && font.size >= 8) table.font.size = font.size;
+    
+    const targetSize = (font && font.size && font.size >= 8) ? font.size : 13;
+    table.font.size = targetSize;
+    
+    // Force font size on the entire table range to override any paragraph-level 1pt
+    table.getRange().font.size = targetSize;
   } catch (e) {
     console.warn("Could not apply font to table", e);
   }
@@ -248,9 +253,11 @@ export const WordApiService = {
               await context.sync();
               
               const paras = wrapper.paragraphs;
-              paras.load('items');
+              paras.load('items/parentTable');
               await context.sync();
-              paras.items.forEach((p: any) => { p.font.size = 1; });
+              paras.items.forEach((p: any) => { 
+                if (!p.parentTable) p.font.size = 1; 
+              });
 
               applyFontToTable(table, inheritedFont);
               hideTableBorders(table);
@@ -299,9 +306,11 @@ export const WordApiService = {
               await context.sync();
               
               const paras = wrapper.paragraphs;
-              paras.load('items');
+              paras.load('items/parentTable');
               await context.sync();
-              paras.items.forEach((p: any) => { p.font.size = 1; });
+              paras.items.forEach((p: any) => { 
+                if (!p.parentTable) p.font.size = 1; 
+              });
 
               applyFontToTable(table, inheritedFont);
               hideTableBorders(table);
@@ -516,9 +525,11 @@ export const WordApiService = {
         await context.sync();
         
         const paras = wrapper.paragraphs;
-        paras.load('items');
+        paras.load('items/parentTable');
         await context.sync();
-        paras.items.forEach((p: any) => { p.font.size = 1; });
+        paras.items.forEach((p: any) => { 
+          if (!p.parentTable) p.font.size = 1; 
+        });
 
         applyFontToTable(insertedTable, currentFont);
         hideTableBorders(insertedTable);
@@ -569,9 +580,11 @@ export const WordApiService = {
         await context.sync();
         
         const paras = wrapper.paragraphs;
-        paras.load('items');
+        paras.load('items/parentTable');
         await context.sync();
-        paras.items.forEach((p: any) => { p.font.size = 1; });
+        paras.items.forEach((p: any) => { 
+          if (!p.parentTable) p.font.size = 1; 
+        });
 
         applyFontToTable(insertedTable, currentFont);
         hideTableBorders(insertedTable);
