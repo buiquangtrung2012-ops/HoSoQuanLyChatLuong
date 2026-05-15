@@ -315,6 +315,7 @@ export const WordApiService = {
                   nameCC.placeholderText = '[Họ tên]';
                   nameCC.appearance = 'BoundingBox';
                   if (s?.name) nameCC.insertText(s.name, 'Replace');
+                  else nameCC.insertText('..............................', 'Replace');
 
                   const posCell = table.getCell(r * 2 + 2, c);
                   posCell.body.insertText('Chức vụ: ', 'Replace');
@@ -324,6 +325,7 @@ export const WordApiService = {
                   posCC.placeholderText = '[Chức vụ]';
                   posCC.appearance = 'BoundingBox';
                   if (s?.position) posCC.insertText(s.position, 'Replace');
+                  else posCC.insertText('..............................', 'Replace');
                 }
               }
             } else {
@@ -359,6 +361,7 @@ export const WordApiService = {
                 nameCC.placeholderText = '[Họ tên]';
                 nameCC.appearance = 'BoundingBox';
                 if (s.name) nameCC.insertText(s.name, 'Replace');
+                else nameCC.insertText('..............................', 'Replace');
 
                 const posCell = table.getCell(i, 1);
                 posCell.body.insertText('Chức vụ: ', 'Replace');
@@ -368,6 +371,7 @@ export const WordApiService = {
                 posCC.placeholderText = '[Chức vụ]';
                 posCC.appearance = 'BoundingBox';
                 if (s.position) posCC.insertText(s.position, 'Replace');
+                else posCC.insertText('..............................', 'Replace');
               }
             }
 

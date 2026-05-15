@@ -82,6 +82,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v15052026.1130 (15/05/2026)
+- **Sửa lỗi hiển thị**: Tự động điền dấu chấm ".............................." cho các trường họ tên và chức vụ bị trống khi đồng bộ dữ liệu vào bảng thành phần tham gia, thay vì để trống khiến người dùng thấy chữ Placeholder.
+
 ### v15052026.1035 (15/05/2026)
 - **Tối ưu Thừa hưởng Định dạng**: Cải tiến triệt để khả năng kế thừa font chữ. Bảng hiện tại sẽ nhận diện đầy đủ các thuộc tính Bold (In đậm), Italic (Nghiêng) và Color (Màu sắc) từ văn bản mẫu.
 - **Giữ vững Layout**: Duy trì cơ chế ổn định của bản v1710, đảm bảo không phát sinh lỗi dòng trống thừa trong khi vẫn hiển thị đúng định dạng nội dung bảng.
