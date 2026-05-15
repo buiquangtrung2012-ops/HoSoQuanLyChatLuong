@@ -82,6 +82,13 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v15052026.1720 (15/05/2026)
+- **Đồng bộ Dữ liệu Toàn diện (Triệt để)**:
+  - Cho phép tự động mở khóa (Unlock) Content Control nếu đang ở chế độ `cannotEdit` để ghi dữ liệu, sau đó khóa lại như cũ.
+  - Hỗ trợ không phân biệt chữ hoa/chữ thường (Case-insensitive) cho các thẻ Tag.
+  - Bổ sung hàng loạt variant cho Tag: `project_[tên_trường]`, `work_[tên_trường]` và phiên bản viết thường của tất cả các tag chức danh.
+  - Cải tiến hiệu năng đồng bộ theo lô (Batching) giúp quá trình đổ dữ liệu mượt mà và ổn định hơn.
+
 ### v15052026.1715 (15/05/2026)
 - **Vá lỗi Đồng bộ Content Control**: Mở rộng phạm vi ánh xạ dữ liệu, đảm bảo mọi trường nhập liệu trong các Tab (Dự án, Công việc, Ký hồ sơ...) đều được ghi nhận chính xác vào các ô Content Control tương ứng trong Word.
 - **Bổ sung Mapping thông minh**: Tự động nhận diện cả các tag rút gọn (Ví dụ: thay vì chỉ nhận `investorRep`, hệ thống giờ nhận diện cả tag `investor`).

@@ -151,14 +151,20 @@ export const WordApiService = {
       // Add all project properties directly as tags (e.g. investor, designer, etc.)
       Object.keys(project).forEach(key => {
         if (typeof project[key] === 'string' || typeof project[key] === 'number') {
-          allData[key] = String(project[key]);
+          const sVal = String(project[key]);
+          allData[key] = sVal;
+          allData[key.toLowerCase()] = sVal;
+          allData[`project_${key}`] = sVal;
         }
       });
 
       // Add all work properties directly as tags
       Object.keys(work).forEach(key => {
         if (typeof work[key] === 'string' || typeof work[key] === 'number') {
-          allData[key] = String(work[key]);
+          const sVal = String(work[key]);
+          allData[key] = sVal;
+          allData[key.toLowerCase()] = sVal;
+          allData[`work_${key}`] = sVal;
         }
       });
 
@@ -167,12 +173,18 @@ export const WordApiService = {
       allPersonnel.forEach((p: any) => {
         if (p.position) {
           const titleTag = `title_${p.position.trim()}`;
-          allData[titleTag] = p.name || '';
+          const sName = p.name || '';
+          allData[titleTag] = sName;
+          allData[titleTag.toLowerCase()] = sName;
           // Also add honorific version
-          const honorific = resolveGender(p.name || '', p.gender);
-          allData[`${titleTag}_full`] = `${honorific} ${p.name || ''}`;
+          const honorific = resolveGender(sName, p.gender);
+          allData[`${titleTag}_full`] = `${honorific} ${sName}`;
+          allData[`${titleTag.toLowerCase()}_full`] = `${honorific} ${sName}`;
         }
       });
+
+      console.log("WordApiService: Final allData keys count:", Object.keys(allData).length);
+      (window as any).lastAllData = allData;
 
       if (onStatus) onStatus("Đang đồng bộ với Word...");
 
@@ -220,46 +232,36 @@ export const WordApiService = {
         
         // 1. Fill normal text controls - Using a safer one-by-one or small-batch approach
         // for these critical fields to ensure we don't crash on the first error.
+        // 1. Fill normal text controls
         for (const item of allCCs) {
           const tag = item.tag;
           if (!tag) continue;
           
-          const val = allData[tag];
+          let val = allData[tag];
+          // Try case-insensitive fallback
+          if (val === undefined) val = allData[tag.toLowerCase()];
+          
           const isTableOrSummary = tag.startsWith('table_') || tag.startsWith('summary_');
           
-          if (val !== undefined && val !== '' && !isTableOrSummary) {
+          if (val !== undefined && val !== null && val !== '' && !isTableOrSummary) {
             try {
-              // PROACTIVE CHECKS: Skip locked or incompatible controls
-              if (item.cannotEdit) {
-                console.warn(`WordApiService: Skipping locked CC: ${item.tag}`);
-                continue;
-              }
-              if (item.type === 'Group') {
-                console.warn(`WordApiService: Skipping Group CC: ${item.tag}`);
-                continue;
-              }
+              // Temporarily unlock if locked
+              const originalLock = item.cannotEdit;
+              if (originalLock) item.cannotEdit = false;
 
               item.insertText(String(val), 'Replace');
               
-              try {
-                // Formatting reset is optional and can fail separately
-                item.font.bold = null;
-                item.font.italic = null;
-                item.font.underline = 'None';
-                item.font.color = 'Auto';
-              } catch (fErr) {}
+              if (originalLock) item.cannotEdit = true;
 
-              // IMPORTANT: We must sync frequently to catch errors locally.
-              // For text fields, we sync every item to be 100% safe against "InvalidArgument" 
-              // halting the whole loop. The overhead is acceptable for 20-50 fields.
-              await context.sync();
+              // Batch sync for performance and reliability
+              if (filledCount % 10 === 0) await context.sync();
               filledCount++;
             } catch (itemErr: any) {
-              console.warn(`WordApiService: Failed to fill [${item.tag}]: ${itemErr.message}`);
-              // Error is now caught here, loop WILL continue to the next item.
+              console.warn(`WordApiService: Error filling [${tag}]:`, itemErr);
             }
           }
         }
+        await context.sync();
 
         console.log(`WordApiService: Finished filling ${filledCount} text controls`);
 
