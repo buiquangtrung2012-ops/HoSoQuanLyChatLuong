@@ -424,59 +424,114 @@ export const WordApiService = {
               wrapper.clear();
               await context.sync();
 
-              // Set wrapper font size to 1pt to minimize newline space
-              wrapper.font.size = 1;
+              if (type === 'personnel') {
+                const groups: Record<string, any[]> = {};
+                dataList.forEach((item: any) => {
+                  const u = item.unit || 'Khác';
+                  if (!groups[u]) groups[u] = [];
+                  groups[u].push(item);
+                });
 
-              const table = wrapper.insertTable(rowCount, config.columns.length, 'Start');
+                for (const unit of Object.keys(groups)) {
+                  const para = wrapper.insertParagraph(`Đơn vị: ${unit}`, 'End');
+                  if (currentFont && currentFont.name) para.font.name = currentFont.name;
+                  para.font.size = currentFont && currentFont.size ? currentFont.size : 12;
+                  para.font.bold = true;
+                  para.spaceBefore = 6;
+                  para.spaceAfter = 6;
+
+                  const unitData = groups[unit];
+                  const tRows = unitData.length + 1;
+                  const table = wrapper.insertTable(tRows, config.columns.length, 'End');
+                  
+                  applyFontToTable(table, currentFont);
+                  table.font.bold = false;
+                  
+                  config.columns.forEach((col, i) => {
+                    const cell = table.getCell(0, i);
+                    cell.body.insertText(col, 'Replace');
+                    cell.body.paragraphs.getFirst().font.bold = true;
+                    cell.shadingColor = '#F3F4F6';
+                  });
+
+                  unitData.forEach((item: any, rIdx: number) => {
+                    const row = rIdx + 1;
+                    table.getCell(row, 0).body.insertText((rIdx + 1).toString(), 'Replace');
+                    table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+                    table.getCell(row, 2).body.insertText(item.position || '', 'Replace');
+                    table.getCell(row, 3).body.insertText(item.unit || '', 'Replace');
+                  });
+                }
+              } else {
+                const table = wrapper.insertTable(rowCount, config.columns.length, 'End');
+                
+                applyFontToTable(table, currentFont);
+                table.font.bold = false;
+                
+                config.columns.forEach((col, i) => {
+                  const cell = table.getCell(0, i);
+                  cell.body.insertText(col, 'Replace');
+                  cell.body.paragraphs.getFirst().font.bold = true;
+                  cell.shadingColor = '#F3F4F6';
+                });
+
+                dataList.forEach((item: any, rIdx: number) => {
+                  const row = rIdx + 1;
+                  table.getCell(row, 0).body.insertText((rIdx + 1).toString(), 'Replace');
+                  if (type === 'materials') {
+                    table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+                    table.getCell(row, 2).body.insertText(item.origin || '', 'Replace');
+                    table.getCell(row, 3).body.insertText(item.supplier || '', 'Replace');
+                    table.getCell(row, 4).body.insertText(item.qty?.toString() || '', 'Replace');
+                  }
+                  if (type === 'equipment') {
+                    table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+                    table.getCell(row, 2).body.insertText(item.serial || '', 'Replace');
+                    table.getCell(row, 3).body.insertText(item.inspectionDate?.split('-').reverse().join('/') || '', 'Replace');
+                    table.getCell(row, 4).body.insertText(item.expiryDate?.split('-').reverse().join('/') || '', 'Replace');
+                  }
+                  if (type === 'workitems') {
+                    table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+                    table.getCell(row, 2).body.insertText(item.code || '', 'Replace');
+                    table.getCell(row, 3).body.insertText(item.quantity?.toString() || '', 'Replace');
+                    table.getCell(row, 4).body.insertText(item.unit || '', 'Replace');
+                  }
+                  if (type === 'lab') {
+                    table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
+                    table.getCell(row, 2).body.insertText(item.code || '', 'Replace');
+                    table.getCell(row, 3).body.insertText(item.expiry || '', 'Replace');
+                    table.getCell(row, 4).body.insertText(item.equipment || '', 'Replace');
+                  }
+                });
+              }
+
               await context.sync();
-              
-              // Explicitly set all paragraphs in wrapper to 1pt font size
               const paras = wrapper.paragraphs;
-              paras.load('items');
+              paras.load('items,items/text');
               await context.sync();
-              paras.items.forEach((p: any) => { p.font.size = 1; });
+              if (paras.items.length > 0) {
+                const firstPara = paras.items[0];
+                try {
+                   if (!firstPara.text || firstPara.text.trim() === '') {
+                     firstPara.font.size = 1;
+                     firstPara.spaceBefore = 0;
+                     firstPara.spaceAfter = 0;
+                     firstPara.lineSpacing = 1;
+                   }
+                } catch(e){}
+              }
+              if (paras.items.length > 1) {
+                const lastPara = paras.items[paras.items.length - 1];
+                try {
+                   if (!lastPara.text || lastPara.text.trim() === '') {
+                     lastPara.font.size = 1;
+                     lastPara.spaceBefore = 0;
+                     lastPara.spaceAfter = 0;
+                     lastPara.lineSpacing = 1;
+                   }
+                } catch(e){}
+              }
 
-              applyFontToTable(table, currentFont);
-              hideTableBorders(table);
-              
-              config.columns.forEach((col, i) => {
-                const cell = table.getCell(0, i);
-                cell.body.insertText(col, 'Replace');
-                cell.body.paragraphs.getFirst().font.bold = true;
-              });
-              dataList.forEach((item, rIdx) => {
-                const row = rIdx + 1;
-                table.getCell(row, 0).body.insertText((rIdx + 1).toString(), 'Replace');
-                if (type === 'personnel') {
-                  table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
-                  table.getCell(row, 2).body.insertText(item.position || '', 'Replace');
-                  table.getCell(row, 3).body.insertText(item.unit || '', 'Replace');
-                }
-                if (type === 'materials') {
-                  table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
-                  table.getCell(row, 2).body.insertText(item.origin || '', 'Replace');
-                  table.getCell(row, 3).body.insertText(item.supplier || '', 'Replace');
-                  table.getCell(row, 4).body.insertText(item.qty?.toString() || '', 'Replace');
-                }
-                if (type === 'equipment') {
-                  table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
-                  table.getCell(row, 2).body.insertText(item.serial || '', 'Replace');
-                  table.getCell(row, 3).body.insertText(item.inspectionDate?.split('-').reverse().join('/') || '', 'Replace');
-                  table.getCell(row, 4).body.insertText(item.expiryDate?.split('-').reverse().join('/') || '', 'Replace');
-                }
-                if (type === 'workitems') {
-                  table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
-                  table.getCell(row, 2).body.insertText(item.code || '', 'Replace');
-                  table.getCell(row, 3).body.insertText(item.quantity?.toString() || '', 'Replace');
-                  table.getCell(row, 4).body.insertText(item.unit || '', 'Replace');
-                }
-                if (type === 'lab') {
-                  table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
-                  table.getCell(row, 2).body.insertText(item.code || '', 'Replace');
-                  table.getCell(row, 3).body.insertText(item.expiry || '', 'Replace');
-                  table.getCell(row, 4).body.insertText(item.equipment || '', 'Replace');
-                }
-              });
               tablesRefreshed++;
             }
           } catch (summaryErr: any) {
@@ -557,22 +612,43 @@ export const WordApiService = {
       const table = wrapper.insertTable(2, config.columns.length, 'Start');
       await context.sync();
       
-      // Fix font size for all paragraphs in wrapper
-      const paras = wrapper.paragraphs;
-      paras.load('items');
-      await context.sync();
-      paras.items.forEach((p: any) => { p.font.size = 1; });
-
       applyFontToTable(table, currentFont);
-      hideTableBorders(table);
+      table.font.bold = false;
       
       config.columns.forEach((col, i) => {
         const cell = table.getCell(0, i);
         cell.body.insertText(col, 'Replace');
         cell.body.paragraphs.getFirst().font.bold = true;
+        cell.shadingColor = '#F3F4F6';
       });
 
       await context.sync();
+      const paras = wrapper.paragraphs;
+      paras.load('items,items/text');
+      await context.sync();
+      if (paras.items.length > 0) {
+        const firstPara = paras.items[0];
+        try {
+           if (!firstPara.text || firstPara.text.trim() === '') {
+             firstPara.font.size = 1;
+             firstPara.spaceBefore = 0;
+             firstPara.spaceAfter = 0;
+             firstPara.lineSpacing = 1;
+           }
+        } catch(e){}
+      }
+      if (paras.items.length > 1) {
+        const lastPara = paras.items[paras.items.length - 1];
+        try {
+           if (!lastPara.text || lastPara.text.trim() === '') {
+             lastPara.font.size = 1;
+             lastPara.spaceBefore = 0;
+             lastPara.spaceAfter = 0;
+             lastPara.lineSpacing = 1;
+           }
+        } catch(e){}
+      }
+
       wrapper.getRange('After').select();
       await context.sync();
       alert(`Đã chèn khung Bảng ${config.label}. Nhấn nút "Cập nhật dữ liệu" để đổ dữ liệu vào bảng.`);
