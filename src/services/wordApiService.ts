@@ -465,9 +465,46 @@ export const WordApiService = {
                 cell.shadingColor = '#F3F4F6';
               });
 
+              // Apply column widths
+              try {
+                table.preferredWidthType = 'Percent';
+                table.preferredWidth = 100;
+                table.columns.load('items');
+                await context.sync();
+                
+                table.columns.getItemAt(0).preferredWidth = 7; // STT
+                if (type === 'personnel') {
+                  table.columns.getItemAt(1).preferredWidth = 45;
+                  table.columns.getItemAt(2).preferredWidth = 24;
+                  table.columns.getItemAt(3).preferredWidth = 24;
+                } else if (type === 'materials') {
+                  table.columns.getItemAt(1).preferredWidth = 45;
+                  table.columns.getItemAt(2).preferredWidth = 18;
+                  table.columns.getItemAt(3).preferredWidth = 20;
+                  table.columns.getItemAt(4).preferredWidth = 10;
+                } else if (type === 'equipment') {
+                  table.columns.getItemAt(1).preferredWidth = 45;
+                  table.columns.getItemAt(2).preferredWidth = 18;
+                  table.columns.getItemAt(3).preferredWidth = 15;
+                  table.columns.getItemAt(4).preferredWidth = 15;
+                } else if (type === 'lab') {
+                  table.columns.getItemAt(1).preferredWidth = 45;
+                  table.columns.getItemAt(2).preferredWidth = 15;
+                  table.columns.getItemAt(3).preferredWidth = 15;
+                  table.columns.getItemAt(4).preferredWidth = 18;
+                } else if (type === 'workitems') {
+                  table.columns.getItemAt(1).preferredWidth = 50;
+                  table.columns.getItemAt(2).preferredWidth = 18;
+                  table.columns.getItemAt(3).preferredWidth = 12;
+                  table.columns.getItemAt(4).preferredWidth = 13;
+                }
+              } catch (e) {}
+
               dataList.forEach((item: any, rIdx: number) => {
                 const row = rIdx + 1;
-                table.getCell(row, 0).body.insertText((rIdx + 1).toString(), 'Replace');
+                const sttCell = table.getCell(row, 0);
+                sttCell.body.insertText((rIdx + 1).toString(), 'Replace');
+                sttCell.body.paragraphs.getFirst().alignment = 'Centered';
                 if (type === 'personnel') {
                   table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
                   table.getCell(row, 2).body.insertText(item.position || '', 'Replace');
@@ -599,6 +636,46 @@ export const WordApiService = {
         cell.body.paragraphs.getFirst().alignment = 'Centered';
         cell.shadingColor = '#F3F4F6';
       });
+
+      // Apply column widths
+      try {
+        table.preferredWidthType = 'Percent';
+        table.preferredWidth = 100;
+        table.columns.load('items');
+        await context.sync();
+        
+        table.columns.getItemAt(0).preferredWidth = 7; // STT
+        if (baseType === 'personnel') {
+          table.columns.getItemAt(1).preferredWidth = 45;
+          table.columns.getItemAt(2).preferredWidth = 24;
+          table.columns.getItemAt(3).preferredWidth = 24;
+        } else if (baseType === 'materials') {
+          table.columns.getItemAt(1).preferredWidth = 45;
+          table.columns.getItemAt(2).preferredWidth = 18;
+          table.columns.getItemAt(3).preferredWidth = 20;
+          table.columns.getItemAt(4).preferredWidth = 10;
+        } else if (baseType === 'equipment') {
+          table.columns.getItemAt(1).preferredWidth = 45;
+          table.columns.getItemAt(2).preferredWidth = 18;
+          table.columns.getItemAt(3).preferredWidth = 15;
+          table.columns.getItemAt(4).preferredWidth = 15;
+        } else if (baseType === 'lab') {
+          table.columns.getItemAt(1).preferredWidth = 45;
+          table.columns.getItemAt(2).preferredWidth = 15;
+          table.columns.getItemAt(3).preferredWidth = 15;
+          table.columns.getItemAt(4).preferredWidth = 18;
+        } else if (baseType === 'workitems') {
+          table.columns.getItemAt(1).preferredWidth = 50;
+          table.columns.getItemAt(2).preferredWidth = 18;
+          table.columns.getItemAt(3).preferredWidth = 12;
+          table.columns.getItemAt(4).preferredWidth = 13;
+        }
+      } catch (e) {}
+
+      // Add one empty data row with centered STT for visual placeholder
+      const dataCell = table.getCell(1, 0);
+      dataCell.body.insertText('1', 'Replace');
+      dataCell.body.paragraphs.getFirst().alignment = 'Centered';
 
       await context.sync();
       wrapper.getRange('After').select();

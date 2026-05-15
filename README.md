@@ -82,6 +82,15 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v15052026.1616 (15/05/2026)
+- **Tối ưu Bảng Dữ liệu**: 
+  - Căn giữa nội dung và thu nhỏ cột **STT** (~7%) cho tất cả các bảng tổng hợp.
+  - Tự động mở rộng các cột thông tin chính (**Họ tên, Vật tư, Thiết bị, PTN**) để chiếm diện tích lớn nhất.
+  - Thu nhỏ kích thước cột **Khối lượng** để tối ưu không gian hiển thị.
+- **Tối ưu Giao diện (UI)**:
+  - **Loại bỏ nút Đổ dữ liệu** ở Sidebar để làm gọn thanh menu.
+  - **Nâng cấp Tab Tạo mẫu**: Chuyển sang bố cục 5 cột và thu nhỏ kích thước các nút bấm, giúp giao diện chuyên nghiệp và chứa được nhiều thông tin hơn trên một màn hình.
+
 ### v15052026.1545 (15/05/2026)
 - **Sửa lỗi bảng bị đè/mất định dạng**: Khắc phục triệt để lỗi bảng bị co lại hoặc văn bản bị đè lên nhau khi Đồng bộ dữ liệu. Nguyên nhân do lệnh thu nhỏ cỡ chữ nhầm vào các ô trong bảng. Giờ đây chỉ thu nhỏ dòng trống cuối cùng để đảm bảo thẩm mỹ mà không làm hỏng dữ liệu.
 

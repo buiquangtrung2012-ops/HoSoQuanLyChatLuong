@@ -81,24 +81,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ))}
       </nav>
 
-      {/* Global Data Fill Action at bottom of Sidebar */}
-      <div className="p-4 border-t">
-        <button
-          onClick={async () => {
-            if (window.confirm("Xác nhận đổ dữ liệu vào văn bản Word?")) {
-              await WordApiService.fillDataToDocument();
-            }
-          }}
-          className={cn(
-            "w-full flex items-center justify-center py-2.5 rounded-xl transition-all font-bold text-xs shadow-lg active:scale-95",
-            "bg-green-600 text-white hover:bg-green-700 shadow-green-600/20"
-          )}
-          title="Đổ dữ liệu vào văn bản"
-        >
-          <Zap size={18} className={cn(isCollapsed ? "" : "mr-2")} />
-          {!isCollapsed && <span>ĐỔ DỮ LIỆU</span>}
-        </button>
-      </div>
     </div>
   );
 };
