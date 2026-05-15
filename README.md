@@ -82,6 +82,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v15052026.1150 (15/05/2026)
+- **Tái thiết kế giao diện (UI)**: Nâng cấp toàn diện giao diện nhập liệu "Thông tin dự án" sang phong cách thẻ nổi (floating cards) hiện đại. Các trường dữ liệu giờ đây mang vẻ ngoài tối giản với thiết kế không viền, làm nổi bật thông tin dự án, cải thiện rõ rệt trải nghiệm người dùng (UX) và tính thẩm mỹ.
+
 ### v15052026.1130 (15/05/2026)
 - **Sửa lỗi hiển thị**: Tự động điền dấu chấm ".............................." cho các trường họ tên và chức vụ bị trống khi đồng bộ dữ liệu vào bảng thành phần tham gia, thay vì để trống khiến người dùng thấy chữ Placeholder.
 
