@@ -25,7 +25,7 @@ export const Topbar: React.FC = () => {
 
   return (
     <>
-    <div className="h-16 border-b bg-card flex items-center justify-between px-4 sticky top-0 z-10 gap-2">
+    <div className="h-20 border-b bg-card flex items-center justify-between px-4 sticky top-0 z-10 gap-4">
       <div className="flex items-center flex-1 min-w-0 max-w-[400px] gap-4">
         <div className="relative flex-1 max-w-[160px]">
           <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-muted-foreground pointer-events-none">
@@ -48,9 +48,6 @@ export const Topbar: React.FC = () => {
       </div>
 
       <div className="flex items-center space-x-2 flex-shrink-0">
-        <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold tracking-tighter">
-          {CURRENT_VERSION}
-        </span>
 
         {/* Clear All Button with In-place Confirmation */}
         <div className="relative">
@@ -96,25 +93,30 @@ export const Topbar: React.FC = () => {
           <span>ĐỒNG BỘ DỮ LIỆU</span>
         </button>
 
-        {/* Update / Version Manager button */}
-        <button
-          id="btn-version-manager"
-          disabled={isChecking}
-          onClick={async () => {
-            await checkUpdates();
-            setShowModal(true);
-          }}
-          className="relative flex items-center px-3 py-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-all text-xs font-medium disabled:opacity-70 cursor-pointer"
-        >
-          <RefreshCw size={16} className={`mr-1.5 ${isChecking ? 'animate-spin' : ''}`} />
-          {isChecking ? '...' : 'Cập nhật'}
-          {hasUpdate && !isChecking && (
-            <span
-              className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500"
-              style={{ animation: 'pulse-badge 1.5s infinite' }}
-            />
-          )}
-        </button>
+        {/* Update / Version Manager button group */}
+        <div className="flex flex-col items-center gap-1">
+          <button
+            id="btn-version-manager"
+            disabled={isChecking}
+            onClick={async () => {
+              await checkUpdates();
+              setShowModal(true);
+            }}
+            className="relative flex items-center px-4 py-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-all text-xs font-bold disabled:opacity-70 cursor-pointer min-w-[100px] justify-center"
+          >
+            <RefreshCw size={16} className={`mr-1.5 ${isChecking ? 'animate-spin' : ''}`} />
+            {isChecking ? '...' : 'Cập nhật'}
+            {hasUpdate && !isChecking && (
+              <span
+                className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500"
+                style={{ animation: 'pulse-badge 1.5s infinite' }}
+              />
+            )}
+          </button>
+          <span className="text-[9px] text-primary/60 font-mono font-bold tracking-tighter">
+            {CURRENT_VERSION}
+          </span>
+        </div>
       </div>
     </div>
 

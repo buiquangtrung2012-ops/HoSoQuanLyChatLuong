@@ -82,6 +82,17 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v15052026.1705 (15/05/2026)
+- **Tái cấu trúc Topbar**: Mở rộng không gian làm việc, đưa thông tin phiên bản xuống dưới nút Cập nhật để giao diện thoáng hơn.
+- **Hệ thống Ngày tháng tiếng Việt**: Tự động chuyển đổi `dd/mm/yyyy` sang định dạng chuẩn văn bản Việt Nam (Ví dụ: "ngày 03 tháng 10 năm 2025") qua tag `workInspectDateVN`.
+- **Nhân sự theo Chức danh**: Hỗ trợ chèn tên nhân sự thông qua chức danh (Ví dụ: tag `title_Chỉ Huy Trưởng` sẽ tự động lấy tên người tương ứng).
+- **Cải tiến Quản lý Công việc**:
+  - Thay thế cột Mã CV bằng **STT** tự động.
+  - Cho phép **di chuyển thứ tự công việc** (Lên/Xuống) linh hoạt.
+- **Tối ưu Bảng Thành phần**:
+  - Tự động điều chỉnh số hàng theo số lượng nhân sự thực tế (không còn mặc định 3 hàng).
+  - Cố định chiều rộng cột STT bằng cách ép chiều rộng từng ô, đảm bảo thẩm mỹ tối đa.
+
 ### v15052026.1630 (15/05/2026)
 - **Vá lỗi Đồng bộ dữ liệu**: 
   - Khắc phục triệt để lỗi mất dòng đầu tiên (header) và lỗi font chữ siêu nhỏ khi đồng bộ dữ liệu nhiều lần. 

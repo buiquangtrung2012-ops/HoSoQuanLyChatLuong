@@ -151,7 +151,7 @@ export const ExportModule: React.FC = () => {
 
             doc.render(data);
             const out = doc.getZip().generate({
-                type: "blob",
+                type: "uint8array",
                 mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             });
             

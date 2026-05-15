@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, Save, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, Save, Trash2, Edit2, ChevronUp, ChevronDown } from 'lucide-react';
 import type { WorkItem } from '../types';
 import { Modal } from '../components/Modal';
 import { StorageService } from '../services/storageService';
@@ -79,12 +79,21 @@ export const WorkItemsModule: React.FC = () => {
   };
 
   const confirmDelete = () => {
-    if (itemToDelete) {
-      const updated = workItems.filter(item => item.id !== itemToDelete);
-      setWorkItems(updated);
-      StorageService.saveWorkItems(updated);
-      setItemToDelete(null);
     }
+  };
+
+  const handleMove = (id: string, direction: 'up' | 'down') => {
+    const index = workItems.findIndex(item => item.id === id);
+    if (index === -1) return;
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === workItems.length - 1) return;
+
+    const newItems = [...workItems];
+    const swapIndex = direction === 'up' ? index - 1 : index + 1;
+    [newItems[index], newItems[swapIndex]] = [newItems[swapIndex], newItems[index]];
+    
+    setWorkItems(newItems);
+    StorageService.saveWorkItems(newItems);
   };
 
   return (
@@ -121,7 +130,7 @@ export const WorkItemsModule: React.FC = () => {
           <table className="w-full text-left text-sm">
             <thead className="bg-muted/50 text-muted-foreground font-medium border-b">
               <tr>
-                <th className="px-6 py-3">Mã</th>
+                <th className="px-6 py-3 w-16">STT</th>
                 <th className="px-6 py-3">Tên công việc</th>
                 <th className="px-6 py-3">Khối lượng</th>
                 <th className="px-6 py-3">Ngày nghiệm thu</th>
@@ -129,17 +138,35 @@ export const WorkItemsModule: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {workItems.map((item) => (
+              {workItems.map((item, index) => (
                 <tr key={item.id} className="hover:bg-accent/50 transition-colors">
-                  <td className="px-6 py-4 font-mono text-xs">{item.code}</td>
+                  <td className="px-6 py-4 font-bold text-primary">{index + 1}</td>
                   <td className="px-6 py-4">
                     <p className="font-medium">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">{item.line} - {item.category}</p>
+                    <p className="text-xs text-muted-foreground">{item.line} - {item.category} (Mã: {item.code})</p>
                   </td>
                   <td className="px-6 py-4">{item.quantity} {item.unit}</td>
                   <td className="px-6 py-4 font-medium text-primary">{item.inspectionDate}</td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end space-x-1">
+                      <div className="flex flex-col">
+                        <button 
+                          onClick={() => handleMove(item.id, 'up')}
+                          disabled={index === 0}
+                          className="p-1 text-muted-foreground hover:text-primary disabled:opacity-30"
+                          title="Di chuyển lên"
+                        >
+                          <ChevronUp size={16} />
+                        </button>
+                        <button 
+                          onClick={() => handleMove(item.id, 'down')}
+                          disabled={index === workItems.length - 1}
+                          className="p-1 text-muted-foreground hover:text-primary disabled:opacity-30"
+                          title="Di chuyển xuống"
+                        >
+                          <ChevronDown size={16} />
+                        </button>
+                      </div>
                       <button 
                         onClick={() => handleOpenEdit(item)}
                         className="p-1.5 text-primary hover:bg-primary/10 rounded-md transition-colors"

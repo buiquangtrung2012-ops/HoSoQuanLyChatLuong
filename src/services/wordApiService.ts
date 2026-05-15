@@ -25,6 +25,21 @@ export const resolveGender = (name: string, gender?: string): string => {
   return detectGender(name);
 };
 
+// ---- Helper định dạng ngày tháng tiếng Việt ----
+export const formatVietnameseDate = (dateStr: string): string => {
+  if (!dateStr) return 'ngày ... tháng ... năm ...';
+  // Input expected: yyyy-mm-dd or dd/mm/yyyy
+  let d, m, y;
+  if (dateStr.includes('-')) {
+    [y, m, d] = dateStr.split('-');
+  } else if (dateStr.includes('/')) {
+    [d, m, y] = dateStr.split('/');
+  } else {
+    return dateStr;
+  }
+  return `ngày ${d.padStart(2, '0')} tháng ${m.padStart(2, '0')} năm ${y}`;
+};
+
 export const isWordApiAvailable = () => {
   try {
     // @ts-ignore
@@ -115,6 +130,10 @@ export const WordApiService = {
         workQty: work.quantity?.toString() || '',
         workUnit: work.unit || '',
         workInspectDate: work.inspectionDate?.split('-').reverse().join('/') || '',
+        workInspectDateVN: formatVietnameseDate(work.inspectionDate || ''),
+        // Project dates
+        projectStartVN: formatVietnameseDate(project.startDate || ''),
+        projectEndVN: formatVietnameseDate(project.endDate || ''),
         matName: mat.name || '',
         matSource: mat.source || '',
         matLot: mat.lot || '',
@@ -127,6 +146,18 @@ export const WordApiService = {
         labExpiry: lab.expiry || '',
         ...participants,
       };
+
+      // Add personnel by title mapping (e.g. title_Chỉ Huy Trưởng -> "Nguyễn Văn A")
+      const allPersonnel = StorageService.get('hoso_personnel') || [];
+      allPersonnel.forEach((p: any) => {
+        if (p.position) {
+          const titleTag = `title_${p.position.trim()}`;
+          allData[titleTag] = p.name || '';
+          // Also add honorific version
+          const honorific = resolveGender(p.name || '', p.gender);
+          allData[`${titleTag}_full`] = `${honorific} ${p.name || ''}`;
+        }
+      });
 
       if (onStatus) onStatus("Đang đồng bộ với Word...");
 
@@ -346,10 +377,9 @@ export const WordApiService = {
                 }
               }
             } else {
-              const signersRaw = group.signers;
-              const minRows = (role === 'tc' || role === 'tv') ? 3 : 2;
-              const rowCount = Math.max(signersRaw.length, minRows);
-              const actualSigners = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
+              const signersRaw = group.signers || [];
+              const rowCount = Math.max(signersRaw.length, 1);
+              const actualSigners = signersRaw.length > 0 ? signersRaw : [{ name: '', position: '', gender: 'auto' }];
 
               // Set wrapper font size to 1pt to minimize newline space
               wrapper.font.size = 1;
@@ -523,6 +553,12 @@ export const WordApiService = {
                   table.columns.getItemAt(3).preferredWidth = 12;
                   table.columns.getItemAt(4).preferredWidth = 13;
                 }
+                
+                // Force each cell in first column to be small
+                for (let r = 0; r < rowCount; r++) {
+                   table.getCell(r, 0).preferredWidth = 7;
+                }
+                
                 await context.sync();
               } catch (e) {}
 
