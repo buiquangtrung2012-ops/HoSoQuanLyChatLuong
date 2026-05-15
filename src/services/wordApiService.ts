@@ -54,10 +54,18 @@ const hideTableBorders = (table: any) => {
 
 const applyFontToTable = (table: any, font: any) => {
   try {
-    // Clear any default bolding first
+    // Clear any default bolding/italic first
     table.font.bold = false;
-    if (font && font.name) table.font.name = font.name;
-    if (font && font.size) table.font.size = font.size;
+    table.font.italic = false;
+    
+    // Inherit font from provided source if available
+    if (font) {
+      if (font.name) table.font.name = font.name;
+      // Only inherit size if it's a reasonable document font size (usually >= 8)
+      if (font.size && font.size >= 8) {
+        table.font.size = font.size;
+      }
+    }
   } catch (e) {
     console.warn("Could not apply font to table", e);
   }
@@ -217,12 +225,13 @@ export const WordApiService = {
 
         for (const wrapper of allTableCCs) {
           try {
-            // Load font from the wrapper itself to maintain local styling
-            let localFont: any = null;
+            // Load font from the surrounding text (Before the wrapper) to maintain document style
+            let inheritedFont: any = null;
             try {
-              wrapper.load('font/name,font/size');
+              const rangeBefore = wrapper.getRange('Before');
+              rangeBefore.load('font/name,font/size,font/bold');
               await context.sync();
-              localFont = wrapper.font;
+              inheritedFont = rangeBefore.font;
             } catch (e) {}
 
             const tag = wrapper.tag;
@@ -264,8 +273,7 @@ export const WordApiService = {
               const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
               const rowCount = maxSigners * 2 + 1;
 
-              // Set wrapper font size to 1pt to minimize newline space
-              wrapper.font.size = 1;
+              // No global 1pt font size to avoid overriding table content
 
               table = wrapper.insertTable(rowCount, colCount, 'Start');
               await context.sync();
@@ -278,7 +286,7 @@ export const WordApiService = {
                 if (!p.parentTable) p.font.size = 1; 
               });
 
-              applyFontToTable(table, localFont);
+              applyFontToTable(table, inheritedFont);
               hideTableBorders(table);
 
               for (let c = 0; c < colCount; c++) {
@@ -320,8 +328,7 @@ export const WordApiService = {
               const rowCount = Math.max(signersRaw.length, minRows);
               const actualSigners = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
 
-              // Set wrapper font size to 1pt to minimize newline space
-              wrapper.font.size = 1;
+              // No global 1pt font size to avoid overriding table content
 
               table = wrapper.insertTable(rowCount, 2, 'Start');
               await context.sync();
@@ -334,7 +341,7 @@ export const WordApiService = {
                 if (!p.parentTable) p.font.size = 1; 
               });
 
-              applyFontToTable(table, localFont);
+              applyFontToTable(table, inheritedFont);
               hideTableBorders(table);
 
               for (let i = 0; i < rowCount; i++) {
@@ -544,8 +551,7 @@ export const WordApiService = {
       wrapper.appearance = 'BoundingBox';
       wrapper.placeholderText = ' '; // Hide placeholder
 
-      // Set wrapper font size to 1pt to minimize newline space
-      wrapper.font.size = 1;
+      // No global 1pt font size to avoid overriding table content
 
       let insertedTable: any = null;
       if (isJV) {
@@ -576,7 +582,7 @@ export const WordApiService = {
           const cell = insertedTable.getCell(0, c);
           cell.body.insertText(members[c], 'Replace');
           cell.body.paragraphs.getFirst().font.bold = true;
-          cell.body.paragraphs.getFirst().alignment = 'Center';
+          cell.body.paragraphs.getFirst().alignment = 'Centered';
         }
 
         for (let r = 0; r < maxSigners; r++) {
