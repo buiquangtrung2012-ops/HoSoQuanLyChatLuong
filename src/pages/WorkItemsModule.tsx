@@ -79,6 +79,11 @@ export const WorkItemsModule: React.FC = () => {
   };
 
   const confirmDelete = () => {
+    if (itemToDelete) {
+      const updated = workItems.filter(item => item.id !== itemToDelete);
+      setWorkItems(updated);
+      StorageService.saveWorkItems(updated);
+      setItemToDelete(null);
     }
   };
 

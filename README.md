@@ -82,6 +82,11 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v15052026.1715 (15/05/2026)
+- **Vá lỗi Đồng bộ Content Control**: Mở rộng phạm vi ánh xạ dữ liệu, đảm bảo mọi trường nhập liệu trong các Tab (Dự án, Công việc, Ký hồ sơ...) đều được ghi nhận chính xác vào các ô Content Control tương ứng trong Word.
+- **Bổ sung Mapping thông minh**: Tự động nhận diện cả các tag rút gọn (Ví dụ: thay vì chỉ nhận `investorRep`, hệ thống giờ nhận diện cả tag `investor`).
+- **Tối ưu hóa vòng lặp xử lý**: Thêm các bước kiểm tra an toàn cho tag để tránh lỗi gián đoạn quá trình đổ dữ liệu.
+
 ### v15052026.1705 (15/05/2026)
 - **Tái cấu trúc Topbar**: Mở rộng không gian làm việc, đưa thông tin phiên bản xuống dưới nút Cập nhật để giao diện thoáng hơn.
 - **Hệ thống Ngày tháng tiếng Việt**: Tự động chuyển đổi `dd/mm/yyyy` sang định dạng chuẩn văn bản Việt Nam (Ví dụ: "ngày 03 tháng 10 năm 2025") qua tag `workInspectDateVN`.

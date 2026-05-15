@@ -121,6 +121,7 @@ export const WordApiService = {
         packageName: project.packageName || '',
         contractor: project.contractor || '',
         investorRep: project.investor || '',
+        supervisorRep: project.supervisor || '',
         designRep: project.designer || '',
         projectLocation: project.location || '',
         workName: work.name || '',
@@ -146,6 +147,20 @@ export const WordApiService = {
         labExpiry: lab.expiry || '',
         ...participants,
       };
+
+      // Add all project properties directly as tags (e.g. investor, designer, etc.)
+      Object.keys(project).forEach(key => {
+        if (typeof project[key] === 'string' || typeof project[key] === 'number') {
+          allData[key] = String(project[key]);
+        }
+      });
+
+      // Add all work properties directly as tags
+      Object.keys(work).forEach(key => {
+        if (typeof work[key] === 'string' || typeof work[key] === 'number') {
+          allData[key] = String(work[key]);
+        }
+      });
 
       // Add personnel by title mapping (e.g. title_Chỉ Huy Trưởng -> "Nguyễn Văn A")
       const allPersonnel = StorageService.get('hoso_personnel') || [];
@@ -206,8 +221,11 @@ export const WordApiService = {
         // 1. Fill normal text controls - Using a safer one-by-one or small-batch approach
         // for these critical fields to ensure we don't crash on the first error.
         for (const item of allCCs) {
-          const val = allData[item.tag];
-          const isTableOrSummary = item.tag.startsWith('table_') || item.tag.startsWith('summary_');
+          const tag = item.tag;
+          if (!tag) continue;
+          
+          const val = allData[tag];
+          const isTableOrSummary = tag.startsWith('table_') || tag.startsWith('summary_');
           
           if (val !== undefined && val !== '' && !isTableOrSummary) {
             try {
