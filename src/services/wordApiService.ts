@@ -455,7 +455,7 @@ export const WordApiService = {
                 const cell = table.getCell(0, i);
                 cell.body.insertText(col, 'Replace');
                 cell.body.paragraphs.getFirst().font.bold = true;
-                cell.body.paragraphs.getFirst().alignment = 'Center';
+                cell.body.paragraphs.getFirst().alignment = 'Centered';
                 cell.shadingColor = '#F3F4F6';
               });
 
@@ -583,7 +583,7 @@ export const WordApiService = {
         const cell = table.getCell(0, i);
         cell.body.insertText(col, 'Replace');
         cell.body.paragraphs.getFirst().font.bold = true;
-        cell.body.paragraphs.getFirst().alignment = 'Center';
+        cell.body.paragraphs.getFirst().alignment = 'Centered';
         cell.shadingColor = '#F3F4F6';
       });
 

@@ -82,6 +82,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v15052026.1345 (15/05/2026)
+- **Sửa lỗi chèn bảng**: Khắc phục lỗi Word API khiến quá trình chèn bảng bị gián đoạn (chỉ chèn được cột STT) do sử dụng sai tham số căn lề (Center thay vì Centered).
+
 ### v15052026.1340 (15/05/2026)
 - **Cải tiến Bảng Nhân sự**: Hệ thống giờ đây tự động quét các "Đơn vị công tác" từ dữ liệu Nhân sự và tạo ra các nút chèn bảng riêng biệt cho từng Đơn vị (VD: Bảng Nhân sự - Coteccons). Bạn có thể chèn độc lập từng bảng vào bất kỳ vị trí nào mong muốn thay vì gộp chung vào một Content Control duy nhất.
 - **Tối ưu Bảng Tổng hợp**:
