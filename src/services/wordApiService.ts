@@ -407,16 +407,26 @@ export const WordApiService = {
             for (const wrapper of foundSummaries) {
               wrapper.clear();
               await context.sync();
+
+              // Set wrapper font size to 1pt to minimize newline space
+              wrapper.font.size = 1;
+
               const table = wrapper.insertTable(rowCount, config.columns.length, 'Start');
-              try {
-                table.style = 'Table Normal';
-              } catch (e) {}
+              await context.sync();
+              
+              // Explicitly set all paragraphs in wrapper to 1pt font size
+              const paras = wrapper.paragraphs;
+              paras.load('items');
+              await context.sync();
+              paras.items.forEach((p: any) => { p.font.size = 1; });
+
+              applyFontToTable(table, currentFont);
+              hideTableBorders(table);
               
               config.columns.forEach((col, i) => {
                 const cell = table.getCell(0, i);
                 cell.body.insertText(col, 'Replace');
                 cell.body.paragraphs.getFirst().font.bold = true;
-                cell.shadingColor = '#F3F4F6';
               });
               dataList.forEach((item, rIdx) => {
                 const row = rIdx + 1;
@@ -504,21 +514,46 @@ export const WordApiService = {
     // @ts-ignore
     await Word.run(async (context: any) => {
       const range = context.document.getSelection();
+
+      // Get current font for inheritance
+      let currentFont: any = null;
+      try {
+        range.load('font/name,font/size,font/bold,font/italic,font/color');
+        await context.sync();
+        currentFont = {
+          name: range.font.name,
+          size: range.font.size,
+          bold: range.font.bold,
+          italic: range.font.italic,
+          color: range.font.color
+        };
+      } catch (e) {}
+
       const wrapper = range.insertContentControl();
       wrapper.tag = `summary_${type}`;
       wrapper.title = `Bảng Tổng hợp ${config.label}`;
       wrapper.appearance = 'BoundingBox';
+      wrapper.placeholderText = ' '; // Hide placeholder
+
+      // Set wrapper font size to 1pt to minimize newline space
+      wrapper.font.size = 1;
 
       const table = wrapper.insertTable(2, config.columns.length, 'Start');
-      try {
-        table.style = 'Table Normal';
-      } catch (e) {}
+      await context.sync();
+      
+      // Fix font size for all paragraphs in wrapper
+      const paras = wrapper.paragraphs;
+      paras.load('items');
+      await context.sync();
+      paras.items.forEach((p: any) => { p.font.size = 1; });
+
+      applyFontToTable(table, currentFont);
+      hideTableBorders(table);
       
       config.columns.forEach((col, i) => {
         const cell = table.getCell(0, i);
         cell.body.insertText(col, 'Replace');
         cell.body.paragraphs.getFirst().font.bold = true;
-        cell.shadingColor = '#F3F4F6';
       });
 
       await context.sync();
