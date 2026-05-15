@@ -405,6 +405,22 @@ export const WordApiService = {
             
             const rowCount = dataList.length + 1;
             for (const wrapper of foundSummaries) {
+              let currentFont: any = null;
+              try {
+                const wrapperRange = wrapper.getRange();
+                wrapperRange.load('font/name,font/size,font/bold,font/italic,font/color');
+                await context.sync();
+                currentFont = {
+                  name: wrapperRange.font.name,
+                  size: wrapperRange.font.size,
+                  bold: wrapperRange.font.bold,
+                  italic: wrapperRange.font.italic,
+                  color: wrapperRange.font.color
+                };
+              } catch (e) {
+                console.warn('Cannot get wrapper font', e);
+              }
+
               wrapper.clear();
               await context.sync();
 
