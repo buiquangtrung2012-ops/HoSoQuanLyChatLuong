@@ -54,18 +54,8 @@ const hideTableBorders = (table: any) => {
 
 const applyFontToTable = (table: any, font: any) => {
   try {
-    // Reset formatting
-    table.font.bold = false;
-    table.font.italic = false;
-    
-    // Use inherited font or default to a safe size
     if (font && font.name) table.font.name = font.name;
-    
-    const targetSize = (font && font.size && font.size >= 8) ? font.size : 13;
-    table.font.size = targetSize;
-    
-    // Force font size on the entire table range to override any paragraph-level 1pt
-    table.getRange().font.size = targetSize;
+    if (font && font.size) table.font.size = font.size;
   } catch (e) {
     console.warn("Could not apply font to table", e);
   }
@@ -177,59 +167,82 @@ export const WordApiService = {
         let filledCount = 0;
         let tablesRefreshed = 0;
         
-        // 1. Fill normal text controls
+        // 1. Fill normal text controls - Using a safer one-by-one or small-batch approach
+        // for these critical fields to ensure we don't crash on the first error.
         for (const item of allCCs) {
           const val = allData[item.tag];
           const isTableOrSummary = item.tag.startsWith('table_') || item.tag.startsWith('summary_');
           
           if (val !== undefined && val !== '' && !isTableOrSummary) {
             try {
-              if (item.cannotEdit) continue;
-              if (item.type === 'Group') continue;
+              // PROACTIVE CHECKS: Skip locked or incompatible controls
+              if (item.cannotEdit) {
+                console.warn(`WordApiService: Skipping locked CC: ${item.tag}`);
+                continue;
+              }
+              if (item.type === 'Group') {
+                console.warn(`WordApiService: Skipping Group CC: ${item.tag}`);
+                continue;
+              }
 
               item.insertText(String(val), 'Replace');
               
               try {
+                // Formatting reset is optional and can fail separately
                 item.font.bold = null;
                 item.font.italic = null;
                 item.font.underline = 'None';
                 item.font.color = 'Auto';
               } catch (fErr) {}
 
+              // IMPORTANT: We must sync frequently to catch errors locally.
+              // For text fields, we sync every item to be 100% safe against "InvalidArgument" 
+              // halting the whole loop. The overhead is acceptable for 20-50 fields.
               await context.sync();
               filledCount++;
             } catch (itemErr: any) {
-              console.warn(`WordApiService: Failed to fill [${item.tag}]`);
+              console.warn(`WordApiService: Failed to fill [${item.tag}]: ${itemErr.message}`);
+              // Error is now caught here, loop WILL continue to the next item.
             }
           }
         }
 
+        console.log(`WordApiService: Finished filling ${filledCount} text controls`);
+
         // 2. Refresh dynamic participant tables
         const allTableCCs = allCCs.filter((cc: any) => cc.tag && cc.tag.startsWith('table_'));
 
+        // Load document font for inheritance
+        let currentFont: any = null;
+        try {
+          const firstPara = context.document.body.paragraphs.getFirst();
+          firstPara.load('font/name,font/size');
+          await context.sync();
+          currentFont = firstPara.font;
+        } catch (e) {}
+
         for (const wrapper of allTableCCs) {
           try {
-            // Load font from the range BEFORE the wrapper to maintain document style (FIX for v1710 12pt issue)
-            let inheritedFont: any = null;
-            try {
-              const rangeBefore = wrapper.getRange('Before');
-              rangeBefore.load('font/name,font/size');
-              await context.sync();
-              inheritedFont = rangeBefore.font;
-            } catch (e) {}
-
             const tag = wrapper.tag;
             const role = tag.replace('table_', '');
             
+            // Find group data
             const group = savedGroups.find((g: any) => g.prefix === role);
-            if (!group || !group.signers) continue;
+            if (!group || !group.signers) {
+              console.log(`WordApiService: No data for table tag ${tag}, skipping.`);
+              continue;
+            }
 
             if (onStatus) onStatus(`Đang làm mới bảng: ${role.toUpperCase()}...`);
 
+            // Temporarily unlock if locked
             const originalLock = wrapper.cannotEdit;
             if (originalLock) wrapper.cannotEdit = false;
             
+            // Hide placeholder text
             wrapper.placeholderText = ' ';
+
+            // Sequence change: Clear then insert (with explicit paragraph font fix)
             wrapper.clear();
             await context.sync();
             
@@ -237,6 +250,7 @@ export const WordApiService = {
             let table: Word.Table;
             
             if (isJV) {
+              if (onStatus) onStatus(`Đang đổ bảng Liên danh (${role.toUpperCase()})...`);
               const members = projectData.contractorMembers || [];
               const colCount = members.length;
               if (colCount === 0) continue;
@@ -248,18 +262,19 @@ export const WordApiService = {
               const maxSigners = Math.max(...memberSigners.map((s: any) => s.length), 1);
               const rowCount = maxSigners * 2 + 1;
 
+              // Set wrapper font size to 1pt to minimize newline space
               wrapper.font.size = 1;
+
               table = wrapper.insertTable(rowCount, colCount, 'Start');
               await context.sync();
               
+              // Explicitly set all paragraphs in wrapper to 1pt font size
               const paras = wrapper.paragraphs;
-              paras.load('items/parentTable');
+              paras.load('items');
               await context.sync();
-              paras.items.forEach((p: any) => { 
-                if (!p.parentTable) p.font.size = 1; 
-              });
+              paras.items.forEach((p: any) => { p.font.size = 1; });
 
-              applyFontToTable(table, inheritedFont);
+              applyFontToTable(table, currentFont);
               hideTableBorders(table);
 
               for (let c = 0; c < colCount; c++) {
@@ -301,18 +316,19 @@ export const WordApiService = {
               const rowCount = Math.max(signersRaw.length, minRows);
               const actualSigners = signersRaw.length > 0 ? signersRaw : Array(rowCount).fill(null).map(() => ({ name: '', position: '', gender: 'auto' }));
 
+              // Set wrapper font size to 1pt to minimize newline space
               wrapper.font.size = 1;
+
               table = wrapper.insertTable(rowCount, 2, 'Start');
               await context.sync();
               
+              // Explicitly set all paragraphs in wrapper to 1pt font size
               const paras = wrapper.paragraphs;
-              paras.load('items/parentTable');
+              paras.load('items');
               await context.sync();
-              paras.items.forEach((p: any) => { 
-                if (!p.parentTable) p.font.size = 1; 
-              });
+              paras.items.forEach((p: any) => { p.font.size = 1; });
 
-              applyFontToTable(table, inheritedFont);
+              applyFontToTable(table, currentFont);
               hideTableBorders(table);
 
               for (let i = 0; i < rowCount; i++) {
@@ -339,11 +355,13 @@ export const WordApiService = {
               }
             }
 
+            // Restore lock if needed
             if (originalLock) wrapper.cannotEdit = true;
+            
             tablesRefreshed++;
             await context.sync();
           } catch (tableErr: any) {
-            console.warn(`Error refreshing table ${wrapper.tag}`);
+            console.warn(`Error refreshing table ${wrapper.tag}:`, tableErr);
           }
         }
 
@@ -370,7 +388,9 @@ export const WordApiService = {
               wrapper.clear();
               await context.sync();
               const table = wrapper.insertTable(rowCount, config.columns.length, 'Start');
-              try { table.style = 'Table Normal'; } catch (e) {}
+              try {
+                table.style = 'Table Normal';
+              } catch (e) {}
               
               config.columns.forEach((col, i) => {
                 const cell = table.getCell(0, i);
@@ -414,26 +434,28 @@ export const WordApiService = {
               tablesRefreshed++;
             }
           } catch (summaryErr: any) {
-            console.warn(`Error refreshing summary ${tag}`);
+            console.warn(`Error refreshing summary ${tag}:`, summaryErr);
           }
         }
 
         await context.sync();
         let resultMsg = `Thành công! Đã cập nhật ${filledCount} trường`;
         if (tablesRefreshed > 0) resultMsg += ` và ${tablesRefreshed} bảng`;
+        console.log("WordApiService: Success! " + resultMsg);
         if (onStatus) onStatus(resultMsg);
       }).catch((err: any) => {
-        console.error("WordApiService error", err);
+        console.error("WordApiService error in Word.run:", err);
         if (onStatus) onStatus('Lỗi Word API: ' + err.message);
       });
     } catch (err: any) {
+      console.error("WordApiService critical error:", err);
       if (onStatus) onStatus('Lỗi hệ thống: ' + err.message);
     }
   },
 
   insertContentControl: async (id: string, label: string) => {
     if (!isWordApiAvailable()) {
-      alert(`Chức năng này chỉ hoạt động khi mở trong Word.\nTag: ${id}`);
+      alert(`Chức năng này chỉ hoạt động khi mở trong Microsoft Word.\n\nTag sẽ chèn: ${id}`);
       return;
     }
     // @ts-ignore
@@ -447,6 +469,9 @@ export const WordApiService = {
       await context.sync();
       cc.getRange('After').select();
       await context.sync();
+    }).catch((err: any) => {
+      console.error(err);
+      alert('Lỗi khi chèn Content Control vào Word: ' + err.message);
     });
   },
 
@@ -465,7 +490,9 @@ export const WordApiService = {
       wrapper.appearance = 'BoundingBox';
 
       const table = wrapper.insertTable(2, config.columns.length, 'Start');
-      try { table.style = 'Table Normal'; } catch (e) {}
+      try {
+        table.style = 'Table Normal';
+      } catch (e) {}
       
       config.columns.forEach((col, i) => {
         const cell = table.getCell(0, i);
@@ -477,12 +504,13 @@ export const WordApiService = {
       await context.sync();
       wrapper.getRange('After').select();
       await context.sync();
-    });
+      alert(`Đã chèn khung Bảng ${config.label}. Nhấn nút "Cập nhật dữ liệu" để đổ dữ liệu vào bảng.`);
+    }).catch((err: any) => alert('Lỗi chèn bảng tổng hợp: ' + err.message));
   },
 
   insertParticipantTable: async (role: string) => {
     if (!isWordApiAvailable()) {
-      alert('Chức năng này chỉ hoạt động khi mở trong Word.');
+      alert('Chức năng này chỉ hoạt động khi mở trong Microsoft Word.');
       return;
     }
     
@@ -495,6 +523,7 @@ export const WordApiService = {
     await Word.run(async (context: any) => {
       const range = context.document.getSelection();
       
+      // Get current font for inheritance
       let currentFont: any = null;
       try {
         range.load('font/name,font/size');
@@ -502,12 +531,14 @@ export const WordApiService = {
         currentFont = range.font;
       } catch (e) {}
 
+      // Create a wrapper Content Control (Stable v1620 logic)
       const wrapper = range.insertContentControl();
       wrapper.tag = `table_${role}`;
       wrapper.title = `Bảng Thành phần: ${role.toUpperCase()}`;
       wrapper.appearance = 'BoundingBox';
-      wrapper.placeholderText = ' ';
+      wrapper.placeholderText = ' '; // Hide placeholder
 
+      // Set wrapper font size to 1pt to minimize newline space
       wrapper.font.size = 1;
 
       let insertedTable: any = null;
@@ -524,12 +555,11 @@ export const WordApiService = {
         insertedTable = wrapper.insertTable(rowCount, colCount, 'Start');
         await context.sync();
         
+        // Fix font size for all paragraphs in wrapper
         const paras = wrapper.paragraphs;
-        paras.load('items/parentTable');
+        paras.load('items');
         await context.sync();
-        paras.items.forEach((p: any) => { 
-          if (!p.parentTable) p.font.size = 1; 
-        });
+        paras.items.forEach((p: any) => { p.font.size = 1; });
 
         applyFontToTable(insertedTable, currentFont);
         hideTableBorders(insertedTable);
@@ -538,7 +568,7 @@ export const WordApiService = {
           const cell = insertedTable.getCell(0, c);
           cell.body.insertText(members[c], 'Replace');
           cell.body.paragraphs.getFirst().font.bold = true;
-          cell.body.paragraphs.getFirst().alignment = 'Centered';
+          cell.body.paragraphs.getFirst().alignment = 'Center';
         }
 
         for (let r = 0; r < maxSigners; r++) {
@@ -579,12 +609,11 @@ export const WordApiService = {
         insertedTable = wrapper.insertTable(rowCount, 2, 'Start');
         await context.sync();
         
+        // Fix font size for all paragraphs in wrapper
         const paras = wrapper.paragraphs;
-        paras.load('items/parentTable');
+        paras.load('items');
         await context.sync();
-        paras.items.forEach((p: any) => { 
-          if (!p.parentTable) p.font.size = 1; 
-        });
+        paras.items.forEach((p: any) => { p.font.size = 1; });
 
         applyFontToTable(insertedTable, currentFont);
         hideTableBorders(insertedTable);
