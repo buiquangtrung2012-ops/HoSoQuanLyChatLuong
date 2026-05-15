@@ -35,7 +35,7 @@ export interface WorkItem {
   code: string;
   unit: string;
   quantity: number;
-  startDate: string;
+  requestDate: string;
   inspectionDate: string;
 }
 

@@ -23,44 +23,20 @@ const contentControls = [
   { id: 'supervisorRep', label: 'Tư vấn Giám sát', icon: Users, category: 'Dự án' },
   { id: 'designRep', label: 'Tư vấn Thiết kế', icon: Users, category: 'Dự án' },
   { id: 'projectLocation', label: 'Địa điểm', icon: MapPin, category: 'Dự án' },
+  { id: 'projectStartVN', label: 'Ngày khởi công (Chữ)', icon: Calendar, category: 'Dự án' },
+  { id: 'projectEndVN', label: 'Ngày hoàn thành (Chữ)', icon: Calendar, category: 'Dự án' },
   
   // Thông tin Công việc
   { id: 'workName', label: 'Tên Công việc', icon: Layers, category: 'Công việc' },
-  { id: 'workCode', label: 'Mã CV', icon: Hash, category: 'Công việc' },
+  { id: 'workCode', label: 'Mã CV/STT', icon: Hash, category: 'Công việc' },
   { id: 'workLine', label: 'Tuyến', icon: Layout, category: 'Công việc' },
   { id: 'workCategory', label: 'Hạng mục', icon: Layout, category: 'Công việc' },
   { id: 'workQty', label: 'Khối lượng', icon: Hash, category: 'Công việc' },
   { id: 'workUnit', label: 'Đơn vị tính', icon: FileText, category: 'Công việc' },
+  { id: 'workRequestDate', label: 'Ngày yêu cầu NT', icon: Calendar, category: 'Công việc' },
+  { id: 'workRequestDateVN', label: 'Ngày yêu cầu NT (Chữ)', icon: PenLine, category: 'Công việc' },
   { id: 'workInspectDate', label: 'Ngày nghiệm thu', icon: Calendar, category: 'Công việc' },
-
-  // Thông tin Nhân sự chung (cũ)
-  { id: 'staffName', label: 'Tên Nhân sự', icon: User, category: 'Nhân sự' },
-  { id: 'staffPosition', label: 'Chức vụ', icon: FileText, category: 'Nhân sự' },
-  { id: 'staffUnit', label: 'Đơn vị công tác', icon: Building2, category: 'Nhân sự' },
-
-  // Thành phần tham gia (CĐT)
-  { id: 'cdt1_name', label: 'CĐT 1 - Tên', icon: User, category: 'Thành phần tham gia' },
-  { id: 'cdt1_pos', label: 'CĐT 1 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
-  { id: 'cdt2_name', label: 'CĐT 2 - Tên', icon: User, category: 'Thành phần tham gia' },
-  { id: 'cdt2_pos', label: 'CĐT 2 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
-
-  // Thành phần tham gia (Thi công)
-  { id: 'tc1_name', label: 'Thi công 1 - Tên', icon: User, category: 'Thành phần tham gia' },
-  { id: 'tc1_pos', label: 'Thi công 1 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
-  { id: 'tc2_name', label: 'Thi công 2 - Tên', icon: User, category: 'Thành phần tham gia' },
-  { id: 'tc2_pos', label: 'Thi công 2 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
-  { id: 'tc3_name', label: 'Thi công 3 - Tên', icon: User, category: 'Thành phần tham gia' },
-  { id: 'tc3_pos', label: 'Thi công 3 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
-
-  // Thành phần tham gia (Tư vấn giám sát)
-  { id: 'tv1_name', label: 'TVGS 1 - Tên', icon: User, category: 'Thành phần tham gia' },
-  { id: 'tv1_pos', label: 'TVGS 1 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
-  { id: 'tv2_name', label: 'TVGS 2 - Tên', icon: User, category: 'Thành phần tham gia' },
-  { id: 'tv2_pos', label: 'TVGS 2 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
-
-  // Thành phần tham gia (Tư vấn thiết kế)
-  { id: 'tvtk1_name', label: 'TVTK 1 - Tên', icon: User, category: 'Thành phần tham gia' },
-  { id: 'tvtk1_pos', label: 'TVTK 1 - Chức vụ', icon: FileText, category: 'Thành phần tham gia' },
+  { id: 'workInspectDateVN', label: 'Ngày nghiệm thu (Chữ)', icon: PenLine, category: 'Công việc' },
 
   // Thông tin Vật liệu
   { id: 'matName', label: 'Tên Vật liệu', icon: Package, category: 'Vật liệu' },
@@ -72,11 +48,13 @@ const contentControls = [
   { id: 'equipName', label: 'Tên Máy móc', icon: Truck, category: 'Máy móc' },
   { id: 'equipSerial', label: 'Số Serial/Biển số', icon: Hash, category: 'Máy móc' },
   { id: 'equipExpiry', label: 'Hạn kiểm định', icon: Calendar, category: 'Máy móc' },
+  { id: 'equipExpiryVN', label: 'Hạn kiểm định (Chữ)', icon: PenLine, category: 'Máy móc' },
 
   // Thông tin Phòng thí nghiệm
   { id: 'labName', label: 'Tên PTN', icon: FlaskConical, category: 'PTN' },
   { id: 'labCode', label: 'Mã LAS-XD', icon: Hash, category: 'PTN' },
   { id: 'labExpiry', label: 'Hạn chứng chỉ PTN', icon: Calendar, category: 'PTN' },
+  { id: 'labExpiryVN', label: 'Hạn chứng chỉ (Chữ)', icon: PenLine, category: 'PTN' },
 ];
 
 const summaryTables = [

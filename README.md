@@ -82,6 +82,16 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v15052026.1725 (15/05/2026)
+- **Cập nhật Tab Công việc**: Đổi tên trường "Ngày bắt đầu" thành **"Ngày yêu cầu nghiệm thu"** để khớp với thực tế hồ sơ.
+- **Bổ sung Nút chèn Ngày dạng chữ**: 
+  - Đã thêm nút chèn **Ngày yêu cầu NT (Chữ)** và **Ngày nghiệm thu (Chữ)** trong Tab Tạo mẫu.
+  - Bổ sung nút chèn ngày dạng chữ cho cả Hạn kiểm định máy móc và Hạn chứng chỉ PTN.
+- **Tối ưu hóa Tab Tạo mẫu**: 
+  - Loại bỏ các nút dư thừa (Nhân sự chung cũ).
+  - Sắp xếp lại danh mục nút giúp việc thiết kế mẫu nhanh chóng và logic hơn.
+- **Đồng bộ Dữ liệu**: Cập nhật logic ánh xạ cho các trường ngày tháng mới.
+
 ### v15052026.1720 (15/05/2026)
 - **Đồng bộ Dữ liệu Toàn diện (Triệt để)**:
   - Cho phép tự động mở khóa (Unlock) Content Control nếu đang ở chế độ `cannotEdit` để ghi dữ liệu, sau đó khóa lại như cũ.

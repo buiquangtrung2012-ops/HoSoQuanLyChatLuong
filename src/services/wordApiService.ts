@@ -130,6 +130,8 @@ export const WordApiService = {
         workCategory: work.category || '',
         workQty: work.quantity?.toString() || '',
         workUnit: work.unit || '',
+        workRequestDate: work.requestDate?.split('-').reverse().join('/') || '',
+        workRequestDateVN: formatVietnameseDate(work.requestDate || ''),
         workInspectDate: work.inspectionDate?.split('-').reverse().join('/') || '',
         workInspectDateVN: formatVietnameseDate(work.inspectionDate || ''),
         // Project dates
@@ -142,9 +144,11 @@ export const WordApiService = {
         equipName: equip.name || '',
         equipSerial: equip.serial || '',
         equipExpiry: equip.expiry || '',
+        equipExpiryVN: formatVietnameseDate(equip.expiry || ''),
         labName: lab.name || '',
         labCode: lab.code || '',
         labExpiry: lab.expiry || '',
+        labExpiryVN: formatVietnameseDate(lab.expiry || ''),
         ...participants,
       };
 

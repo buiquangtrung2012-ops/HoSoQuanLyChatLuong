@@ -5,10 +5,10 @@ import { Modal } from '../components/Modal';
 import { StorageService } from '../services/storageService';
 
 const initialWorkItems: WorkItem[] = [
-  { id: '1', line: 'Tuyến Lộ 1', category: 'Phần móng', name: 'Lắp dựng móng đúc sẵn M1', code: 'MC-001', unit: 'Cái', quantity: 24, startDate: '2026-05-01', inspectionDate: '2026-05-03' },
-  { id: '2', line: 'Tuyến Lộ 1', category: 'Phần cột', name: 'Lắp dựng cột đèn bát giác H=8m', code: 'CD-001', unit: 'Cột', quantity: 24, startDate: '2026-05-04', inspectionDate: '2026-05-05' },
-  { id: '3', line: 'Tuyến Lộ 2', category: 'Cáp điện', name: 'Rải cáp ngầm Cu/XLPE/PVC 4x16mm2', code: 'CN-002', unit: 'm', quantity: 850, startDate: '2026-05-05', inspectionDate: '2026-05-10' },
-  { id: '4', line: 'Tuyến Lộ 1', category: 'Thiết bị', name: 'Lắp đặt đèn LED 120W và cần đèn', code: 'LD-001', unit: 'Bộ', quantity: 24, startDate: '2026-05-12', inspectionDate: '2026-05-15' },
+  { id: '1', line: 'Tuyến Lộ 1', category: 'Phần móng', name: 'Lắp dựng móng đúc sẵn M1', code: 'MC-001', unit: 'Cái', quantity: 24, requestDate: '2026-05-01', inspectionDate: '2026-05-03' },
+  { id: '2', line: 'Tuyến Lộ 1', category: 'Phần cột', name: 'Lắp dựng cột đèn bát giác H=8m', code: 'CD-001', unit: 'Cột', quantity: 24, requestDate: '2026-05-04', inspectionDate: '2026-05-05' },
+  { id: '3', line: 'Tuyến Lộ 2', category: 'Cáp điện', name: 'Rải cáp ngầm Cu/XLPE/PVC 4x16mm2', code: 'CN-002', unit: 'm', quantity: 850, requestDate: '2026-05-05', inspectionDate: '2026-05-10' },
+  { id: '4', line: 'Tuyến Lộ 1', category: 'Thiết bị', name: 'Lắp đặt đèn LED 120W và cần đèn', code: 'LD-001', unit: 'Bộ', quantity: 24, requestDate: '2026-05-12', inspectionDate: '2026-05-15' },
 ];
 
 export const WorkItemsModule: React.FC = () => {
@@ -21,7 +21,7 @@ export const WorkItemsModule: React.FC = () => {
     category: 'Phần móng',
     unit: 'Cái',
     quantity: 0,
-    startDate: new Date().toISOString().split('T')[0],
+    requestDate: new Date().toISOString().split('T')[0],
     inspectionDate: new Date().toISOString().split('T')[0],
   });
 
@@ -42,7 +42,7 @@ export const WorkItemsModule: React.FC = () => {
       category: 'Phần móng',
       unit: 'Cái',
       quantity: 0,
-      startDate: new Date().toISOString().split('T')[0],
+      requestDate: new Date().toISOString().split('T')[0],
       inspectionDate: new Date().toISOString().split('T')[0],
     });
     setIsModalOpen(true);
@@ -285,11 +285,11 @@ export const WorkItemsModule: React.FC = () => {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-xs font-bold text-muted-foreground uppercase">Ngày bắt đầu</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase">Ngày yêu cầu nghiệm thu</label>
               <input 
                 type="date"
-                value={newItem.startDate}
-                onChange={e => setNewItem({...newItem, startDate: e.target.value})}
+                value={newItem.requestDate}
+                onChange={e => setNewItem({...newItem, requestDate: e.target.value})}
                 className="w-full p-2 border rounded-md text-sm bg-background" 
               />
             </div>
