@@ -284,11 +284,13 @@ export const WordApiService = {
               table = wrapper.insertTable(rowCount, colCount, 'Start');
               await context.sync();
               
-              // Explicitly set all paragraphs in wrapper to 1pt font size
+              // Only shrink the trailing empty paragraph in the wrapper
               const paras = wrapper.paragraphs;
               paras.load('items');
               await context.sync();
-              paras.items.forEach((p: any) => { p.font.size = 1; });
+              if (paras.items.length > 0) {
+                paras.items[paras.items.length - 1].font.size = 1;
+              }
 
               applyFontToTable(table, currentFont);
               hideTableBorders(table);
@@ -340,11 +342,13 @@ export const WordApiService = {
               table = wrapper.insertTable(rowCount, 2, 'Start');
               await context.sync();
               
-              // Explicitly set all paragraphs in wrapper to 1pt font size
+              // Only shrink the trailing empty paragraph in the wrapper
               const paras = wrapper.paragraphs;
               paras.load('items');
               await context.sync();
-              paras.items.forEach((p: any) => { p.font.size = 1; });
+              if (paras.items.length > 0) {
+                paras.items[paras.items.length - 1].font.size = 1;
+              }
 
               applyFontToTable(table, currentFont);
               hideTableBorders(table);
@@ -446,7 +450,9 @@ export const WordApiService = {
               const paras = wrapper.paragraphs;
               paras.load('items');
               await context.sync();
-              paras.items.forEach((p: any) => { p.font.size = 1; });
+              if (paras.items.length > 0) {
+                paras.items[paras.items.length - 1].font.size = 1;
+              }
 
               applyFontToTable(table, currentFont);
               table.font.bold = false;
@@ -576,6 +582,13 @@ export const WordApiService = {
       try { table.style = 'Table Normal'; } catch(e){}
       await context.sync();
       
+      const paras = wrapper.paragraphs;
+      paras.load('items');
+      await context.sync();
+      if (paras.items.length > 0) {
+        paras.items[paras.items.length - 1].font.size = 1;
+      }
+
       applyFontToTable(table, currentFont);
       table.font.bold = false;
       
@@ -588,32 +601,6 @@ export const WordApiService = {
       });
 
       await context.sync();
-      const paras = wrapper.paragraphs;
-      paras.load('items,items/text');
-      await context.sync();
-      if (paras.items.length > 0) {
-        const firstPara = paras.items[0];
-        try {
-           if (!firstPara.text || firstPara.text.trim() === '') {
-             firstPara.font.size = 1;
-             firstPara.spaceBefore = 0;
-             firstPara.spaceAfter = 0;
-             firstPara.lineSpacing = 1;
-           }
-        } catch(e){}
-      }
-      if (paras.items.length > 1) {
-        const lastPara = paras.items[paras.items.length - 1];
-        try {
-           if (!lastPara.text || lastPara.text.trim() === '') {
-             lastPara.font.size = 1;
-             lastPara.spaceBefore = 0;
-             lastPara.spaceAfter = 0;
-             lastPara.lineSpacing = 1;
-           }
-        } catch(e){}
-      }
-
       wrapper.getRange('After').select();
       await context.sync();
       alert(`Đã chèn khung Bảng ${config.label}. Nhấn nút "Cập nhật dữ liệu" để đổ dữ liệu vào bảng.`);

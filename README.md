@@ -82,6 +82,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
 
+### v15052026.1545 (15/05/2026)
+- **Sửa lỗi bảng bị đè/mất định dạng**: Khắc phục triệt để lỗi bảng bị co lại hoặc văn bản bị đè lên nhau khi Đồng bộ dữ liệu. Nguyên nhân do lệnh thu nhỏ cỡ chữ nhầm vào các ô trong bảng. Giờ đây chỉ thu nhỏ dòng trống cuối cùng để đảm bảo thẩm mỹ mà không làm hỏng dữ liệu.
+
 ### v15052026.1345 (15/05/2026)
 - **Sửa lỗi chèn bảng**: Khắc phục lỗi Word API khiến quá trình chèn bảng bị gián đoạn (chỉ chèn được cột STT) do sử dụng sai tham số căn lề (Center thay vì Centered).
 
