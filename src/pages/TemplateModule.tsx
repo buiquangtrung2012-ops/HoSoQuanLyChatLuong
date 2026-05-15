@@ -93,6 +93,7 @@ export const TemplateModule: React.FC = () => {
   const [customRecords, setCustomRecords] = useState<string[]>([]);
   const [dynamicContentControls, setDynamicContentControls] = useState(contentControls);
   const [customGroups, setCustomGroups] = useState<any[]>([]);
+  const [personnelUnits, setPersonnelUnits] = useState<string[]>([]);
 
   useEffect(() => {
     setCustomRecords(StorageService.getRecordTypes());
@@ -101,6 +102,10 @@ export const TemplateModule: React.FC = () => {
     const savedGroups = StorageService.get('hoso_participants_v2') || [];
     const cGroups = savedGroups.filter((g: any) => g.prefix.startsWith('custom_'));
     setCustomGroups(cGroups);
+    
+    const pData = StorageService.get('hoso_personnel') || [];
+    const units = Array.from(new Set(pData.map((p: any) => p.unit).filter(Boolean)));
+    setPersonnelUnits(units as string[]);
     
     const dControls = [...contentControls];
     cGroups.forEach((g: any) => {
@@ -250,7 +255,9 @@ export const TemplateModule: React.FC = () => {
 
           <div className="grid grid-cols-4 gap-3">
             {[
-              { id: 'personnel', label: 'Bảng Nhân sự', icon: Users },
+              ...(personnelUnits.length > 0 
+                  ? personnelUnits.map(u => ({ id: `personnel_${u}`, label: `Nhân sự - ${u}`, icon: Users }))
+                  : [{ id: 'personnel', label: 'Bảng Nhân sự', icon: Users }]),
               { id: 'materials', label: 'Bảng Vật liệu', icon: Package },
               { id: 'equipment', label: 'Bảng Máy móc', icon: Truck },
               { id: 'lab', label: 'Bảng PTN', icon: FlaskConical },
