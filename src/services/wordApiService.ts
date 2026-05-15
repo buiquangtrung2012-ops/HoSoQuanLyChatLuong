@@ -54,8 +54,13 @@ const hideTableBorders = (table: any) => {
 
 const applyFontToTable = (table: any, font: any) => {
   try {
-    if (font && font.name) table.font.name = font.name;
-    if (font && font.size) table.font.size = font.size;
+    if (!font) return;
+
+    if (font.name) table.font.name = font.name;
+    if (font.size) table.font.size = font.size;
+    if (font.bold !== undefined) table.font.bold = font.bold;
+    if (font.italic !== undefined) table.font.italic = font.italic;
+    if (font.color) table.font.color = font.color;
   } catch (e) {
     console.warn("Could not apply font to table", e);
   }
@@ -212,19 +217,30 @@ export const WordApiService = {
         // 2. Refresh dynamic participant tables
         const allTableCCs = allCCs.filter((cc: any) => cc.tag && cc.tag.startsWith('table_'));
 
-        // Load document font for inheritance
-        let currentFont: any = null;
-        try {
-          const firstPara = context.document.body.paragraphs.getFirst();
-          firstPara.load('font/name,font/size');
-          await context.sync();
-          currentFont = firstPara.font;
-        } catch (e) {}
 
         for (const wrapper of allTableCCs) {
           try {
             const tag = wrapper.tag;
             const role = tag.replace('table_', '');
+
+            let currentFont: any = null;
+            try {
+              const wrapperRange = wrapper.getRange();
+              wrapperRange.load(
+                'font/name,font/size,font/bold,font/italic,font/color'
+              );
+              await context.sync();
+
+              currentFont = {
+                name: wrapperRange.font.name,
+                size: wrapperRange.font.size,
+                bold: wrapperRange.font.bold,
+                italic: wrapperRange.font.italic,
+                color: wrapperRange.font.color
+              };
+            } catch (e) {
+              console.warn('Cannot get wrapper font', e);
+            }
             
             // Find group data
             const group = savedGroups.find((g: any) => g.prefix === role);
@@ -526,9 +542,18 @@ export const WordApiService = {
       // Get current font for inheritance
       let currentFont: any = null;
       try {
-        range.load('font/name,font/size');
+        range.load(
+          'font/name,font/size,font/bold,font/italic,font/color'
+        );
         await context.sync();
-        currentFont = range.font;
+
+        currentFont = {
+          name: range.font.name,
+          size: range.font.size,
+          bold: range.font.bold,
+          italic: range.font.italic,
+          color: range.font.color
+        };
       } catch (e) {}
 
       // Create a wrapper Content Control (Stable v1620 logic)

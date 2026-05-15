@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, RefreshCw, Clock, CheckCircle, ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
 
 // The current app version — must match what's in Topbar.tsx
-export const CURRENT_VERSION = 'v15052026.1025';
+export const CURRENT_VERSION = 'v15052026.1035';
 
 interface VersionEntry {
   version: string;
