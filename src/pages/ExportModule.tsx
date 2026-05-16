@@ -4,6 +4,7 @@ import { StorageService } from '../services/storageService';
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import { saveAs } from 'file-saver';
+import { formatDateDMY, formatVietnameseDate, resolveGender } from '../services/wordApiService';
 
 export const ExportModule: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -122,8 +123,16 @@ export const ExportModule: React.FC = () => {
 
   const generateZip = async (templateData: Uint8Array, workItems: any[], project: any, participants: any) => {
     try {
-        const zip = new PizZip();
+        const materials = StorageService.get('hoso_materials') || [];
+        const equipment = StorageService.get('hoso_equipment') || [];
+        const labs = StorageService.get('hoso_labs') || [];
+        const personnel = StorageService.get('hoso_personnel') || [];
         
+        const mat = materials[0] || {};
+        const equip = equipment[0] || {};
+        const lab = labs[0] || {};
+
+        let stt = 1;
         for (const work of workItems) {
             const content = new PizZip(templateData);
             const doc = new Docxtemplater(content, {
@@ -131,12 +140,15 @@ export const ExportModule: React.FC = () => {
                 linebreaks: true,
             });
 
-            const data = {
+            // Prepare dynamic data for this specific work item
+            const data: any = {
+                stt: stt,
                 projectName: project.name || '',
                 contractNumber: project.contractNumber || '',
                 packageName: project.packageName || '',
                 contractor: project.contractor || '',
                 investorRep: project.investor || '',
+                supervisorRep: project.supervisor || '',
                 designRep: project.designer || '',
                 projectLocation: project.location || '',
                 workName: work.name || '',
@@ -145,9 +157,53 @@ export const ExportModule: React.FC = () => {
                 workCategory: work.category || '',
                 workQty: work.quantity?.toString() || '',
                 workUnit: work.unit || '',
-                workInspectDate: work.inspectionDate?.split('-').reverse().join('/') || '',
+                workRequestDate: formatDateDMY(work.requestDate || ''),
+                workRequestDateVN: formatVietnameseDate(work.requestDate || ''),
+                workInspectDate: formatDateDMY(work.inspectionDate || ''),
+                workInspectDateVN: formatVietnameseDate(work.inspectionDate || ''),
+                // Project dates
+                projectStart: formatDateDMY(project.startDate || ''),
+                projectStartVN: formatVietnameseDate(project.startDate || ''),
+                projectEnd: formatDateDMY(project.endDate || ''),
+                projectEndVN: formatVietnameseDate(project.endDate || ''),
+                matName: mat.name || '',
+                matSource: mat.source || '',
+                matLot: mat.lot || '',
+                matQty: mat.qty?.toString() || '',
+                equipName: equip.name || '',
+                equipSerial: equip.serial || '',
+                equipExpiry: formatDateDMY(equip.expiry || ''),
+                equipExpiryVN: formatVietnameseDate(equip.expiry || ''),
+                labName: lab.name || '',
+                labCode: lab.code || '',
+                labExpiry: formatDateDMY(lab.expiry || ''),
+                labExpiryVN: formatVietnameseDate(lab.expiry || ''),
                 ...participants
             };
+
+            // Add personnel by title
+            personnel.forEach((p: any) => {
+                if (p.position) {
+                    const titleTag = `title_${p.position.trim()}`;
+                    data[titleTag] = p.name || '';
+                    const honorific = resolveGender(p.name || '', p.gender);
+                    data[`${titleTag}_full`] = `${honorific} ${p.name || ''}`;
+                }
+            });
+
+            // Add all project properties
+            Object.keys(project).forEach(key => {
+                if (typeof project[key] === 'string' || typeof project[key] === 'number') {
+                    data[`project_${key}`] = String(project[key]);
+                }
+            });
+
+            // Add all work properties
+            Object.keys(work).forEach(key => {
+                if (typeof work[key] === 'string' || typeof work[key] === 'number') {
+                    data[`work_${key}`] = String(work[key]);
+                }
+            });
 
             doc.render(data);
             const out = doc.getZip().generate({
@@ -155,8 +211,9 @@ export const ExportModule: React.FC = () => {
                 mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             });
             
-            const fileName = `BB_NghiemThu_${work.code || 'CV'}_${work.name.substring(0, 30).replace(/[/\\?%*:|"<>]/g, '-')}.docx`;
+            const fileName = `BB_${stt}_${work.code || 'CV'}_${work.name.substring(0, 30).replace(/[/\\?%*:|"<>]/g, '-')}.docx`;
             zip.file(fileName, out);
+            stt++;
         }
 
         const finalZip = zip.generate({ type: "blob" });

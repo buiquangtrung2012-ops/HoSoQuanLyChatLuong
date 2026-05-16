@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { FlaskConical, Search, Plus, FileText, UserCheck, Save, Trash2, AlertCircle } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { StorageService } from '../services/storageService';
+import { formatDateDMY } from '../services/wordApiService';
 
 const initialLabs = [
-  { name: "Phòng thí nghiệm LAS-XD 123", code: "LAS-XD 123", expiry: "30/12/2027", equipment: "Đầy đủ thiết bị nén tĩnh, kéo thép" },
-  { name: "Trung tâm Kiểm định Xây dựng Miền Nam", code: "LAS-XD 456", expiry: "15/06/2028", equipment: "Phòng Lab hóa học, cơ lý" },
+  { name: "Phòng thí nghiệm LAS-XD 123", code: "LAS-XD 123", expiry: "2027-12-30", equipment: "Đầy đủ thiết bị nén tĩnh, kéo thép" },
+  { name: "Trung tâm Kiểm định Xây dựng Miền Nam", code: "LAS-XD 456", expiry: "2028-06-15", equipment: "Phòng Lab hóa học, cơ lý" },
 ];
 
 export const LabModule: React.FC = () => {
@@ -116,7 +117,7 @@ export const LabModule: React.FC = () => {
 
             <div className="space-y-2 pt-2">
               <div className="flex items-center text-sm text-muted-foreground">
-                <FileText size={14} className="mr-2" /> Hiệu lực chứng chỉ: {lab.expiry}
+                <FileText size={14} className="mr-2" /> Hiệu lực chứng chỉ: {formatDateDMY(lab.expiry)}
               </div>
             </div>
 

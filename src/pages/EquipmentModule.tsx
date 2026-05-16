@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Truck, Search, Plus, Calendar, ShieldCheck, Save, Trash2, AlertCircle, Edit2 } from 'lucide-react';
 import { Modal } from '../components/Modal';
 import { StorageService } from '../services/storageService';
+import { formatDateDMY } from '../services/wordApiService';
 
 const initialEquipment = [
-  { name: "Cần trục tháp POTAIN", serial: "PT-2024-X", lastCheck: "01/01/2026", expiry: "01/01/2027" },
-  { name: "Máy bơm bê tông PUTZMEISTER", serial: "PZ-888", lastCheck: "15/02/2026", expiry: "15/02/2027" },
-  { name: "Máy toàn đạc LEICA TS06", serial: "L-99021", lastCheck: "10/03/2026", expiry: "10/03/2027" },
+  { name: "Cần trục tháp POTAIN", serial: "PT-2024-X", lastCheck: "2026-01-01", expiry: "2027-01-01" },
+  { name: "Máy bơm bê tông PUTZMEISTER", serial: "PZ-888", lastCheck: "2026-02-15", expiry: "2027-02-15" },
+  { name: "Máy toàn đạc LEICA TS06", serial: "L-99021", lastCheck: "2026-03-10", expiry: "2027-03-10" },
 ];
 
 export const EquipmentModule: React.FC = () => {
@@ -115,8 +116,8 @@ export const EquipmentModule: React.FC = () => {
                 <tr key={i} className="hover:bg-accent/50 transition-colors">
                   <td className="px-6 py-4 font-medium">{item.name}</td>
                   <td className="px-6 py-4 font-mono text-xs">{item.serial}</td>
-                  <td className="px-6 py-4 text-muted-foreground">{item.lastCheck}</td>
-                  <td className="px-6 py-4 font-medium text-primary">{item.expiry}</td>
+                  <td className="px-6 py-4 text-muted-foreground">{formatDateDMY(item.lastCheck)}</td>
+                  <td className="px-6 py-4 font-medium text-primary">{formatDateDMY(item.expiry)}</td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end space-x-1">
                       <button 

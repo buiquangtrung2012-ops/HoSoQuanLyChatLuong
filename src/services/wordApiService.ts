@@ -40,6 +40,16 @@ export const formatVietnameseDate = (dateStr: string): string => {
   return `ngày ${d.padStart(2, '0')} tháng ${m.padStart(2, '0')} năm ${y}`;
 };
 
+export const formatDateDMY = (dateStr: string): string => {
+  if (!dateStr) return '';
+  if (dateStr.includes('-')) {
+    const [y, m, d] = dateStr.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  if (dateStr.includes('/')) return dateStr;
+  return dateStr;
+};
+
 export const isWordApiAvailable = () => {
   try {
     // @ts-ignore
@@ -130,12 +140,14 @@ export const WordApiService = {
         workCategory: work.category || '',
         workQty: work.quantity?.toString() || '',
         workUnit: work.unit || '',
-        workRequestDate: work.requestDate?.split('-').reverse().join('/') || '',
+        workRequestDate: formatDateDMY(work.requestDate || ''),
         workRequestDateVN: formatVietnameseDate(work.requestDate || ''),
-        workInspectDate: work.inspectionDate?.split('-').reverse().join('/') || '',
+        workInspectDate: formatDateDMY(work.inspectionDate || ''),
         workInspectDateVN: formatVietnameseDate(work.inspectionDate || ''),
         // Project dates
+        projectStart: formatDateDMY(project.startDate || ''),
         projectStartVN: formatVietnameseDate(project.startDate || ''),
+        projectEnd: formatDateDMY(project.endDate || ''),
         projectEndVN: formatVietnameseDate(project.endDate || ''),
         matName: mat.name || '',
         matSource: mat.source || '',
@@ -143,11 +155,11 @@ export const WordApiService = {
         matQty: mat.qty?.toString() || '',
         equipName: equip.name || '',
         equipSerial: equip.serial || '',
-        equipExpiry: equip.expiry || '',
+        equipExpiry: formatDateDMY(equip.expiry || ''),
         equipExpiryVN: formatVietnameseDate(equip.expiry || ''),
         labName: lab.name || '',
         labCode: lab.code || '',
-        labExpiry: lab.expiry || '',
+        labExpiry: formatDateDMY(lab.expiry || ''),
         labExpiryVN: formatVietnameseDate(lab.expiry || ''),
         ...participants,
       };
@@ -614,8 +626,8 @@ export const WordApiService = {
                 if (type === 'equipment') {
                   table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
                   table.getCell(row, 2).body.insertText(item.serial || '', 'Replace');
-                  table.getCell(row, 3).body.insertText(item.inspectionDate?.split('-').reverse().join('/') || '', 'Replace');
-                  table.getCell(row, 4).body.insertText(item.expiryDate?.split('-').reverse().join('/') || '', 'Replace');
+                  table.getCell(row, 3).body.insertText(formatDateDMY(item.lastCheck || ''), 'Replace');
+                  table.getCell(row, 4).body.insertText(formatDateDMY(item.expiry || ''), 'Replace');
                 }
                 if (type === 'workitems') {
                   table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
@@ -626,7 +638,7 @@ export const WordApiService = {
                 if (type === 'lab') {
                   table.getCell(row, 1).body.insertText(item.name || '', 'Replace');
                   table.getCell(row, 2).body.insertText(item.code || '', 'Replace');
-                  table.getCell(row, 3).body.insertText(item.expiry || '', 'Replace');
+                  table.getCell(row, 3).body.insertText(formatDateDMY(item.expiry || ''), 'Replace');
                   table.getCell(row, 4).body.insertText(item.equipment || '', 'Replace');
                 }
               });

@@ -86,6 +86,24 @@ export const TemplateModule: React.FC = () => {
     setPersonnelUnits(units as string[]);
     
     const dControls = [...contentControls];
+    
+    // Thêm các tag nhân sự theo chức danh
+    const positions = Array.from(new Set(pData.map((p: any) => p.position).filter(Boolean)));
+    positions.forEach((pos: any) => {
+       dControls.push({
+         id: `title_${pos.trim()}`,
+         label: `${pos}`,
+         icon: User,
+         category: 'Nhân sự (theo Chức vụ)'
+       });
+       dControls.push({
+         id: `title_${pos.trim()}_full`,
+         label: `${pos} (Kèm Ông/Bà)`,
+         icon: User,
+         category: 'Nhân sự (theo Chức vụ)'
+       });
+    });
+
     cGroups.forEach((g: any) => {
        g.signers.forEach((s: any, idx: number) => {
          dControls.push({

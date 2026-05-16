@@ -3,6 +3,7 @@ import { Plus, Search, Filter, CheckCircle2, Clock, AlertCircle, Save, Trash2, E
 import type { WorkItem } from '../types';
 import { Modal } from '../components/Modal';
 import { StorageService } from '../services/storageService';
+import { formatDateDMY } from '../services/wordApiService';
 
 const initialWorkItems: WorkItem[] = [
   { id: '1', line: 'Tuyến Lộ 1', category: 'Phần móng', name: 'Lắp dựng móng đúc sẵn M1', code: 'MC-001', unit: 'Cái', quantity: 24, requestDate: '2026-05-01', inspectionDate: '2026-05-03' },
@@ -151,7 +152,7 @@ export const WorkItemsModule: React.FC = () => {
                     <p className="text-xs text-muted-foreground">{item.line} - {item.category} (Mã: {item.code})</p>
                   </td>
                   <td className="px-6 py-4">{item.quantity} {item.unit}</td>
-                  <td className="px-6 py-4 font-medium text-primary">{item.inspectionDate}</td>
+                  <td className="px-6 py-4 font-medium text-primary">{formatDateDMY(item.inspectionDate)}</td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end space-x-1">
                       <div className="flex flex-col">

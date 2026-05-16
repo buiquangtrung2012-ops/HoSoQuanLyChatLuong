@@ -1,5 +1,7 @@
 # Construction Quality Add-in Pro (Hồ sơ quản lý chất lượng)
 
+> 🚀 **THÔNG BÁO QUAN TRỌNG:** Mọi thay đổi trong mã nguồn **BẮT BUỘC** phải được đẩy (push) lên GitHub và chạy quy trình Deploy để cập nhật Add-in. Vui lòng xem kỹ phần [Quy trình cập nhật đúng](#quy-trình-cập-nhật-đúng-bắt-buộc-thực hiện-đủ-2-bước-sau-mỗi-lần-chỉnh-sửa).
+
 Hệ thống quản lý hồ sơ chất lượng công trình chuyên nghiệp dưới dạng Microsoft Office Add-in (Excel & Word).
 
 ## Công nghệ sử dụng
@@ -79,7 +81,18 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 ## Lịch sử cập nhật
 > **QUY ƯỚC ĐÁNH VERSION:**
-> Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/Topbar.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v14052026.0855`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
+> Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/VersionManager.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v16052026.0945`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
+
+
+### v16052026.0945 (16/05/2026)
+- **Chuẩn hóa Ngày tháng (dd/MM/yyyy)**: Chuyển đổi toàn bộ hiển thị ngày tháng trên giao diện và khi xuất file Word sang định dạng `dd/MM/yyyy` chuẩn Việt Nam.
+- **Nâng cấp Xuất hồ sơ hàng loạt (Mailings)**:
+  - Tự động gán **Số thứ tự (STT)** cho từng biên bản trong bộ hồ sơ.
+  - Đảm bảo dữ liệu (Nội dung, Mã hiệu, Ngày tháng, Nhân sự) thay đổi tương ứng theo từng STT công việc trong danh sách (Mail Merge).
+- **Khôi phục Nhân sự theo Chức vụ**: 
+  - Tự động tạo các nút chèn tag `title_[Chức vụ]` trong tab Tạo mẫu dựa trên danh sách nhân sự thực tế.
+  - Hỗ trợ chèn tên kèm xưng hô Ông/Bà tự động qua tag `_full`.
+- **Đồng bộ hóa dữ liệu**: Cập nhật logic ánh xạ cho các trường ngày tháng và chức vụ mới trong dịch vụ WordApiService.
 
 
 ### v15052026.1725 (15/05/2026)
