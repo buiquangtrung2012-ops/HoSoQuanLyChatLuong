@@ -123,6 +123,7 @@ export const ExportModule: React.FC = () => {
 
   const generateZip = async (templateData: Uint8Array, workItems: any[], project: any, participants: any) => {
     try {
+        const zip = new PizZip();
         const materials = StorageService.get('hoso_materials') || [];
         const equipment = StorageService.get('hoso_equipment') || [];
         const labs = StorageService.get('hoso_labs') || [];
