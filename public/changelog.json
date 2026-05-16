@@ -1,0 +1,27 @@
+{
+  "latest": "v16052026.0945",
+  "versions": [
+    {
+      "version": "v16052026.0945",
+      "date": "16/05/2026",
+      "changes": [
+        "Chuẩn hóa Ngày tháng (dd/MM/yyyy) trên toàn hệ thống",
+        "Nâng cấp Xuất hàng loạt (Mailings): Tự động gán STT và dữ liệu theo hàng",
+        "Khôi phục Nhân sự theo Chức vụ trong tab Tạo mẫu",
+        "Đồng bộ hóa dữ liệu với các tag title_ mới"
+      ],
+      "path": "/"
+    },
+    {
+      "version": "v15052026.1725",
+      "date": "15/05/2026",
+      "changes": [
+        "Đổi tên 'Ngày bắt đầu' thành 'Ngày yêu cầu nghiệm thu'",
+        "Thêm các nút chuyển đổi ngày tự động",
+        "Dọn dẹp giao diện Tạo mẫu",
+        "Cập nhật ánh xạ dữ liệu ngày tháng"
+      ],
+      "path": "/versions/v15052026.1725/"
+    }
+  ]
+}
