@@ -175,7 +175,7 @@ export const LabModule: React.FC = () => {
               <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Hạn chứng chỉ</label>
               <input 
                 type="text"
-                value={newLab.expiry.split('-').reverse().join('/')}
+                value={(newLab.expiry || '').split('-').reverse().join('/')}
                 onChange={e => {
                     const val = e.target.value.split('/').reverse().join('-');
                     setNewLab({...newLab, expiry: val});

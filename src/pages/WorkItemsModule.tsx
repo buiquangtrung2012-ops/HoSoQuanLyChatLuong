@@ -289,7 +289,7 @@ export const WorkItemsModule: React.FC = () => {
               <label className="text-xs font-bold text-muted-foreground uppercase">Ngày yêu cầu nghiệm thu</label>
               <input 
                 type="text"
-                value={newItem.requestDate.split('-').reverse().join('/')}
+                value={(newItem.requestDate || '').split('-').reverse().join('/')}
                 onChange={e => {
                     const val = e.target.value.split('/').reverse().join('-');
                     setNewItem({...newItem, requestDate: val});
@@ -302,7 +302,7 @@ export const WorkItemsModule: React.FC = () => {
               <label className="text-xs font-bold text-muted-foreground uppercase">Ngày nghiệm thu</label>
               <input 
                 type="text"
-                value={newItem.inspectionDate.split('-').reverse().join('/')}
+                value={(newItem.inspectionDate || '').split('-').reverse().join('/')}
                 onChange={e => {
                     const val = e.target.value.split('/').reverse().join('-');
                     setNewItem({...newItem, inspectionDate: val});

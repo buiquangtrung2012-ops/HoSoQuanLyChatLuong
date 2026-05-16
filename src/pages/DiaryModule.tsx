@@ -208,7 +208,7 @@ export const DiaryModule: React.FC = () => {
                   <input 
                     type="text" 
                     className="w-full p-2 border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/50 outline-none" 
-                    value={date.split('-').reverse().join('/')}
+                    value={(date || '').split('-').reverse().join('/')}
                     onChange={(e) => {
                         const val = e.target.value.split('/').reverse().join('-');
                         setDate(val);

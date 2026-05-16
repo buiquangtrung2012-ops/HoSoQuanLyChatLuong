@@ -192,7 +192,7 @@ export const EquipmentModule: React.FC = () => {
               <label className="text-xs font-bold text-muted-foreground uppercase">Ngày kiểm định</label>
               <input 
                 type="text"
-                value={newEquip.lastCheck.split('-').reverse().join('/')}
+                value={(newEquip.lastCheck || '').split('-').reverse().join('/')}
                 onChange={e => {
                     const val = e.target.value.split('/').reverse().join('-');
                     setNewEquip({...newEquip, lastCheck: val});
@@ -205,7 +205,7 @@ export const EquipmentModule: React.FC = () => {
               <label className="text-xs font-bold text-muted-foreground uppercase">Ngày hết hạn</label>
               <input 
                 type="text"
-                value={newEquip.expiry.split('-').reverse().join('/')}
+                value={(newEquip.expiry || '').split('-').reverse().join('/')}
                 onChange={e => {
                     const val = e.target.value.split('/').reverse().join('-');
                     setNewEquip({...newEquip, expiry: val});
