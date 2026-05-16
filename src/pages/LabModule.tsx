@@ -174,9 +174,13 @@ export const LabModule: React.FC = () => {
             <div className="space-y-1">
               <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Hạn chứng chỉ</label>
               <input 
-                type="date"
-                value={newLab.expiry}
-                onChange={e => setNewLab({...newLab, expiry: e.target.value})}
+                type="text"
+                value={newLab.expiry.split('-').reverse().join('/')}
+                onChange={e => {
+                    const val = e.target.value.split('/').reverse().join('-');
+                    setNewLab({...newLab, expiry: val});
+                }}
+                placeholder="dd/mm/yyyy"
                 className="w-full p-2.5 border rounded-xl text-sm bg-background focus:ring-2 focus:ring-primary/50 outline-none" 
               />
             </div>

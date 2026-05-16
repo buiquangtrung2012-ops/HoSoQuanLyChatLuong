@@ -288,18 +288,26 @@ export const WorkItemsModule: React.FC = () => {
             <div className="space-y-1">
               <label className="text-xs font-bold text-muted-foreground uppercase">Ngày yêu cầu nghiệm thu</label>
               <input 
-                type="date"
-                value={newItem.requestDate}
-                onChange={e => setNewItem({...newItem, requestDate: e.target.value})}
+                type="text"
+                value={newItem.requestDate.split('-').reverse().join('/')}
+                onChange={e => {
+                    const val = e.target.value.split('/').reverse().join('-');
+                    setNewItem({...newItem, requestDate: val});
+                }}
+                placeholder="dd/mm/yyyy"
                 className="w-full p-2 border rounded-md text-sm bg-background" 
               />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-bold text-muted-foreground uppercase">Ngày nghiệm thu</label>
               <input 
-                type="date"
-                value={newItem.inspectionDate}
-                onChange={e => setNewItem({...newItem, inspectionDate: e.target.value})}
+                type="text"
+                value={newItem.inspectionDate.split('-').reverse().join('/')}
+                onChange={e => {
+                    const val = e.target.value.split('/').reverse().join('-');
+                    setNewItem({...newItem, inspectionDate: val});
+                }}
+                placeholder="dd/mm/yyyy"
                 className="w-full p-2 border rounded-md text-sm bg-background" 
               />
             </div>

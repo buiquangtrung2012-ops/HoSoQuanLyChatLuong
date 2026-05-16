@@ -206,10 +206,14 @@ export const DiaryModule: React.FC = () => {
                 </label>
                 <div className="flex space-x-2">
                   <input 
-                    type="date" 
+                    type="text" 
                     className="w-full p-2 border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary/50 outline-none" 
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
+                    value={date.split('-').reverse().join('/')}
+                    onChange={(e) => {
+                        const val = e.target.value.split('/').reverse().join('-');
+                        setDate(val);
+                    }}
+                    placeholder="dd/mm/yyyy"
                   />
                 </div>
               </div>

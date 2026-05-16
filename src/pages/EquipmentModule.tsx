@@ -191,18 +191,26 @@ export const EquipmentModule: React.FC = () => {
             <div className="space-y-1">
               <label className="text-xs font-bold text-muted-foreground uppercase">Ngày kiểm định</label>
               <input 
-                type="date"
-                value={newEquip.lastCheck}
-                onChange={e => setNewEquip({...newEquip, lastCheck: e.target.value})}
+                type="text"
+                value={newEquip.lastCheck.split('-').reverse().join('/')}
+                onChange={e => {
+                    const val = e.target.value.split('/').reverse().join('-');
+                    setNewEquip({...newEquip, lastCheck: val});
+                }}
+                placeholder="dd/mm/yyyy"
                 className="w-full p-2 border rounded-md text-sm bg-background" 
               />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-bold text-muted-foreground uppercase">Ngày hết hạn</label>
               <input 
-                type="date"
-                value={newEquip.expiry}
-                onChange={e => setNewEquip({...newEquip, expiry: e.target.value})}
+                type="text"
+                value={newEquip.expiry.split('-').reverse().join('/')}
+                onChange={e => {
+                    const val = e.target.value.split('/').reverse().join('-');
+                    setNewEquip({...newEquip, expiry: val});
+                }}
+                placeholder="dd/mm/yyyy"
                 className="w-full p-2 border rounded-md text-sm bg-background" 
               />
             </div>

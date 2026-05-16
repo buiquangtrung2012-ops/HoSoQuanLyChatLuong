@@ -1,6 +1,16 @@
 {
-  "latest": "v16052026.0945",
+  "latest": "v16052026.1045",
   "versions": [
+    {
+      "version": "v16052026.1045",
+      "date": "16/05/2026",
+      "changes": [
+        "Ép buộc định dạng dd/MM/yyyy cho tất cả các ô nhập liệu ngày tháng",
+        "Chuyển đổi date picker sang text input để đồng nhất hiển thị",
+        "Cập nhật định dạng ngày trong Nhật ký, Công việc, Máy móc và PTN"
+      ],
+      "path": "/"
+    },
     {
       "version": "v16052026.0945",
       "date": "16/05/2026",
