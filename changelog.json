@@ -1,0 +1,83 @@
+﻿{
+    "latest":  "v18052026.1708",
+    "versions":  [
+                     {
+                         "version":  "v18052026.1708",
+                         "date":  "18/05/2026",
+                         "changes":  [
+                                         "Xuất Hồ Sơ (Mailings 1 File): Thay đổi hành vi tính năng \"Xuất Toàn Bộ Công Việc\" (Mailings). Thay vì tạo file ZIP chứa nhiều file Word nhỏ, hệ thống tự động gom tất cả bản ghi vào chung 1 file Word duy nhất, tách biệt bằng ngắt trang.",
+                                         "Sử dụng cơ chế Auto-Loop Injection ({#workItems}) trực tiếp vào mã XML, giúp người dùng không cần sửa đổi file mẫu.",
+                                         "Đảm bảo tương thích hoàn toàn với Header/Footer của tài liệu (thông tin dự án)."
+                                     ],
+                         "path":  "/HoSoQuanLyChatLuong/"
+                     },
+                     {
+                         "version":  "v16052026.0945",
+                         "date":  "16/05/2026",
+                         "changes":  [
+                                         "Chuẩn hóa Ngày tháng (dd/MM/yyyy): Chuyển đổi toàn bộ hiển thị ngày tháng trên giao diện và khi xuất file Word sang định dạng dd/MM/yyyy chuẩn Việt Nam.",
+                                         "Nâng cấp Xuất hồ sơ hàng loạt (Mailings):",
+                                         "Tự động gán Số thứ tự (STT) cho từng biên bản trong bộ hồ sơ.",
+                                         "Đảm bảo dữ liệu (Nội dung, Mã hiệu, Ngày tháng, Nhân sự) thay đổi tương ứng theo từng STT công việc trong danh sách (Mail Merge).",
+                                         "Khôi phục Nhân sự theo Chức vụ:",
+                                         "Tự động tạo các nút chèn tag title_[Chức vụ] trong tab Tạo mẫu dựa trên danh sách nhân sự thực tế.",
+                                         "Hỗ trợ chèn tên kèm xưng hô Ông/Bà tự động qua tag _full.",
+                                         "Đồng bộ hóa dữ liệu: Cập nhật logic ánh xạ cho các trường ngày tháng và chức vụ mới trong dịch vụ WordApiService."
+                                     ],
+                         "path":  "/HoSoQuanLyChatLuong/versions/v16052026.0945/"
+                     },
+                     {
+                         "version":  "v15052026.1725",
+                         "date":  "15/05/2026",
+                         "changes":  [
+                                         "Cập nhật Tab Công việc: Đổi tên trường \"Ngày bắt đầu\" thành \"Ngày yêu cầu nghiệm thu\" để khớp với thực tế hồ sơ.",
+                                         "Bổ sung Nút chèn Ngày dạng chữ:",
+                                         "Đã thêm nút chèn Ngày yêu cầu NT (Chữ) và Ngày nghiệm thu (Chữ) trong Tab Tạo mẫu.",
+                                         "Bổ sung nút chèn ngày dạng chữ cho cả Hạn kiểm định máy móc và Hạn chứng chỉ PTN.",
+                                         "Tối ưu hóa Tab Tạo mẫu:",
+                                         "Loại bỏ các nút dư thừa (Nhân sự chung cũ).",
+                                         "Sắp xếp lại danh mục nút giúp việc thiết kế mẫu nhanh chóng và logic hơn.",
+                                         "Đồng bộ Dữ liệu: Cập nhật logic ánh xạ cho các trường ngày tháng mới."
+                                     ],
+                         "path":  "/HoSoQuanLyChatLuong/versions/v15052026.1725/"
+                     },
+                     {
+                         "version":  "v15052026.1720",
+                         "date":  "15/05/2026",
+                         "changes":  [
+                                         "Đồng bộ Dữ liệu Toàn diện (Triệt để):",
+                                         "Cho phép tự động mở khóa (Unlock) Content Control nếu đang ở chế độ cannotEdit để ghi dữ liệu, sau đó khóa lại như cũ.",
+                                         "Hỗ trợ không phân biệt chữ hoa/chữ thường (Case-insensitive) cho các thẻ Tag.",
+                                         "Bổ sung hàng loạt variant cho Tag: project_[tên_trường], work_[tên_trường] và phiên bản viết thường của tất cả các tag chức danh.",
+                                         "Cải tiến hiệu năng đồng bộ theo lô (Batching) giúp quá trình đổ dữ liệu mượt mà và ổn định hơn."
+                                     ],
+                         "path":  "/HoSoQuanLyChatLuong/versions/v15052026.1720/"
+                     },
+                     {
+                         "version":  "v15052026.1715",
+                         "date":  "15/05/2026",
+                         "changes":  [
+                                         "Vá lỗi Đồng bộ Content Control: Mở rộng phạm vi ánh xạ dữ liệu, đảm bảo mọi trường nhập liệu trong các Tab (Dự án, Công việc, Ký hồ sơ...) đều được ghi nhận chính xác vào các ô Content Control tương ứng trong Word.",
+                                         "Bổ sung Mapping thông minh: Tự động nhận diện cả các tag rút gọn (Ví dụ: thay vì chỉ nhận investorRep, hệ thống giờ nhận diện cả tag investor).",
+                                         "Tối ưu hóa vòng lặp xử lý: Thêm các bước kiểm tra an toàn cho tag để tránh lỗi gián đoạn quá trình đổ dữ liệu."
+                                     ],
+                         "path":  "/HoSoQuanLyChatLuong/versions/v15052026.1715/"
+                     },
+                     {
+                         "version":  "v15052026.1705",
+                         "date":  "15/05/2026",
+                         "changes":  [
+                                         "Tái cấu trúc Topbar: Mở rộng không gian làm việc, đưa thông tin phiên bản xuống dưới nút Cập nhật để giao diện thoáng hơn.",
+                                         "Hệ thống Ngày tháng tiếng Việt: Tự động chuyển đổi dd/mm/yyyy sang định dạng chuẩn văn bản Việt Nam (Ví dụ: \"ngày 03 tháng 10 năm 2025\") qua tag workInspectDateVN.",
+                                         "Nhân sự theo Chức danh: Hỗ trợ chèn tên nhân sự thông qua chức danh (Ví dụ: tag title_Chỉ Huy Trưởng sẽ tự động lấy tên người tương ứng).",
+                                         "Cải tiến Quản lý Công việc:",
+                                         "Thay thế cột Mã CV bằng STT tự động.",
+                                         "Cho phép di chuyển thứ tự công việc (Lên/Xuống) linh hoạt.",
+                                         "Tối ưu Bảng Thành phần:",
+                                         "Tự động điều chỉnh số hàng theo số lượng nhân sự thực tế (không còn mặc định 3 hàng).",
+                                         "Cố định chiều rộng cột STT bằng cách ép chiều rộng từng ô, đảm bảo thẩm mỹ tối đa."
+                                     ],
+                         "path":  "/HoSoQuanLyChatLuong/versions/v15052026.1705/"
+                     }
+                 ]
+}
