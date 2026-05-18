@@ -83,6 +83,10 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > **QUY ƯỚC ĐÁNH VERSION:**
 > Mỗi khi thực hiện cập nhật mã nguồn (đặc biệt trước khi đẩy lên GitHub), phải thay đổi phiên bản trong file `src/components/VersionManager.tsx` theo cấu trúc: `vDDMMYYYY.HHMM` (Ví dụ: `v16052026.0945`). Ghi chú lại thay đổi vào phần Lịch sử cập nhật bên dưới.
 
+### v18052026.1708 (18/05/2026)
+- **Xuất Hồ Sơ (Mailings 1 File)**: Thay đổi hành vi tính năng "Xuất Toàn Bộ Công Việc" (Mailings). Thay vì tạo file ZIP chứa nhiều file Word nhỏ, hệ thống tự động gom tất cả bản ghi vào chung **1 file Word duy nhất**, tách biệt bằng ngắt trang.
+  - Sử dụng cơ chế Auto-Loop Injection (`{#workItems}`) trực tiếp vào mã XML, giúp người dùng không cần sửa đổi file mẫu.
+  - Đảm bảo tương thích hoàn toàn với Header/Footer của tài liệu (thông tin dự án).
 
 ### v16052026.0945 (16/05/2026)
 - **Chuẩn hóa Ngày tháng (dd/MM/yyyy)**: Chuyển đổi toàn bộ hiển thị ngày tháng trên giao diện và khi xuất file Word sang định dạng `dd/MM/yyyy` chuẩn Việt Nam.

@@ -98,7 +98,7 @@ export const ExportModule: React.FC = () => {
                                 getSlice(sliceIndex + 1);
                             } else {
                                 // All slices collected
-                                generateZip(new Uint8Array(fileData), workItems, project, participants);
+                                generateMergedDocument(new Uint8Array(fileData), workItems, project, participants);
                                 myFile.closeAsync();
                             }
                         } else {
@@ -121,9 +121,29 @@ export const ExportModule: React.FC = () => {
     }
   };
 
-  const generateZip = async (templateData: Uint8Array, workItems: any[], project: any, participants: any) => {
+  const generateMergedDocument = async (templateData: Uint8Array, workItems: any[], project: any, participants: any) => {
     try {
-        const zip = new PizZip();
+        const zip = new PizZip(templateData);
+        
+        // 1. Inject Auto-Loop and Page Breaks into the Document XML
+        let docXml = zip.file("word/document.xml")?.asText() || "";
+        
+        // Add {#workItems} at the beginning of the body
+        docXml = docXml.replace('<w:body>', '<w:body><w:p><w:r><w:t>{#workItems}</w:t></w:r></w:p>');
+        
+        // Add {/workItems} at the end of the body and inject {@pageBreak} right before it
+        docXml = docXml.replace(/(<w:sectPr[^>]*>[\s\S]*?<\/w:sectPr>\s*)?<\/w:body>/, (match) => {
+            return `<w:p><w:r><w:t>{@pageBreak}</w:t></w:r></w:p><w:p><w:r><w:t>{/workItems}</w:t></w:r></w:p>` + match;
+        });
+        
+        // Update the XML in the zip
+        zip.file("word/document.xml", docXml);
+
+        const doc = new Docxtemplater(zip, {
+            paragraphLoop: true,
+            linebreaks: true,
+        });
+
         const materials = StorageService.get('hoso_materials') || [];
         const equipment = StorageService.get('hoso_equipment') || [];
         const labs = StorageService.get('hoso_labs') || [];
@@ -133,25 +153,58 @@ export const ExportModule: React.FC = () => {
         const equip = equipment[0] || {};
         const lab = labs[0] || {};
 
-        let stt = 1;
-        for (const work of workItems) {
-            const content = new PizZip(templateData);
-            const doc = new Docxtemplater(content, {
-                paragraphLoop: true,
-                linebreaks: true,
-            });
+        // 2. Prepare the root data object (Static data for headers/footers and root scope)
+        const rootData: any = {
+            projectName: project.name || '',
+            contractNumber: project.contractNumber || '',
+            packageName: project.packageName || '',
+            contractor: project.contractor || '',
+            investorRep: project.investor || '',
+            supervisorRep: project.supervisor || '',
+            designRep: project.designer || '',
+            projectLocation: project.location || '',
+            // Project dates
+            projectStart: formatDateDMY(project.startDate || ''),
+            projectStartVN: formatVietnameseDate(project.startDate || ''),
+            projectEnd: formatDateDMY(project.endDate || ''),
+            projectEndVN: formatVietnameseDate(project.endDate || ''),
+            matName: mat.name || '',
+            matSource: mat.source || '',
+            matLot: mat.lot || '',
+            matQty: mat.qty?.toString() || '',
+            equipName: equip.name || '',
+            equipSerial: equip.serial || '',
+            equipExpiry: formatDateDMY(equip.expiry || ''),
+            equipExpiryVN: formatVietnameseDate(equip.expiry || ''),
+            labName: lab.name || '',
+            labCode: lab.code || '',
+            labExpiry: formatDateDMY(lab.expiry || ''),
+            labExpiryVN: formatVietnameseDate(lab.expiry || ''),
+            ...participants
+        };
 
-            // Prepare dynamic data for this specific work item
-            const data: any = {
-                stt: stt,
-                projectName: project.name || '',
-                contractNumber: project.contractNumber || '',
-                packageName: project.packageName || '',
-                contractor: project.contractor || '',
-                investorRep: project.investor || '',
-                supervisorRep: project.supervisor || '',
-                designRep: project.designer || '',
-                projectLocation: project.location || '',
+        // Add personnel by title to root
+        personnel.forEach((p: any) => {
+            if (p.position) {
+                const titleTag = `title_${p.position.trim()}`;
+                rootData[titleTag] = p.name || '';
+                const honorific = resolveGender(p.name || '', p.gender);
+                rootData[`${titleTag}_full`] = `${honorific} ${p.name || ''}`;
+            }
+        });
+
+        // Add all project properties to root
+        Object.keys(project).forEach(key => {
+            if (typeof project[key] === 'string' || typeof project[key] === 'number') {
+                rootData[`project_${key}`] = String(project[key]);
+            }
+        });
+
+        // 3. Prepare the dynamic workItems array
+        let stt = 1;
+        const workItemsData = workItems.map((work, index) => {
+            const workData: any = {
+                stt: stt++,
                 workName: work.name || '',
                 workCode: work.code || '',
                 workLine: work.line || '',
@@ -162,69 +215,39 @@ export const ExportModule: React.FC = () => {
                 workRequestDateVN: formatVietnameseDate(work.requestDate || ''),
                 workInspectDate: formatDateDMY(work.inspectionDate || ''),
                 workInspectDateVN: formatVietnameseDate(work.inspectionDate || ''),
-                // Project dates
-                projectStart: formatDateDMY(project.startDate || ''),
-                projectStartVN: formatVietnameseDate(project.startDate || ''),
-                projectEnd: formatDateDMY(project.endDate || ''),
-                projectEndVN: formatVietnameseDate(project.endDate || ''),
-                matName: mat.name || '',
-                matSource: mat.source || '',
-                matLot: mat.lot || '',
-                matQty: mat.qty?.toString() || '',
-                equipName: equip.name || '',
-                equipSerial: equip.serial || '',
-                equipExpiry: formatDateDMY(equip.expiry || ''),
-                equipExpiryVN: formatVietnameseDate(equip.expiry || ''),
-                labName: lab.name || '',
-                labCode: lab.code || '',
-                labExpiry: formatDateDMY(lab.expiry || ''),
-                labExpiryVN: formatVietnameseDate(lab.expiry || ''),
-                ...participants
+                // The pageBreak will be rendered for all items except the last one
+                pageBreak: index < workItems.length - 1 ? '<w:p><w:r><w:br w:type="page"/></w:r></w:p>' : ''
             };
-
-            // Add personnel by title
-            personnel.forEach((p: any) => {
-                if (p.position) {
-                    const titleTag = `title_${p.position.trim()}`;
-                    data[titleTag] = p.name || '';
-                    const honorific = resolveGender(p.name || '', p.gender);
-                    data[`${titleTag}_full`] = `${honorific} ${p.name || ''}`;
-                }
-            });
-
-            // Add all project properties
-            Object.keys(project).forEach(key => {
-                if (typeof project[key] === 'string' || typeof project[key] === 'number') {
-                    data[`project_${key}`] = String(project[key]);
-                }
-            });
-
+            
             // Add all work properties
             Object.keys(work).forEach(key => {
                 if (typeof work[key] === 'string' || typeof work[key] === 'number') {
-                    data[`work_${key}`] = String(work[key]);
+                    workData[`work_${key}`] = String(work[key]);
                 }
             });
 
-            doc.render(data);
-            const out = doc.getZip().generate({
-                type: "uint8array",
-                mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            });
-            
-            const fileName = `BB_${stt}_${work.code || 'CV'}_${work.name.substring(0, 30).replace(/[/\\?%*:|"<>]/g, '-')}.docx`;
-            zip.file(fileName, out);
-            stt++;
-        }
+            return workData;
+        });
 
-        const finalZip = zip.generate({ type: "blob" });
-        saveAs(finalZip, `HoSo_NghiemThu_HangLoat_${new Date().getTime()}.zip`);
+        // Add the items array to the root data
+        rootData.workItems = workItemsData;
+
+        // Render the document
+        doc.render(rootData);
+
+        // Generate the final blob
+        const out = doc.getZip().generate({
+            type: "blob",
+            mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        });
+        
+        saveAs(out, `HoSo_NghiemThu_Mailings_${new Date().getTime()}.docx`);
         setIsBatchGenerating(false);
-        alert("Đã tạo bộ hồ sơ hàng loạt thành công! Vui lòng kiểm tra thư mục Tải về.");
+        alert("Đã tạo hồ sơ hàng loạt thành công! Vui lòng kiểm tra thư mục Tải về.");
     } catch (err: any) {
         console.error(err);
         setIsBatchGenerating(false);
-        alert("Lỗi khi tạo file ZIP: " + err.message);
+        alert("Lỗi khi tạo file Word: " + err.message);
     }
   };
 
